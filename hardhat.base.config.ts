@@ -152,16 +152,8 @@ const config: HardhatUserConfig = {
             },
           ],
         },
-        assetParams: {
-          assetParams: [
-            {
-              assetAddress: "0x19F64674D8A5B4E652319F5e239eFd3bc969A1fE".toLowerCase(),
-              priceProvider: "0x9d4b2c05818A0086e641437fcb64ab6098c7BbEc".toLowerCase(),
-              decimals: 18,
-            },
-          ],
-        },
         mocAddresses: {
+          collateralAssetAddress: "0x19F64674D8A5B4E652319F5e239eFd3bc969A1fE".toLowerCase(),
           governorAddress: "0xf984d6f2afcf057984034ac06f2a2182cb62ce5c",
           pauserAddress: "0x94b25b38DB7cF2138E8327Fc54543a117fC20E72",
           mocFeeFlowAddress: "0xcd8a1c9acc980ae031456573e34dc05cd7dae6e3",
