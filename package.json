@@ -3,7 +3,7 @@
   "version": "0.2.0",
   "private": true,
   "homepage": "https://www.moneyonchain.com",
-  "description": "Money on Chain main smart contract protocol RIF deployment",
+  "description": "Money on Chain main smart contract protocol RIF implementation",
   "author": "MOC Investments Corp. 2020",
   "license": "AGPL-3.0",
   "dependencies": {
@@ -11,7 +11,7 @@
     "hardhat-deploy": "0.11.20",
     "hardhat-storage-layout": "0.1.7",
     "solc": "0.8.16",
-    "moc-main": "github:money-on-chain/main-sc-protocol#export-artifacts"
+    "moc-main": "github:money-on-chain/main-sc-protocol#export-artifacts-rif"
   },
   "devDependencies": {
     "@commitlint/cli": "17.2.0",
