@@ -75,6 +75,8 @@ const config: HardhatUserConfig = {
         accountsBalance: "100000000000000000000000000000000000",
       },
       chainId: chainIds.hardhat,
+      // TODO: remove this
+      allowUnlimitedContractSize: true,
       deployParameters: {
         coreParams: {
           protThrld: PCT_BASE.mul(2), // 2
@@ -95,6 +97,7 @@ const config: HardhatUserConfig = {
           swapTCforTPFee: PCT_BASE.mul(1).div(100), // 1%
           redeemTCandTPFee: PCT_BASE.mul(8).div(100), // 8%
           mintTCandTPFee: PCT_BASE.mul(8).div(100), // 8%
+          feeTokenPct: PCT_BASE.mul(5).div(10), // 50%
         },
         ctParams: {
           name: "CollateralToken",
@@ -103,14 +106,18 @@ const config: HardhatUserConfig = {
         mocAddresses: {
           governorAddress: "0x26a00af444928d689dDEc7B4D17C0e4A8c9D407A",
           pauserAddress: "0x26a00aF444928D689DDec7B4D17C0e4a8c9d407b",
+          feeTokenAddress: "0x26a00AF444928d689DDeC7b4d17c0e4A8c9D4060",
+          feeTokenPriceProviderAddress: "0x26A00AF444928d689ddec7b4d17c0E4A8C9D4061",
           mocFeeFlowAddress: "0x26a00aF444928d689DDEC7b4D17c0E4a8c9D407d",
           mocAppreciationBeneficiaryAddress: "0x26A00aF444928D689ddEC7B4D17C0E4A8C9d407F",
+          vendorsGuardianAddress: "0x26a00AF444928D689DDeC7b4D17c0E4a8C9d407E",
         },
+        gasLimit: 30000000, // high value to avoid coverage issue. https://github.com/NomicFoundation/hardhat/issues/3121
       },
       tags: ["local"],
     },
     rskTestnet: {
-      accounts: [`0x${process.env.MNEMONIC}`],
+      accounts: process.env.PK ? [`0x${process.env.PK}`] : { mnemonic },
       chainId: chainIds.rskTestnet,
       url: "https://public-node.testnet.rsk.co",
       deployParameters: {
@@ -131,8 +138,9 @@ const config: HardhatUserConfig = {
           swapTPforTPFee: PCT_BASE.div(1000), // 0.1%
           swapTPforTCFee: PCT_BASE.div(1000), // 0.1%
           swapTCforTPFee: PCT_BASE.div(1000), // 0.1%
-          redeemTCandTPFee: PCT_BASE.div(1000), // 0.1%
-          mintTCandTPFee: PCT_BASE.div(1000), // 0.1%
+          redeemTCandTPFee: PCT_BASE.mul(8).div(10000), // 0.08%
+          mintTCandTPFee: PCT_BASE.mul(8).div(10000), // 0.08%
+          feeTokenPct: PCT_BASE.mul(5).div(10), // 50%
         },
         ctParams: {
           name: "RIFPRO",
@@ -141,8 +149,8 @@ const config: HardhatUserConfig = {
         tpParams: {
           tpParams: [
             {
-              name: "RIFUSD",
-              symbol: "RUSD",
+              name: "TEST",
+              symbol: "TEST",
               priceProvider: "0x0e8E63721E49dbde105a4085b3D548D292Edf38A".toLowerCase(),
               ctarg: PCT_BASE.mul(55).div(10), // 5.5
               mintFee: PCT_BASE.div(100), // 1%
@@ -158,7 +166,11 @@ const config: HardhatUserConfig = {
           pauserAddress: "0x94b25b38DB7cF2138E8327Fc54543a117fC20E72",
           mocFeeFlowAddress: "0xcd8a1c9acc980ae031456573e34dc05cd7dae6e3",
           mocAppreciationBeneficiaryAddress: "0xcd8a1c9acc980ae031456573e34dc05cd7dae6e3",
+          feeTokenAddress: "0x26a00AF444928d689DDeC7b4d17c0e4A8c9D4060",
+          feeTokenPriceProviderAddress: "0x26a00AF444928d689DDeC7b4d17c0e4A8c9D4060",
+          vendorsGuardianAddress: "0x94b25b38DB7cF2138E8327Fc54543a117fC20E72",
         },
+        gasLimit: 30000000, // high value to avoid coverage issue. https://github.com/NomicFoundation/hardhat/issues/3121
       },
       tags: ["testnet"],
     },

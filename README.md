@@ -1,7 +1,7 @@
-# ROC protocol deploy
+# ROC protocol
 
-ROC is an implementation of the Money On Chain main protocol that uses RIF as collateral of the system.
-For more information, please refer to the [documentation section](https://github.com/money-on-chain/main-sc-protocol/blob/master/docs/README.md).
+ROC is an implementation of the Money On Chain main protocol that uses RIF Token as collateral of the system.
+For more information, please refer to the [documentation section](https://github.com/money-on-chain/main-sc-protocol/blob/master/docs/README.md) for the _Moc CA RC20_ variation.
 
 ## Getting Started
 
@@ -42,19 +42,22 @@ npm run typechain
 ## Deployment
 
 This solution has a fully functional deploy mechanism following [hardhat deploy](https://github.com/wighawag/hardhat-deploy) standard.
-It imports smart contracts and deploy scripts from [MoC-main-sc](https://github.com/money-on-chain/main-sc-protocol) repository and uses them to deploy the collateral bag implementation with custom networks configurations. To add networks for deployment or set new deploy parameters see [hardhat.base.config.ts](hardhat.base.config.ts)
+It imports smart contracts and deploy scripts from [MoC-main-sc](https://github.com/money-on-chain/main-sc-protocol) repository and uses them to deploy the RC20 Collateralized Asset version, with custom networks configurations. To add networks for deployment or set new deploy parameters see [hardhat.base.config.ts](hardhat.base.config.ts)
 
 You can configure a network as `testnet` using [tags](https://github.com/wighawag/hardhat-deploy#tags) mechanism, that will allow you to:
+
 1. deploy and initialize the protocol using a governor mocked to skip governance system
 2. initialize the protocol with Pegged Tokens
-3. initialize the protocol with Assets to mocWrapper
-4. transfer governance to the real governor
+3. transfer governance to the real governor
 
-Otherwise, you can set it as `mainnet` and will be initialized with the real governor. In that way, you must add Pegged Tokens and Assets using the governance system. See more in [Areopagus-Governance](https://github.com/money-on-chain/Areopagus-Governance)
+Otherwise, you can set it as `mainnet` and will be initialized with the real governor. In that way, you must add Pegged Tokens using the governance system. See more in [Areopagus-Governance](https://github.com/money-on-chain/Areopagus-Governance)
+
+For the deployer account, you can either set you mnemonic in the `.env` file, or if you want to use the hashed Private Key directly, set the `PK` environment variable (without `0x` prefix).
 
 ### Deploy scripts
 
 To deploy contracts in rsk testnet
+
 ```bash
 npm run deploy-rskTestnet
 ```
@@ -62,6 +65,7 @@ npm run deploy-rskTestnet
 A deployments folder will be created with a sub folder for each network. There you will find a json file for each contract deployed that includes the address and ABI.
 
 Keep in mind that all the contracts are upgradeable using [UUPS](https://eips.ethereum.org/EIPS/eip-1822) proxy pattern, so to interact with them you must use the contract implementation ABI but calling the contract proxy address.
+
 ## Built With
 
 * [Hardhat](https://hardhat.org/) - Task runner
