@@ -79,7 +79,7 @@
     "prettier:check": "prettier --config .prettierrc --check \"**/*.{js,json,md,sol,ts}\"",
     "release": "standard-version",
     "docgen": "hardhat docgen",
-    "deploy-localhost": "DEPLOYING=true hardhat deploy --no-compile",
-    "deploy-rskTestnet": "DEPLOYING=true hardhat deploy --no-compile --network rskTestnet"
+    "deploy-localhost": "VIA_IR=true hardhat deploy",
+    "deploy-rskTestnet": "VIA_IR=true hardhat deploy --network rskTestnet"
   }
 }
