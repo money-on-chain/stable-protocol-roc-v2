@@ -78,7 +78,7 @@ const deployFunc: DeployFunction = async (hre: HardhatRuntimeEnvironment) => {
             bes: settlementParams.bes,
           },
           governorAddress,
-          pauserAddress,
+          pauserAddress: deployer,
           mocCoreExpansion: deployedMocExpansionContract.address,
           emaCalculationBlockSpan: coreParams.emaCalculationBlockSpan,
           mocVendors: MocVendors.address,
@@ -88,6 +88,10 @@ const deployFunc: DeployFunction = async (hre: HardhatRuntimeEnvironment) => {
       { gasLimit },
     ),
   );
+  console.log("pausing MocRif until migration from V1 has been completed...");
+  // pause
+  await mocCARC20.pause();
+
   console.log("initialization completed!");
   // for testnet we add some Pegged Token and then transfer governance to the real governor
   if (hre.network.tags.testnet) {
