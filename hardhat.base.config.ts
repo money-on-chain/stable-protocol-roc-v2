@@ -14,22 +14,29 @@ import { HardhatUserConfig } from "hardhat/config";
 import { BigNumber } from "ethers";
 import "solidity-coverage";
 import "hardhat-storage-layout";
-import { DeployParameters } from "moc-main/export/types/types";
+import { DeployParameters } from "moc-main/export/scripts/types";
 
 dotenvConfig({ path: resolve(__dirname, "./.env") });
 
 const PCT_BASE = BigNumber.from((1e18).toString());
 const DAY_BLOCK_SPAN = 2880;
 const MONTH_BLOCK_SPAN = DAY_BLOCK_SPAN * 30;
+
+type RifDeployParameters = Omit<DeployParameters, "ctParams"> & {
+  mocAddresses: {
+    collateralTokenAddress: String;
+  };
+};
+
 declare module "hardhat/types/config" {
   export interface HardhatNetworkUserConfig {
-    deployParameters: DeployParameters;
+    deployParameters: RifDeployParameters;
   }
   export interface HardhatNetworkConfig {
-    deployParameters: DeployParameters;
+    deployParameters: RifDeployParameters;
   }
   export interface HttpNetworkConfig {
-    deployParameters: DeployParameters;
+    deployParameters: RifDeployParameters;
   }
 }
 
@@ -99,12 +106,10 @@ const config: HardhatUserConfig = {
           mintTCandTPFee: PCT_BASE.mul(8).div(100), // 8%
           feeTokenPct: PCT_BASE.mul(5).div(10), // 50%
         },
-        ctParams: {
-          name: "CollateralToken",
-          symbol: "CT",
-        },
         mocAddresses: {
           governorAddress: "0x26a00af444928d689dDEc7B4D17C0e4A8c9D407A",
+          collateralAssetAddress: "0x19F64674D8A5B4E652319F5e239eFd3bc969A1fE",
+          collateralTokenAddress: "0x19F64674D8A5B4E652319F5e239eFd3bc969A1fE",
           pauserAddress: "0x26a00aF444928D689DDec7B4D17C0e4a8c9d407b",
           feeTokenAddress: "0x26a00AF444928d689DDeC7b4d17c0e4A8c9D4060",
           feeTokenPriceProviderAddress: "0x26A00AF444928d689ddec7b4d17c0E4A8C9D4061",
@@ -142,16 +147,12 @@ const config: HardhatUserConfig = {
           mintTCandTPFee: PCT_BASE.mul(8).div(10000), // 0.08%
           feeTokenPct: PCT_BASE.mul(5).div(10), // 50%
         },
-        ctParams: {
-          name: "RIFPRO",
-          symbol: "RIFP",
-        },
         tpParams: {
           tpParams: [
             {
               name: "TEST",
               symbol: "TEST",
-              priceProvider: "0x0e8E63721E49dbde105a4085b3D548D292Edf38A".toLowerCase(),
+              priceProvider: "0x0e8E63721E49dbde105a4085b3D548D292Edf38A",
               ctarg: PCT_BASE.mul(55).div(10), // 5.5
               mintFee: PCT_BASE.div(100), // 1%
               redeemFee: PCT_BASE.div(100), // 1%
@@ -161,7 +162,8 @@ const config: HardhatUserConfig = {
           ],
         },
         mocAddresses: {
-          collateralAssetAddress: "0x19F64674D8A5B4E652319F5e239eFd3bc969A1fE".toLowerCase(),
+          collateralAssetAddress: "0x19F64674D8A5B4E652319F5e239eFd3bc969A1fE",
+          collateralTokenAddress: "0x19F64674D8A5B4E652319F5e239eFd3bc969A1fE",
           governorAddress: "0xf984d6f2afcf057984034ac06f2a2182cb62ce5c",
           pauserAddress: "0x94b25b38DB7cF2138E8327Fc54543a117fC20E72",
           mocFeeFlowAddress: "0xcd8a1c9acc980ae031456573e34dc05cd7dae6e3",
@@ -176,7 +178,7 @@ const config: HardhatUserConfig = {
     },
   },
   paths: {
-    artifacts: process.env.DEPLOYING ? "node_modules/moc-main/export/artifacts" : "./artifacts",
+    artifacts: "./artifacts",
     cache: "./cache",
     sources: "./contracts",
     tests: "./test",
@@ -229,7 +231,6 @@ const config: HardhatUserConfig = {
     contracts: [
       {
         artifacts: "node_modules/moc-main/export/artifacts",
-        deploy: "node_modules/moc-main/export/deploy/deploy/rc20",
       },
     ],
   },
