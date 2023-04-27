@@ -35,6 +35,7 @@ const deployFunc: DeployFunction = async (hre: HardhatRuntimeEnvironment) => {
     mocFeeFlowAddress,
     mocAppreciationBeneficiaryAddress,
     vendorsGuardianAddress,
+    tcInterestCollectorAddress,
   } = mocAddresses;
 
   // for tests and testnet we deploy a Governor Mock
@@ -76,6 +77,9 @@ const deployFunc: DeployFunction = async (hre: HardhatRuntimeEnvironment) => {
             successFee: coreParams.successFee,
             appreciationFactor: coreParams.appreciationFactor,
             bes: settlementParams.bes,
+            tcInterestCollectorAddress,
+            tcInterestRate: coreParams.tcInterestRate,
+            tcInterestPaymentBlockSpan: coreParams.tcInterestPaymentBlockSpan,
           },
           governorAddress,
           pauserAddress: deployer,

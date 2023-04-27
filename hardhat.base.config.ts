@@ -20,6 +20,7 @@ dotenvConfig({ path: resolve(__dirname, "./.env") });
 
 const PCT_BASE = BigNumber.from((1e18).toString());
 const DAY_BLOCK_SPAN = 2880;
+const WEEK_BLOCK_SPAN = DAY_BLOCK_SPAN * 7;
 const MONTH_BLOCK_SPAN = DAY_BLOCK_SPAN * 30;
 
 type RifDeployParameters = Omit<DeployParameters, "ctParams"> & {
@@ -91,6 +92,8 @@ const config: HardhatUserConfig = {
           emaCalculationBlockSpan: DAY_BLOCK_SPAN,
           successFee: PCT_BASE.mul(10).div(100), // 10%
           appreciationFactor: PCT_BASE.mul(50).div(100), // 50%
+          tcInterestRate: PCT_BASE.mul(5).div(100000), // 0.005% : weekly 0.0025 / 365 * 7
+          tcInterestPaymentBlockSpan: WEEK_BLOCK_SPAN,
         },
         settlementParams: {
           bes: MONTH_BLOCK_SPAN,
@@ -116,6 +119,7 @@ const config: HardhatUserConfig = {
           mocFeeFlowAddress: "0x26a00aF444928d689DDEC7b4D17c0E4a8c9D407d",
           mocAppreciationBeneficiaryAddress: "0x26A00aF444928D689ddEC7B4D17C0E4A8C9d407F",
           vendorsGuardianAddress: "0x26a00AF444928D689DDeC7b4D17c0E4a8C9d407E",
+          tcInterestCollectorAddress: "0x27a00Af444928D689DDec7B4D17c0E4a8c9d407F",
         },
         gasLimit: 30000000, // high value to avoid coverage issue. https://github.com/NomicFoundation/hardhat/issues/3121
       },
@@ -132,6 +136,8 @@ const config: HardhatUserConfig = {
           emaCalculationBlockSpan: DAY_BLOCK_SPAN,
           successFee: PCT_BASE.mul(20).div(100), // 20%
           appreciationFactor: PCT_BASE.mul(0).div(100), // 0%
+          tcInterestRate: PCT_BASE.mul(5).div(100000), // 0.005% : weekly 0.0025 / 365 * 7
+          tcInterestPaymentBlockSpan: WEEK_BLOCK_SPAN,
         },
         settlementParams: {
           bes: DAY_BLOCK_SPAN,
@@ -171,6 +177,7 @@ const config: HardhatUserConfig = {
           feeTokenAddress: "0x26a00AF444928d689DDeC7b4d17c0e4A8c9D4060",
           feeTokenPriceProviderAddress: "0x26a00AF444928d689DDeC7b4d17c0e4A8c9D4060",
           vendorsGuardianAddress: "0x94b25b38DB7cF2138E8327Fc54543a117fC20E72",
+          tcInterestCollectorAddress: "0x27a00Af444928D689DDec7B4D17c0E4a8c9d407F",
         },
         gasLimit: 30000000, // high value to avoid coverage issue. https://github.com/NomicFoundation/hardhat/issues/3121
       },
@@ -190,6 +197,13 @@ const config: HardhatUserConfig = {
       optimizer: {
         enabled: true,
         runs: 200,
+        details: {
+          yulDetails: {
+            // solves viaIR issue that inline internal functions: https://github.com/ethereum/solidity/issues/13858#issuecomment-1428754261
+            optimizerSteps:
+              "dhfoDgvulfnTUtnIf[xa[r]EscLMcCTUtTOntnfDIulLculVcul[j]Tpeulxa[rul]xa[r]cLgvifCTUca[r]LSsTOtfDnca[r]Iulc]jmul[jul]VcTOculjmul",
+          },
+        },
       },
       viaIR: process.env.VIA_IR ? true : false,
       outputSelection: {
