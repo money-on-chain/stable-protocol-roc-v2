@@ -10,7 +10,7 @@
     "hardhat": "2.13.0",
     "hardhat-deploy": "0.11.25",
     "hardhat-storage-layout": "0.1.7",
-    "solc": "0.8.16",
+    "solc": "0.8.18",
     "moc-main": "github:money-on-chain/main-sc-protocol#export-artifacts-rif"
   },
   "devDependencies": {
@@ -21,7 +21,7 @@
     "@openzeppelin/contracts": "4.8.2",
     "@openzeppelin/contracts-upgradeable": "4.8.2",
     "@openzeppelin/hardhat-upgrades": "1.22.1",
-    "@typechain/ethers-v5": "10.2.0",
+    "@typechain/ethers-v5": "10.2.1",
     "@types/chai": "4.3.4",
     "@types/fs-extra": "11.0.1",
     "@types/memoizee": "0.4.8",
@@ -80,6 +80,7 @@
     "release": "standard-version",
     "docgen": "hardhat docgen",
     "deploy-localhost": "VIA_IR=true hardhat deploy",
+    "deploy-development": "VIA_IR=true hardhat deploy --network development",
     "deploy-rskTestnet": "VIA_IR=true hardhat deploy --network rskTestnet"
   }
 }
