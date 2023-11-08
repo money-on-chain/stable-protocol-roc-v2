@@ -86,6 +86,7 @@ const config: HardhatUserConfig = {
         accountsBalance: "100000000000000000000000000000000000",
       },
       chainId: chainIds.hardhat,
+      hardfork: "london", // FIXME: latest evm version supported by rsk explorers, keep it updated
       // TODO: remove this
       allowUnlimitedContractSize: true,
       deployParameters: {
@@ -97,6 +98,7 @@ const config: HardhatUserConfig = {
           appreciationFactor: PCT_BASE.mul(50).div(100), // 50%
           tcInterestRate: PCT_BASE.mul(5).div(100000), // 0.005% : weekly 0.0025 / 365 * 7
           tcInterestPaymentBlockSpan: WEEK_BLOCK_SPAN,
+          decayBlockSpan: DAY_BLOCK_SPAN,
         },
         settlementParams: {
           bes: MONTH_BLOCK_SPAN,
@@ -113,16 +115,33 @@ const config: HardhatUserConfig = {
           feeTokenPct: PCT_BASE.mul(5).div(10), // 50%
         },
         mocAddresses: {
-          governorAddress: "0x26a00af444928d689dDEc7B4D17C0e4A8c9D407A",
+          governorAddress: "0x26a00af444928d689dDEc7B4D17C0e4A8c9D407A", // if not provided a new GovernorMock.sol is deployed
           collateralAssetAddress: "0x19F64674D8A5B4E652319F5e239eFd3bc969A1fE",
-          collateralTokenAddress: "0x19F64674D8A5B4E652319F5e239eFd3bc969A1fE",
-          pauserAddress: "0x26a00aF444928D689DDec7B4D17C0e4a8c9d407b",
+          collateralTokenAddress: "0x19F64674D8A5B4E652319F5e239eFd3bc969A1fE", // if not provided a new MocTC.sol is deployed
+          pauserAddress: "0x26a00aF444928D689DDec7B4D17C0e4a8c9d407b", // if not provided is set to deployer
           feeTokenAddress: "0x26a00AF444928d689DDeC7b4d17c0e4A8c9D4060",
           feeTokenPriceProviderAddress: "0x26A00AF444928d689ddec7b4d17c0E4A8C9D4061",
           mocFeeFlowAddress: "0x26a00aF444928d689DDEC7b4D17c0E4a8c9D407d",
           mocAppreciationBeneficiaryAddress: "0x26A00aF444928D689ddEC7B4D17C0E4A8C9d407F",
           vendorsGuardianAddress: "0x26a00AF444928D689DDeC7b4D17c0E4a8C9d407E",
           tcInterestCollectorAddress: "0x27a00Af444928D689DDec7B4D17c0E4a8c9d407F",
+          authorizedExecutors: [], // for testnet deployer is assigned as an executor
+          maxAbsoluteOpProviderAddress: "", // if not provided a new FCMaxAbsoluteOpProvider.sol will be deployed with pauser as owner
+          maxOpDiffProviderAddress: "", // if not provided a new FCMaxOpDifferenceProvider.sol will be deployed with pauser as owner
+        },
+        queueParams: {
+          minOperWaitingBlk: 1,
+          execFeeParams: {
+            tcMintExecFee: BigNumber.from("1000000"),
+            tcRedeemExecFee: BigNumber.from("1000001"),
+            tpMintExecFee: BigNumber.from("1000002"),
+            tpRedeemExecFee: BigNumber.from("1000003"),
+            mintTCandTPExecFee: BigNumber.from("2000000"),
+            redeemTCandTPExecFee: BigNumber.from("2000001"),
+            swapTPforTPExecFee: BigNumber.from("2000002"),
+            swapTPforTCExecFee: BigNumber.from("1000003"),
+            swapTCforTPExecFee: BigNumber.from("1000004"),
+          },
         },
         gasLimit: 30000000, // high value to avoid coverage issue. https://github.com/NomicFoundation/hardhat/issues/3121
       },
@@ -139,6 +158,7 @@ const config: HardhatUserConfig = {
           appreciationFactor: PCT_BASE.mul(50).div(100), // 50%
           tcInterestRate: PCT_BASE.mul(5).div(100000), // 0.005% : weekly 0.0025 / 365 * 7
           tcInterestPaymentBlockSpan: WEEK_BLOCK_SPAN,
+          decayBlockSpan: DAY_BLOCK_SPAN,
         },
         settlementParams: {
           bes: MONTH_BLOCK_SPAN,
@@ -155,23 +175,40 @@ const config: HardhatUserConfig = {
           feeTokenPct: PCT_BASE.mul(5).div(10), // 50%
         },
         mocAddresses: {
-          governorAddress: "0x26a00af444928d689dDEc7B4D17C0e4A8c9D407A",
+          governorAddress: "0x26a00af444928d689dDEc7B4D17C0e4A8c9D407A", // if not provided a new GovernorMock.sol is deployed
           collateralAssetAddress: "0x19F64674D8A5B4E652319F5e239eFd3bc969A1fE",
-          collateralTokenAddress: "0x19F64674D8A5B4E652319F5e239eFd3bc969A1fE",
-          pauserAddress: "0x26a00aF444928D689DDec7B4D17C0e4a8c9d407b",
+          collateralTokenAddress: "0x19F64674D8A5B4E652319F5e239eFd3bc969A1fE", // if not provided a new MocTC.sol is deployed
+          pauserAddress: "0x26a00aF444928D689DDec7B4D17C0e4a8c9d407b", // if not provided is set to deployer
           feeTokenAddress: "0x26a00AF444928d689DDeC7b4d17c0e4A8c9D4060",
           feeTokenPriceProviderAddress: "0x26A00AF444928d689ddec7b4d17c0E4A8C9D4061",
           mocFeeFlowAddress: "0x26a00aF444928d689DDEC7b4D17c0E4a8c9D407d",
           mocAppreciationBeneficiaryAddress: "0x26A00aF444928D689ddEC7B4D17C0E4A8C9d407F",
           vendorsGuardianAddress: "0x26a00AF444928D689DDeC7b4D17c0E4a8C9d407E",
           tcInterestCollectorAddress: "0x27a00Af444928D689DDec7B4D17c0E4a8c9d407F",
+          authorizedExecutors: [], // for testnet deployer is assigned as an executor
+          maxAbsoluteOpProviderAddress: "", // if not provided a new FCMaxAbsoluteOpProvider.sol will be deployed with pauser as owner
+          maxOpDiffProviderAddress: "", // if not provided a new FCMaxOpDifferenceProvider.sol will be deployed with pauser as owner
+        },
+        queueParams: {
+          minOperWaitingBlk: 1,
+          execFeeParams: {
+            tcMintExecFee: BigNumber.from("1000000"),
+            tcRedeemExecFee: BigNumber.from("1000001"),
+            tpMintExecFee: BigNumber.from("1000002"),
+            tpRedeemExecFee: BigNumber.from("1000003"),
+            mintTCandTPExecFee: BigNumber.from("2000000"),
+            redeemTCandTPExecFee: BigNumber.from("2000001"),
+            swapTPforTPExecFee: BigNumber.from("2000002"),
+            swapTPforTCExecFee: BigNumber.from("1000003"),
+            swapTCforTPExecFee: BigNumber.from("1000004"),
+          },
         },
         gasLimit: 6800000,
       },
       mocV1Address: "0x24a1ab81e9c29a8bBc163b47D934557ce5050EE1",
       tags: ["local"],
     },
-    rskTestnet: {
+    rskTestnetMigration: {
       accounts: process.env.PK ? [`0x${process.env.PK}`] : { mnemonic },
       chainId: chainIds.rskTestnet,
       url: "https://public-node.testnet.rsk.co",
@@ -184,6 +221,7 @@ const config: HardhatUserConfig = {
           appreciationFactor: PCT_BASE.mul(50).div(100), // 50%
           tcInterestRate: PCT_BASE.mul(5).div(100000), // 0.005% : weekly 0.0025 / 365 * 7
           tcInterestPaymentBlockSpan: WEEK_BLOCK_SPAN,
+          decayBlockSpan: DAY_BLOCK_SPAN,
         },
         settlementParams: {
           bes: MONTH_BLOCK_SPAN,
@@ -200,20 +238,117 @@ const config: HardhatUserConfig = {
           feeTokenPct: PCT_BASE.mul(5).div(10), // 50%
         },
         mocAddresses: {
-          governorAddress: "0x26a00af444928d689dDEc7B4D17C0e4A8c9D407A",
+          governorAddress: "0x26a00af444928d689dDEc7B4D17C0e4A8c9D407A", // if not provided a new GovernorMock.sol is deployed
           collateralAssetAddress: "0x19F64674D8A5B4E652319F5e239eFd3bc969A1fE",
-          collateralTokenAddress: "0x19F64674D8A5B4E652319F5e239eFd3bc969A1fE",
-          pauserAddress: "0x26a00aF444928D689DDec7B4D17C0e4a8c9d407b",
+          collateralTokenAddress: "0x19F64674D8A5B4E652319F5e239eFd3bc969A1fE", // if not provided a new MocTC.sol is deployed
+          pauserAddress: "0x26a00aF444928D689DDec7B4D17C0e4a8c9d407b", // if not provided is set to deployer
           feeTokenAddress: "0x26a00AF444928d689DDeC7b4d17c0e4A8c9D4060",
           feeTokenPriceProviderAddress: "0x26A00AF444928d689ddec7b4d17c0E4A8C9D4061",
           mocFeeFlowAddress: "0x26a00aF444928d689DDEC7b4D17c0E4a8c9D407d",
           mocAppreciationBeneficiaryAddress: "0x26A00aF444928D689ddEC7B4D17C0E4A8C9d407F",
           vendorsGuardianAddress: "0x26a00AF444928D689DDeC7b4D17c0E4a8C9d407E",
           tcInterestCollectorAddress: "0x27a00Af444928D689DDec7B4D17c0E4a8c9d407F",
+          authorizedExecutors: [], // for testnet deployer is assigned as an executor
+          maxAbsoluteOpProviderAddress: "", // if not provided a new FCMaxAbsoluteOpProvider.sol will be deployed with pauser as owner
+          maxOpDiffProviderAddress: "", // if not provided a new FCMaxOpDifferenceProvider.sol will be deployed with pauser as owner
+        },
+        queueParams: {
+          minOperWaitingBlk: 5,
+          execFeeParams: {
+            tcMintExecFee: BigNumber.from("100"),
+            tcRedeemExecFee: BigNumber.from("100"),
+            tpMintExecFee: BigNumber.from("100"),
+            tpRedeemExecFee: BigNumber.from("100"),
+            mintTCandTPExecFee: BigNumber.from("100"),
+            redeemTCandTPExecFee: BigNumber.from("100"),
+            swapTPforTPExecFee: BigNumber.from("100"),
+            swapTPforTCExecFee: BigNumber.from("100"),
+            swapTCforTPExecFee: BigNumber.from("100"),
+          },
         },
         gasLimit: 6800000,
       },
       mocV1Address: "0x4512f4C1d984bbf8B7f7404EddFb1881cFA79EfD",
+      tags: ["testnet", "migration"],
+    },
+    rskTestnet: {
+      accounts: process.env.PK ? [`0x${process.env.PK}`] : { mnemonic },
+      chainId: chainIds.rskTestnet,
+      url: "https://public-node.testnet.rsk.co",
+      deployParameters: {
+        coreParams: {
+          protThrld: PCT_BASE.mul(15).div(10), // 1.5
+          liqThrld: PCT_BASE.mul(104).div(100), // 1.04
+          emaCalculationBlockSpan: DAY_BLOCK_SPAN,
+          successFee: PCT_BASE.mul(10).div(100), // 10%
+          appreciationFactor: PCT_BASE.mul(50).div(100), // 50%
+          tcInterestRate: PCT_BASE.mul(5).div(100000), // 0.005% : weekly 0.0025 / 365 * 7
+          tcInterestPaymentBlockSpan: WEEK_BLOCK_SPAN,
+          decayBlockSpan: DAY_BLOCK_SPAN,
+        },
+        settlementParams: {
+          bes: MONTH_BLOCK_SPAN,
+        },
+        feeParams: {
+          feeRetainer: PCT_BASE.div(10), // 10%
+          mintFee: PCT_BASE.div(1000), // 0.1%
+          redeemFee: PCT_BASE.div(1000), // 0.1%
+          swapTPforTPFee: PCT_BASE.div(1000), // 0.1%
+          swapTPforTCFee: PCT_BASE.div(1000), // 0.1%
+          swapTCforTPFee: PCT_BASE.div(1000), // 0.1%
+          redeemTCandTPFee: PCT_BASE.mul(8).div(10000), // 0.08%
+          mintTCandTPFee: PCT_BASE.mul(8).div(10000), // 0.08%
+          feeTokenPct: PCT_BASE.mul(5).div(10), // 50%
+        },
+        ctParams: {
+          name: "RIFPROv2",
+          symbol: "RIFPv2",
+        },
+        tpParams: {
+          tpParams: [
+            {
+              name: "USDRv2",
+              symbol: "USDRv2",
+              priceProvider: "0x9d4b2c05818A0086e641437fcb64ab6098c7BbEc".toLowerCase(),
+              ctarg: PCT_BASE.mul(55).div(10), // 5.5
+              mintFee: PCT_BASE.div(100), // 1%
+              redeemFee: PCT_BASE.div(100), // 1%
+              initialEma: PCT_BASE.mul(6790).div(100000), //0.06790
+              smoothingFactor: PCT_BASE.mul(1104).div(100000), // 0.01104
+            },
+          ],
+        },
+        mocAddresses: {
+          governorAddress: "", // if not provided a new GovernorMock.sol is deployed
+          collateralAssetAddress: "0x19F64674D8A5B4E652319F5e239eFd3bc969A1fE",
+          collateralTokenAddress: "", // if not provided a new MocTC.sol is deployed
+          pauserAddress: "", // if not provided is set to deployer
+          feeTokenAddress: "0x45a97b54021a3F99827641AFe1BFAE574431e6ab",
+          feeTokenPriceProviderAddress: "0x8DCE78BbD4D757EF7777Be113277cf5A35283b1E",
+          mocFeeFlowAddress: "0xcd8a1c9acc980ae031456573e34dc05cd7dae6e3",
+          mocAppreciationBeneficiaryAddress: "0xcd8a1c9acc980ae031456573e34dc05cd7dae6e3",
+          vendorsGuardianAddress: "0xcd8a1c9acc980ae031456573e34dc05cd7dae6e3",
+          tcInterestCollectorAddress: "0xcd8a1c9acc980ae031456573e34dc05cd7dae6e3",
+          authorizedExecutors: [], // for testnet deployer is assigned as an executor
+          maxAbsoluteOpProviderAddress: "", // if not provided a new FCMaxAbsoluteOpProvider.sol will be deployed with pauser as owner
+          maxOpDiffProviderAddress: "", // if not provided a new FCMaxOpDifferenceProvider.sol will be deployed with pauser as owner
+        },
+        queueParams: {
+          minOperWaitingBlk: 5,
+          execFeeParams: {
+            tcMintExecFee: BigNumber.from("100"),
+            tcRedeemExecFee: BigNumber.from("100"),
+            tpMintExecFee: BigNumber.from("100"),
+            tpRedeemExecFee: BigNumber.from("100"),
+            mintTCandTPExecFee: BigNumber.from("100"),
+            redeemTCandTPExecFee: BigNumber.from("100"),
+            swapTPforTPExecFee: BigNumber.from("100"),
+            swapTPforTCExecFee: BigNumber.from("100"),
+            swapTCforTPExecFee: BigNumber.from("100"),
+          },
+        },
+        gasLimit: 6800000,
+      },
       tags: ["testnet"],
     },
   },
@@ -224,7 +359,7 @@ const config: HardhatUserConfig = {
     tests: "./test",
   },
   solidity: {
-    version: "0.8.18",
+    version: "0.8.20",
     settings: {
       // https://hardhat.org/hardhat-network/#solidity-optimizer-support
       optimizer: {
@@ -239,6 +374,7 @@ const config: HardhatUserConfig = {
         },
       },
       viaIR: process.env.VIA_IR ? true : false,
+      evmVersion: "london", // FIXME: latest evm version supported by rsk explorers, keep it updated
       outputSelection: {
         "*": {
           "*": ["storageLayout"],

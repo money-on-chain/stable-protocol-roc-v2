@@ -12,7 +12,7 @@ const deployFunc: DeployFunction = async (hre: HardhatRuntimeEnvironment) => {
     from: deployer,
     gasLimit,
   });
-  console.log(`"MocRifExpansion, as MocCoreExpansion implementation deployed at ${deployImplResult.address}`);
+  console.log(`MocRifExpansion, as MocCoreExpansion implementation deployed at ${deployImplResult.address}`);
   return hre.network.live; // prevents re execution on live networks
 };
 export default deployFunc;

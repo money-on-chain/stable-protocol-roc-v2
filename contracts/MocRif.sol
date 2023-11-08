@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: UNLICENSED
-pragma solidity 0.8.18;
+pragma solidity 0.8.20;
 
-import { MocCARC20 } from "moc-main/contracts/collateral/rc20/MocCARC20.sol";
+import { MocCARC20Deferred } from "moc-main/contracts/collateral/rc20/MocCARC20Deferred.sol";
 
-contract MocRif is MocCARC20 {
+contract MocRif is MocCARC20Deferred {
     error protocolAlreadyMigrated();
 
     function migrateFromV1(

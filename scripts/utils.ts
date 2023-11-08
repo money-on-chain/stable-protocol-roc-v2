@@ -13,6 +13,8 @@ import { MoCSettlement__factory } from "../typechain/factories/dependencies/mocV
 import { MoCVendors__factory } from "../typechain/factories/dependencies/mocV1Imports/MoCVendors__factory";
 import { MocRif } from "../typechain/artifacts/contracts";
 
+export const EXECUTOR_ROLE = ethers.utils.keccak256(ethers.utils.toUtf8Bytes("EXECUTOR_ROLE"));
+
 export const getOrFetchNetworkDeployParams = async (hre: HardhatRuntimeEnvironment) => {
   const { getNamedAccounts } = hre;
   const { deployer } = await getNamedAccounts();
@@ -65,6 +67,7 @@ export const getOrFetchNetworkDeployParams = async (hre: HardhatRuntimeEnvironme
         mocAppreciationBeneficiaryAddress: deployParameters.mocAddresses.mocAppreciationBeneficiaryAddress,
         vendorsGuardianAddress: await mocVendorsV1.getVendorGuardianAddress(),
         tcInterestCollectorAddress: await mocInrateV1.riskProInterestAddress(),
+        authorizedExecutors: deployParameters.mocAddresses.authorizedExecutors,
       },
       tpParams: {
         tpParams: [
@@ -80,6 +83,7 @@ export const getOrFetchNetworkDeployParams = async (hre: HardhatRuntimeEnvironme
           },
         ],
       },
+      queueParams: deployParameters.queueParams,
       gasLimit: deployParameters.gasLimit,
     };
   }
@@ -106,9 +110,10 @@ export const addPeggedToken = async (
         tpEmaSf: tpParams[0].smoothingFactor,
       }),
     );
+    console.log(`Transferring MocRif governance to executor: ${governorAddress}`);
     await waitForTxConfirmation(mocRifV2.changeGovernor(governorAddress));
   } else {
     // for testing we add some Pegged Token and then transfer governance to the real governor
-    await addPeggedTokensAndChangeGovernor(hre, governorAddress, mocRifV2, tpParams);
+    await addPeggedTokensAndChangeGovernor(hre, governorAddress, mocRifV2, { tpParams });
   }
 };
