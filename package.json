@@ -71,7 +71,7 @@
     "prepare": "husky install",
     "clean": "hardhat clean",
     "typechain": "TS_NODE_TRANSPILE_ONLY=true hardhat --config ./hardhat.base.config.ts typechain",
-    "compile": "VIA_IR=true npm run typechain && VIA_IR=true hardhat compile",
+    "compile": "npm run typechain && hardhat compile",
     "lint": "npm run lint:ts && npm run prettier:check",
     "lint:ts": "eslint --config ./.eslintrc.yaml --ignore-path ./.eslintignore --ext .js,.ts .",
     "lint-fix": "eslint --fix --config ./.eslintrc.yaml --ignore-path ./.eslintignore --ext .js,.ts .",
@@ -79,9 +79,9 @@
     "prettier:check": "prettier --config .prettierrc --check \"**/*.{js,json,md,sol,ts}\"",
     "release": "standard-version",
     "docgen": "hardhat docgen",
-    "deploy-localhost": "VIA_IR=true hardhat deploy",
-    "deploy-development": "VIA_IR=true hardhat deploy --network development",
-    "deploy-rskTestnet-migration": "VIA_IR=true hardhat deploy --network rskTestnetMigration",
-    "deploy-rskTestnet": "VIA_IR=true hardhat deploy --network rskTestnet"
+    "deploy-localhost": "hardhat deploy",
+    "deploy-development": "hardhat deploy --network development",
+    "deploy-rskTestnet-migration": "hardhat deploy --network rskTestnetMigration",
+    "deploy-rskTestnet": "hardhat deploy --network rskTestnet"
   }
 }

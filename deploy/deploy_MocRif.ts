@@ -1,9 +1,13 @@
 import { HardhatRuntimeEnvironment } from "hardhat/types";
 import { DeployFunction } from "hardhat-deploy/types";
 import { ethers } from "hardhat";
-import { deployUUPSArtifact, waitForTxConfirmation } from "moc-main/export/scripts/utils";
+import {
+  addPeggedTokensAndChangeGovernor,
+  deployUUPSArtifact,
+  waitForTxConfirmation,
+} from "moc-main/export/scripts/utils";
 import { MocRif__factory, MocTC__factory, MoC__factory } from "../typechain";
-import { addPeggedToken, getOrFetchNetworkDeployParams } from "../scripts/utils";
+import { getOrFetchNetworkDeployParams } from "../scripts/utils";
 
 const deployFunc: DeployFunction = async (hre: HardhatRuntimeEnvironment) => {
   const { deployments, getNamedAccounts } = hre;
@@ -41,6 +45,13 @@ const deployFunc: DeployFunction = async (hre: HardhatRuntimeEnvironment) => {
 
   // for live networks we get the real stopper contract address if mocV1 address is provided
   const network = hre.network.name === "localhost" ? "hardhat" : hre.network.name;
+
+  if (hre.network.tags.migration) {
+    if (!hre.config.networks[network].mocV1Address) throw Error("mocV1Address cannot be null on migration");
+    if (!hre.config.networks[network].mocV1Address) throw Error("mocV1Address cannot be null on migration");
+    if (!governorAddress) throw Error("governorAddress cannot be null on migration");
+  }
+
   if (hre.config.networks[network].mocV1Address) {
     const mocV1Address = hre.config.networks[network].mocV1Address!;
     const mocV1 = MoC__factory.connect(mocV1Address, signer);
@@ -54,15 +65,13 @@ const deployFunc: DeployFunction = async (hre: HardhatRuntimeEnvironment) => {
     console.log(`pauser address for MocRif set at deployer: ${stopperAddress}`);
   }
 
-  // use a governorMock to initialization and later transfer to the real one
-  const governorMock = (
-    await deploy("GovernorMock", {
-      from: deployer,
-    })
-  ).address;
-
-  // if governor address is not provided we keep the mock one
+  // if governor address is not provided we use the mock one
   if (!governorAddress) {
+    const governorMock = (
+      await deploy("GovernorMock", {
+        from: deployer,
+      })
+    ).address;
     governorAddress = governorMock;
     console.log(`using a governorMock for MocRif at: ${governorAddress}`);
   }
@@ -138,7 +147,7 @@ const deployFunc: DeployFunction = async (hre: HardhatRuntimeEnvironment) => {
             maxAbsoluteOpProviderAddress,
             maxOpDiffProviderAddress,
           },
-          governorAddress: governorMock, // at the end we transfer to the real governor
+          governorAddress: governorAddress,
           pauserAddress: hre.network.tags.migration ? deployer : stopperAddress, // for migration use deployer and set the real one on the changer
           mocCoreExpansion: deployedMocExpansionContract.address,
           emaCalculationBlockSpan: coreParams.emaCalculationBlockSpan,
@@ -158,23 +167,31 @@ const deployFunc: DeployFunction = async (hre: HardhatRuntimeEnvironment) => {
     );
   }
 
-  // TODO: Deployer has admin privileges as this stage
-  console.log(`Registering mocRif bucket as enqueuer: ${mocRif.address}`);
-  await waitForTxConfirmation(mocQueue.registerBucket(mocRif.address, { gasLimit }));
-
   if (hre.network.tags.migration) {
     console.log("pausing MocRif until migration from V1 has been completed...");
     // pause
     await waitForTxConfirmation(MocRif__factory.connect(mocRif.address, signer).pause({ gasLimit }));
-  }
+  } else {
+    console.log(`Registering mocRif bucket as enqueuer: ${mocRif.address}`);
+    await waitForTxConfirmation(mocQueue.registerBucket(mocRif.address, { gasLimit }));
 
-  // add stable token
-  await addPeggedToken(hre, MocRif__factory.connect(mocRif.address, signer), governorAddress, tpParams?.tpParams);
+    // for testing we add some Pegged Token and then transfer governance to the real governor
+    const mocRifV2 = MocRif__factory.connect(mocRif.address, signer);
 
-  // if real governor was provided transfer governance to it
-  if (governorAddress != governorMock) {
-    console.log(`Transferring MocQueue governance to executor: ${governorAddress}`);
-    await waitForTxConfirmation(mocQueue.changeGovernor(governorAddress));
+    if (tpParams) {
+      for (let tpParam of tpParams.tpParams) {
+        if (!tpParam.priceProvider) {
+          const tpPriceProvider = await deploy("PriceProviderMock", {
+            from: deployer,
+            args: [ethers.utils.parseEther("1")],
+            gasLimit,
+          });
+          tpParam.priceProvider = tpPriceProvider.address;
+          console.log(`Deploying Fake PriceProvider for ${tpParam.name} at ${tpPriceProvider.address}`);
+        }
+      }
+      await addPeggedTokensAndChangeGovernor(hre, governorAddress, mocRifV2, tpParams);
+    }
   }
 
   return hre.network.live; // prevents re execution on live networks

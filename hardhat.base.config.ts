@@ -24,6 +24,10 @@ const WEEK_BLOCK_SPAN = DAY_BLOCK_SPAN * 7;
 const MONTH_BLOCK_SPAN = DAY_BLOCK_SPAN * 30;
 
 export type RifDeployParameters = Omit<DeployParameters, "ctParams"> & {
+  ctParams?: {
+    name: String;
+    symbol: String;
+  };
   mocAddresses: {
     collateralTokenAddress: String;
   };
@@ -115,22 +119,40 @@ const config: HardhatUserConfig = {
           feeTokenPct: PCT_BASE.mul(5).div(10), // 50%
         },
         mocAddresses: {
-          governorAddress: "0x26a00af444928d689dDEc7B4D17C0e4A8c9D407A", // if not provided a new GovernorMock.sol is deployed
+          governorAddress: "", // if not provided a new GovernorMock.sol is deployed
           collateralAssetAddress: "0x19F64674D8A5B4E652319F5e239eFd3bc969A1fE",
-          collateralTokenAddress: "0x19F64674D8A5B4E652319F5e239eFd3bc969A1fE", // if not provided a new MocTC.sol is deployed
-          pauserAddress: "0x26a00aF444928D689DDec7B4D17C0e4a8c9d407b", // if not provided is set to deployer
+          collateralTokenAddress: "", // if not provided a new MocTC.sol is deployed
+          pauserAddress: "", // if not provided is set to deployer
           feeTokenAddress: "0x26a00AF444928d689DDeC7b4d17c0e4A8c9D4060",
           feeTokenPriceProviderAddress: "0x26A00AF444928d689ddec7b4d17c0E4A8C9D4061",
           mocFeeFlowAddress: "0x26a00aF444928d689DDEC7b4D17c0E4a8c9D407d",
           mocAppreciationBeneficiaryAddress: "0x26A00aF444928D689ddEC7B4D17C0E4A8C9d407F",
           vendorsGuardianAddress: "0x26a00AF444928D689DDeC7b4D17c0E4a8C9d407E",
           tcInterestCollectorAddress: "0x27a00Af444928D689DDec7B4D17c0E4a8c9d407F",
-          authorizedExecutors: [], // for testnet deployer is assigned as an executor
           maxAbsoluteOpProviderAddress: "", // if not provided a new FCMaxAbsoluteOpProvider.sol will be deployed with pauser as owner
           maxOpDiffProviderAddress: "", // if not provided a new FCMaxOpDifferenceProvider.sol will be deployed with pauser as owner
         },
+        ctParams: {
+          name: "RIFPROv2",
+          symbol: "RIFPv2",
+        },
+        tpParams: {
+          tpParams: [
+            {
+              name: "tUSDRIF",
+              symbol: "tUSDRIF",
+              priceProvider: "", // if not provided a new FakePriceProvider with price = 1 will be deployed
+              ctarg: PCT_BASE.mul(55).div(10), // 5.5
+              mintFee: PCT_BASE.div(100), // 1%
+              redeemFee: PCT_BASE.div(100), // 1%
+              initialEma: PCT_BASE.mul(6790).div(100000), //0.06790
+              smoothingFactor: PCT_BASE.mul(1104).div(100000), // 0.01104
+            },
+          ],
+        },
         queueParams: {
           minOperWaitingBlk: 1,
+          maxOperPerBatch: 10,
           execFeeParams: {
             tcMintExecFee: BigNumber.from("1000000"),
             tcRedeemExecFee: BigNumber.from("1000001"),
@@ -175,22 +197,22 @@ const config: HardhatUserConfig = {
           feeTokenPct: PCT_BASE.mul(5).div(10), // 50%
         },
         mocAddresses: {
-          governorAddress: "0x26a00af444928d689dDEc7B4D17C0e4A8c9D407A", // if not provided a new GovernorMock.sol is deployed
+          governorAddress: "", // if not provided a new GovernorMock.sol is deployed
           collateralAssetAddress: "0x19F64674D8A5B4E652319F5e239eFd3bc969A1fE",
-          collateralTokenAddress: "0x19F64674D8A5B4E652319F5e239eFd3bc969A1fE", // if not provided a new MocTC.sol is deployed
-          pauserAddress: "0x26a00aF444928D689DDec7B4D17C0e4a8c9d407b", // if not provided is set to deployer
+          collateralTokenAddress: "", // if not provided a new MocTC.sol is deployed, but required ctParams
+          pauserAddress: "", // if not provided is set to deployer
           feeTokenAddress: "0x26a00AF444928d689DDeC7b4d17c0e4A8c9D4060",
           feeTokenPriceProviderAddress: "0x26A00AF444928d689ddec7b4d17c0E4A8C9D4061",
           mocFeeFlowAddress: "0x26a00aF444928d689DDEC7b4D17c0E4a8c9D407d",
           mocAppreciationBeneficiaryAddress: "0x26A00aF444928D689ddEC7B4D17C0E4A8C9d407F",
           vendorsGuardianAddress: "0x26a00AF444928D689DDeC7b4D17c0E4a8C9d407E",
           tcInterestCollectorAddress: "0x27a00Af444928D689DDec7B4D17c0E4a8c9d407F",
-          authorizedExecutors: [], // for testnet deployer is assigned as an executor
           maxAbsoluteOpProviderAddress: "", // if not provided a new FCMaxAbsoluteOpProvider.sol will be deployed with pauser as owner
           maxOpDiffProviderAddress: "", // if not provided a new FCMaxOpDifferenceProvider.sol will be deployed with pauser as owner
         },
         queueParams: {
           minOperWaitingBlk: 1,
+          maxOperPerBatch: 10,
           execFeeParams: {
             tcMintExecFee: BigNumber.from("1000000"),
             tcRedeemExecFee: BigNumber.from("1000001"),
@@ -205,8 +227,8 @@ const config: HardhatUserConfig = {
         },
         gasLimit: 6800000,
       },
-      mocV1Address: "0x24a1ab81e9c29a8bBc163b47D934557ce5050EE1",
-      tags: ["local"],
+      mocV1Address: "",
+      tags: ["local", "migration"],
     },
     rskTestnetMigration: {
       accounts: process.env.PK ? [`0x${process.env.PK}`] : { mnemonic },
@@ -248,12 +270,12 @@ const config: HardhatUserConfig = {
           mocAppreciationBeneficiaryAddress: "0x26A00aF444928D689ddEC7B4D17C0E4A8C9d407F",
           vendorsGuardianAddress: "0x26a00AF444928D689DDeC7b4D17c0E4a8C9d407E",
           tcInterestCollectorAddress: "0x27a00Af444928D689DDec7B4D17c0E4a8c9d407F",
-          authorizedExecutors: [], // for testnet deployer is assigned as an executor
           maxAbsoluteOpProviderAddress: "", // if not provided a new FCMaxAbsoluteOpProvider.sol will be deployed with pauser as owner
           maxOpDiffProviderAddress: "", // if not provided a new FCMaxOpDifferenceProvider.sol will be deployed with pauser as owner
         },
         queueParams: {
           minOperWaitingBlk: 5,
+          maxOperPerBatch: 65,
           execFeeParams: {
             tcMintExecFee: BigNumber.from("100"),
             tcRedeemExecFee: BigNumber.from("100"),
@@ -329,12 +351,12 @@ const config: HardhatUserConfig = {
           mocAppreciationBeneficiaryAddress: "0xcd8a1c9acc980ae031456573e34dc05cd7dae6e3",
           vendorsGuardianAddress: "0xcd8a1c9acc980ae031456573e34dc05cd7dae6e3",
           tcInterestCollectorAddress: "0xcd8a1c9acc980ae031456573e34dc05cd7dae6e3",
-          authorizedExecutors: [], // for testnet deployer is assigned as an executor
           maxAbsoluteOpProviderAddress: "", // if not provided a new FCMaxAbsoluteOpProvider.sol will be deployed with pauser as owner
           maxOpDiffProviderAddress: "", // if not provided a new FCMaxOpDifferenceProvider.sol will be deployed with pauser as owner
         },
         queueParams: {
           minOperWaitingBlk: 5,
+          maxOperPerBatch: 65,
           execFeeParams: {
             tcMintExecFee: BigNumber.from("100"),
             tcRedeemExecFee: BigNumber.from("100"),
@@ -373,7 +395,7 @@ const config: HardhatUserConfig = {
           },
         },
       },
-      viaIR: process.env.VIA_IR ? true : false,
+      viaIR: process.env.VIA_IR === undefined ? true : process.env.VIA_IR == "true",
       evmVersion: "london", // FIXME: latest evm version supported by rsk explorers, keep it updated
       outputSelection: {
         "*": {
