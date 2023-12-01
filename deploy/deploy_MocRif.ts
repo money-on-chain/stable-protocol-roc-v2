@@ -22,7 +22,6 @@ const deployFunc: DeployFunction = async (hre: HardhatRuntimeEnvironment) => {
 
   const deployedMocVendors = await deployments.getOrNull("MocRifVendorsProxy");
   if (!deployedMocVendors) throw new Error("No MocRifVendors deployed.");
-  const MocVendors = await ethers.getContractAt("MocVendors", deployedMocVendors.address, signer);
 
   const deployedMocQueue = await deployments.getOrNull("MocRifQueueProxy");
   if (!deployedMocQueue) throw new Error("No MocRifQueue deployed.");
@@ -65,33 +64,35 @@ const deployFunc: DeployFunction = async (hre: HardhatRuntimeEnvironment) => {
     console.log(`pauser address for MocRif set at deployer: ${stopperAddress}`);
   }
 
-  // if governor address is not provided we use the mock one
-  if (!governorAddress) {
-    const governorMock = (
-      await deploy("GovernorMock", {
-        from: deployer,
-      })
-    ).address;
-    governorAddress = governorMock;
-    console.log(`using a governorMock for MocRif at: ${governorAddress}`);
-  }
-
   let collateralTokenDeployed;
-  if (!collateralTokenAddress) {
-    collateralTokenAddress = (
-      await deployUUPSArtifact({
-        hre,
-        artifactBaseName: "CollateralToken",
-        contract: "MocTC",
-        initializeArgs: [
-          ctParams.name,
-          ctParams.symbol,
-          deployer, // proper Moc roles are gonna be assigned after it's deployed
-          governorAddress,
-        ],
-      })
-    ).address;
-    collateralTokenDeployed = true;
+  if (!hre.network.tags.migration) {
+    // if governor address is not provided we use the mock one
+    if (!governorAddress) {
+      const governorMock = (
+        await deploy("GovernorMock", {
+          from: deployer,
+        })
+      ).address;
+      governorAddress = governorMock;
+      console.log(`using a governorMock for MocRif at: ${governorAddress}`);
+    }
+
+    if (!collateralTokenAddress) {
+      collateralTokenAddress = (
+        await deployUUPSArtifact({
+          hre,
+          artifactBaseName: "CollateralToken",
+          contract: "MocTC",
+          initializeArgs: [
+            ctParams.name,
+            ctParams.symbol,
+            deployer, // proper Moc roles are gonna be assigned after it's deployed
+            governorAddress,
+          ],
+        })
+      ).address;
+      collateralTokenDeployed = true;
+    }
   }
 
   if (!maxAbsoluteOpProviderAddress) {
@@ -114,49 +115,51 @@ const deployFunc: DeployFunction = async (hre: HardhatRuntimeEnvironment) => {
     maxOpDiffProviderAddress = deployImplResult.address;
   }
 
+  const initializeArgs = [
+    {
+      initializeCoreParams: {
+        initializeBaseBucketParams: {
+          feeTokenAddress,
+          feeTokenPriceProviderAddress,
+          tcTokenAddress: collateralTokenAddress,
+          mocFeeFlowAddress,
+          mocAppreciationBeneficiaryAddress,
+          protThrld: coreParams.protThrld,
+          liqThrld: coreParams.liqThrld,
+          feeRetainer: feeParams.feeRetainer,
+          tcMintFee: feeParams.mintFee,
+          tcRedeemFee: feeParams.redeemFee,
+          swapTPforTPFee: feeParams.swapTPforTPFee,
+          swapTPforTCFee: feeParams.swapTPforTCFee,
+          swapTCforTPFee: feeParams.swapTCforTPFee,
+          redeemTCandTPFee: feeParams.redeemTCandTPFee,
+          mintTCandTPFee: feeParams.mintTCandTPFee,
+          feeTokenPct: feeParams.feeTokenPct,
+          successFee: coreParams.successFee,
+          appreciationFactor: coreParams.appreciationFactor,
+          bes: settlementParams.bes,
+          tcInterestCollectorAddress,
+          tcInterestRate: coreParams.tcInterestRate,
+          tcInterestPaymentBlockSpan: coreParams.tcInterestPaymentBlockSpan,
+          decayBlockSpan: coreParams.decayBlockSpan,
+          maxAbsoluteOpProviderAddress,
+          maxOpDiffProviderAddress,
+        },
+        governorAddress: governorAddress,
+        pauserAddress: hre.network.tags.migration ? deployer : stopperAddress, // for migration use deployer and set the real one on the changer
+        mocCoreExpansion: deployedMocExpansionContract.address,
+        emaCalculationBlockSpan: coreParams.emaCalculationBlockSpan,
+        mocVendors: deployedMocVendors.address,
+      },
+      acTokenAddress: collateralAssetAddress,
+      mocQueue: deployedMocQueue.address,
+    },
+  ];
+
   const mocRif = await deployUUPSArtifact({
     hre,
     contract: "MocRif",
-    initializeArgs: [
-      {
-        initializeCoreParams: {
-          initializeBaseBucketParams: {
-            feeTokenAddress,
-            feeTokenPriceProviderAddress,
-            tcTokenAddress: collateralTokenAddress,
-            mocFeeFlowAddress,
-            mocAppreciationBeneficiaryAddress,
-            protThrld: coreParams.protThrld,
-            liqThrld: coreParams.liqThrld,
-            feeRetainer: feeParams.feeRetainer,
-            tcMintFee: feeParams.mintFee,
-            tcRedeemFee: feeParams.redeemFee,
-            swapTPforTPFee: feeParams.swapTPforTPFee,
-            swapTPforTCFee: feeParams.swapTPforTCFee,
-            swapTCforTPFee: feeParams.swapTCforTPFee,
-            redeemTCandTPFee: feeParams.redeemTCandTPFee,
-            mintTCandTPFee: feeParams.mintTCandTPFee,
-            feeTokenPct: feeParams.feeTokenPct,
-            successFee: coreParams.successFee,
-            appreciationFactor: coreParams.appreciationFactor,
-            bes: settlementParams.bes,
-            tcInterestCollectorAddress,
-            tcInterestRate: coreParams.tcInterestRate,
-            tcInterestPaymentBlockSpan: coreParams.tcInterestPaymentBlockSpan,
-            decayBlockSpan: coreParams.decayBlockSpan,
-            maxAbsoluteOpProviderAddress,
-            maxOpDiffProviderAddress,
-          },
-          governorAddress: governorAddress,
-          pauserAddress: hre.network.tags.migration ? deployer : stopperAddress, // for migration use deployer and set the real one on the changer
-          mocCoreExpansion: deployedMocExpansionContract.address,
-          emaCalculationBlockSpan: coreParams.emaCalculationBlockSpan,
-          mocVendors: MocVendors.address,
-        },
-        acTokenAddress: collateralAssetAddress!,
-        mocQueue: deployedMocQueue.address,
-      },
-    ],
+    initializeArgs,
   });
 
   if (collateralTokenDeployed) {

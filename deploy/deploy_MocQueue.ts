@@ -19,14 +19,14 @@ const deployFunc: DeployFunction = async (hre: HardhatRuntimeEnvironment) => {
   }
 
   // if governor address is not provided we use the mock one
-  if (!governorAddress) {
+  if (!hre.network.tags.migration && !governorAddress) {
     const governorMock = (
       await deploy("GovernorMock", {
         from: deployer,
       })
     ).address;
     governorAddress = governorMock;
-    console.log(`using a governorMock for MocRif at: ${governorAddress}`);
+    console.log(`using a governorMock for MocRifQueue at: ${governorAddress}`);
   }
 
   const mocQueue = await deployUUPSArtifact({
@@ -44,14 +44,10 @@ const deployFunc: DeployFunction = async (hre: HardhatRuntimeEnvironment) => {
 
   const mocQueueProxy = await ethers.getContractAt("MocQueue", mocQueue.address, signer);
 
-  if (hre.network.tags.testnet || hre.network.tags.local) {
+  // For none migration testing environments, we whitelist deployer as executors
+  if (!hre.network.tags.migration && (hre.network.tags.testnet || hre.network.tags.local)) {
     console.log(`Whitelisting queue executor: ${deployer}`);
     await waitForTxConfirmation(mocQueueProxy.grantRole(EXECUTOR_ROLE, deployer));
-
-    for (let authorizedExecutor in mocAddresses.authorizedExecutors) {
-      console.log(`Whitelisting queue executor: ${authorizedExecutor}`);
-      await waitForTxConfirmation(mocQueueProxy.grantRole(EXECUTOR_ROLE, authorizedExecutor));
-    }
   }
   return hre.network.live; // prevents re execution on live networks
 };

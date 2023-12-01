@@ -10,7 +10,6 @@ contract MocRif is MocCARC20Deferred {
         uint256 qAC_,
         uint256 qTC_,
         uint256 qTP_,
-        uint256 tpEma_,
         uint256 nextEmaCalculation_,
         uint256 nextTCInterestPayment_
     ) external onlyAuthorizedChanger {
@@ -18,9 +17,6 @@ contract MocRif is MocCARC20Deferred {
         _depositAC(qAC_);
         _depositTC(qTC_, 0);
         _depositTP(0, qTP_, 0);
-        // update TP Ema because could be calculated after this contract initialization and before the migration
-        EmaItem storage _tpEma = tpEma[0];
-        _tpEma.ema = tpEma_;
         nextEmaCalculation = nextEmaCalculation_;
         nextTCInterestPayment = nextTCInterestPayment_;
     }

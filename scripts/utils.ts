@@ -24,31 +24,23 @@ export const getOrFetchNetworkDeployParams = async (hre: HardhatRuntimeEnvironme
     const mocInrateV1 = MoCInrate__factory.connect(await mocConnectorV1.mocInrate(), signer);
     const mocSettlementV1 = MoCSettlement__factory.connect(await mocConnectorV1.mocSettlement(), signer);
     const mocVendorsV1 = MoCVendors__factory.connect(await mocStateV1.getMoCVendors(), signer);
-    deployParameters = {
-      coreParams: {
+    // Overrides all migration related params
+    deployParameters = Object.assign(deployParameters, {
+      coreParams: Object.assign(deployParameters.coreParams, {
         protThrld: await mocStateV1.getProtected(),
         liqThrld: await mocStateV1.liq(),
         emaCalculationBlockSpan: (await mocStateV1.emaCalculationBlockSpan()).toNumber(),
-        successFee: deployParameters.coreParams.successFee,
-        appreciationFactor: deployParameters.coreParams.appreciationFactor,
         tcInterestRate: await mocInrateV1.riskProRate(),
         tcInterestPaymentBlockSpan: (await mocInrateV1.riskProInterestBlockSpan()).toNumber(),
-      },
-      settlementParams: {
+      }),
+      settlementParams: Object.assign(deployParameters.settlementParams, {
         bes: (await mocSettlementV1.getBlockSpan()).toNumber(),
-      },
-      feeParams: {
-        feeRetainer: deployParameters.feeParams.feeRetainer,
+      }),
+      feeParams: Object.assign(deployParameters.feeParams, {
         mintFee: await mocInrateV1.commissionRatesByTxType(await mocInrateV1.MINT_RISKPRO_FEES_RESERVE()),
         redeemFee: await mocInrateV1.commissionRatesByTxType(await mocInrateV1.REDEEM_RISKPRO_FEES_RESERVE()),
-        swapTPforTPFee: deployParameters.feeParams.swapTPforTPFee,
-        swapTPforTCFee: deployParameters.feeParams.swapTPforTCFee,
-        swapTCforTPFee: deployParameters.feeParams.swapTCforTPFee,
-        redeemTCandTPFee: deployParameters.feeParams.redeemTCandTPFee,
-        mintTCandTPFee: deployParameters.feeParams.mintTCandTPFee,
-        feeTokenPct: deployParameters.feeParams.feeTokenPct,
-      },
-      mocAddresses: {
+      }),
+      mocAddresses: Object.assign(deployParameters.mocAddresses, {
         governorAddress: await mocV1.governor(),
         collateralAssetAddress: await mocConnectorV1.reserveToken(),
         collateralTokenAddress: await mocConnectorV1.riskProToken(),
@@ -56,13 +48,10 @@ export const getOrFetchNetworkDeployParams = async (hre: HardhatRuntimeEnvironme
         feeTokenAddress: await mocStateV1.getMoCToken(),
         feeTokenPriceProviderAddress: await mocStateV1.getMoCPriceProvider(),
         mocFeeFlowAddress: await mocInrateV1.commissionsAddress(),
-        mocAppreciationBeneficiaryAddress: deployParameters.mocAddresses.mocAppreciationBeneficiaryAddress,
         vendorsGuardianAddress: await mocVendorsV1.getVendorGuardianAddress(),
         tcInterestCollectorAddress: await mocInrateV1.riskProInterestAddress(),
-      },
-      queueParams: deployParameters.queueParams,
-      gasLimit: deployParameters.gasLimit,
-    };
+      }),
+    });
   }
   return deployParameters;
 };

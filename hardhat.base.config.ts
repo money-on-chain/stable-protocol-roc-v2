@@ -227,7 +227,7 @@ const config: HardhatUserConfig = {
         },
         gasLimit: 6800000,
       },
-      mocV1Address: "",
+      mocV1Address: "0x25ba86304D6CD460C848768dB0478EB984C990d7",
       tags: ["local", "migration"],
     },
     rskTestnetMigration: {
