@@ -79,9 +79,9 @@
     "prettier:check": "prettier --config .prettierrc --check \"**/*.{js,json,md,sol,ts}\"",
     "release": "standard-version",
     "docgen": "hardhat docgen",
-    "deploy-localhost": "hardhat deploy",
-    "deploy-development": "hardhat deploy --network development",
-    "deploy-rskTestnet-migration": "hardhat deploy --network rskTestnetMigration",
-    "deploy-rskTestnet": "hardhat deploy --network rskTestnet"
+    "deploy-localhost": "hardhat deploy --tags MocRifDeploy",
+    "deploy-development-migration": "hardhat deploy --network development --tags MocRifMigrate",
+    "deploy-rskTestnet-migration": "hardhat deploy --network rskTestnetMigration --tags MocRifMigrate",
+    "deploy-rskTestnet": "hardhat deploy --network rskTestnet --tags MocRifDeploy"
   }
 }

@@ -42,7 +42,7 @@ npm run typechain
 ## Deployment
 
 This solution has a fully functional deploy mechanism following [hardhat deploy](https://github.com/wighawag/hardhat-deploy) standard.
-It imports smart contracts and deploy scripts from [MoC-main-sc](https://github.com/money-on-chain/main-sc-protocol) repository and uses them to deploy the RC20 Collateralized Asset version, with custom networks configurations. To add networks for deployment or set new deploy parameters see [hardhat.base.config.ts](hardhat.base.config.ts)
+It imports smart contracts and deploy scripts from [MoC-main-sc](https://github.com/money-on-chain/main-sc-protocol) repository and uses them to deploy the RC20 Collateralized Asset version, with custom networks configurations. To add networks for deployment or set new deploy parameters see [hardhat.base.config.ts](hardhat.base.config.ts).
 
 You can configure a network as `testnet` using [tags](https://github.com/wighawag/hardhat-deploy#tags) mechanism, that will allow you to:
 
@@ -56,10 +56,18 @@ For the deployer account, you can either set you mnemonic in the `.env` file, or
 
 ### Deploy scripts
 
+There are mainly to ways to deploy the system, from scratch using a full configuration file, or migrating it from v1. For that, there are two different set of deploy scripts and commands.
+
 To deploy contracts in rsk testnet
 
 ```bash
 npm run deploy-rskTestnet
+```
+
+To migrate contracts in rsk testnet from a V1 instance
+
+```bash
+npm run deploy-rskTestnet-migration
 ```
 
 A deployments folder will be created with a sub folder for each network. There you will find a json file for each contract deployed that includes the address and ABI.
