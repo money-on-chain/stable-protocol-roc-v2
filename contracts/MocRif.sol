@@ -3,9 +3,16 @@ pragma solidity 0.8.20;
 
 import { MocCARC20Deferred } from "moc-main/contracts/collateral/rc20/MocCARC20Deferred.sol";
 
+/**
+  @title MocRif
+  @notice A mocCore implementation using RIF Token as RRC20 Collateral Asset 
+ */
 contract MocRif is MocCARC20Deferred {
     error protocolAlreadyMigrated();
 
+    /**
+     * @notice One time only specif funtion for protocols migrating from V1 implementation
+     */
     function migrateFromV1(
         uint256 qAC_,
         uint256 qTC_,
@@ -13,7 +20,8 @@ contract MocRif is MocCARC20Deferred {
         uint256 nextEmaCalculation_,
         uint256 nextTCInterestPayment_
     ) external onlyAuthorizedChanger {
-        if (nACcb != 0 || nTCcb != 0 || pegContainer[0].nTP != 0) revert protocolAlreadyMigrated();
+        // Note: nACcb can be different to zero, by collateral injection
+        if (nTCcb != 0 || pegContainer[0].nTP != 0) revert protocolAlreadyMigrated();
         _depositAC(qAC_);
         _depositTC(qTC_, 0);
         _depositTP(0, qTP_, 0);
