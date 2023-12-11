@@ -1,9 +1,7 @@
 import { HardhatRuntimeEnvironment } from "hardhat/types";
 import { DeployFunction } from "hardhat-deploy/types";
-import { ethers } from "hardhat";
-import { deployUUPSArtifact, waitForTxConfirmation } from "moc-main/export/scripts/utils";
+import { deployUUPSArtifact } from "moc-main/export/scripts/utils";
 import { DeployParameters } from "moc-main/export/scripts/types";
-import { MocRif__factory } from "../typechain";
 import { fetchNetworkDeployParams } from "../scripts/utils";
 import { MigrateParameters } from "../hardhat.base.config";
 
@@ -25,7 +23,6 @@ const deployFunc: DeployFunction = async (hre: HardhatRuntimeEnvironment) => {
   const { deploy } = deployments;
   const { deployer } = await getNamedAccounts();
   const params = await fetchNetworkDeployParams(hre);
-  const signer = ethers.provider.getSigner();
 
   const deployedMocExpansionContract = await deployments.getOrNull("MocRifExpansion");
   if (!deployedMocExpansionContract) throw new Error("No MocRifExpansion deployed.");
@@ -96,6 +93,7 @@ const deployFunc: DeployFunction = async (hre: HardhatRuntimeEnvironment) => {
     {
       initializeCoreParams: {
         initializeBaseBucketParams: {
+          mocQueueAddress: mocQueue.address,
           feeTokenAddress,
           feeTokenPriceProviderAddress,
           tcTokenAddress: collateralTokenAddress,
@@ -123,27 +121,22 @@ const deployFunc: DeployFunction = async (hre: HardhatRuntimeEnvironment) => {
           maxOpDiffProviderAddress,
         },
         governorAddress: governorAddress,
-        pauserAddress: deployer, // We use deployer as pauser, as we need to pause it after init
+        pauserAddress,
         mocCoreExpansion: deployedMocExpansionContract.address,
         emaCalculationBlockSpan: coreParams.emaCalculationBlockSpan,
         mocVendors: deployedMocVendors.address,
       },
       acTokenAddress: collateralAssetAddress,
-      mocQueue: mocQueue.address,
     },
   ];
 
   console.log("Initializing MocRif with:", initializeArgs[0]);
 
-  const mocRif = await deployUUPSArtifact({
+  await deployUUPSArtifact({
     hre,
     contract: "MocRif",
     initializeArgs,
   });
-
-  console.log("pausing MocRif until migration from V1 has been completed...");
-  // pause
-  await waitForTxConfirmation(MocRif__factory.connect(mocRif.address, signer).pause({ gasLimit }));
 
   return hre.network.live; // prevents re execution on live networks
 };

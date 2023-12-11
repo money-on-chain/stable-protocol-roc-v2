@@ -7,7 +7,6 @@ import {
   deployUUPSArtifact,
   waitForTxConfirmation,
 } from "moc-main/export/scripts/utils";
-import { MocRif__factory, MocTC__factory } from "../typechain";
 import { getNetworkDeployParams } from "../scripts/utils";
 
 const deployFunc: DeployFunction = async (hre: HardhatRuntimeEnvironment) => {
@@ -122,6 +121,7 @@ const deployFunc: DeployFunction = async (hre: HardhatRuntimeEnvironment) => {
     {
       initializeCoreParams: {
         initializeBaseBucketParams: {
+          mocQueueAddress: mocQueue.address,
           feeTokenAddress,
           feeTokenPriceProviderAddress,
           tcTokenAddress: collateralTokenAddress,
@@ -155,7 +155,6 @@ const deployFunc: DeployFunction = async (hre: HardhatRuntimeEnvironment) => {
         mocVendors: mocVendorsDeployed.address,
       },
       acTokenAddress: collateralAssetAddress,
-      mocQueue: mocQueue.address,
     },
   ];
 
@@ -168,16 +167,17 @@ const deployFunc: DeployFunction = async (hre: HardhatRuntimeEnvironment) => {
   });
 
   console.log("Delegating CT roles to Moc");
+
+  const mocTCProxy = await ethers.getContractAt("MocTC", collateralTokenAddress, signer);
   // Assign TC Roles, and renounce deployer ADMIN
-  await waitForTxConfirmation(MocTC__factory.connect(collateralTokenAddress, signer).transferAllRoles(mocRif.address));
+  await waitForTxConfirmation(mocTCProxy.transferAllRoles(mocRif.address));
 
   console.log(`Registering mocRif bucket as enqueuer: ${mocRif.address}`);
   await waitForTxConfirmation(mocQueueProxy.registerBucket(mocRif.address, { gasLimit }));
 
-  // for testing we add some Pegged Token and then transfer governance to the real governor
-  const mocRifV2 = MocRif__factory.connect(mocRif.address, signer);
-
   if (tpParams) {
+    // for testing we add some Pegged Token and then transfer governance to the real governor
+    const mocRifV2 = await ethers.getContractAt("MocRif", mocRif.address, signer);
     for (let tpParam of tpParams.tpParams) {
       if (!tpParam.priceProvider) {
         const tpPriceProvider = await deploy("PriceProviderMock", {

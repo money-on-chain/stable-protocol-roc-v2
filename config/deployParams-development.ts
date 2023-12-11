@@ -5,7 +5,7 @@ const PCT_BASE = BigNumber.from((1e18).toString());
 const DAY_BLOCK_SPAN = 2880;
 
 export const developmentMigrateParams: MigrateParameters = {
-  mocV1Address: "0x66449F81A4d3389EAD6295381B8E9b496B4AA616",
+  mocV1Address: "0xe9BEf610cDfB7138F98cA5Cd2A2d3cf0a81C0cF5",
   coreParams: {
     decayBlockSpan: DAY_BLOCK_SPAN,
     successFee: PCT_BASE.mul(10).div(100), // 10%

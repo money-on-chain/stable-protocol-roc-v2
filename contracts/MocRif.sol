@@ -1,17 +1,17 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity 0.8.20;
 
-import { MocCARC20Deferred } from "moc-main/contracts/collateral/rc20/MocCARC20Deferred.sol";
+import { MocCARC20 } from "moc-main/contracts/collateral/rc20/MocCARC20.sol";
 
 /**
   @title MocRif
   @notice A mocCore implementation using RIF Token as RRC20 Collateral Asset 
  */
-contract MocRif is MocCARC20Deferred {
+contract MocRif is MocCARC20 {
     error protocolAlreadyMigrated();
 
     /**
-     * @notice One time only specif funtion for protocols migrating from V1 implementation
+     * @notice One time only specific function for protocols migrating from V1 implementation
      */
     function migrateFromV1(
         uint256 qAC_,

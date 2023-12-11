@@ -15,6 +15,9 @@ bytecodes/
 corpus/
 crytic-export/
 .openzeppelin/
+deployments/development
+deployments/hardhat
+
 
 # files
 *.env
