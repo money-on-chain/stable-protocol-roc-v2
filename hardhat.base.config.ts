@@ -11,25 +11,51 @@ import "hardhat-docgen";
 import "hardhat-gas-reporter";
 import { removeConsoleLog } from "hardhat-preprocessor";
 import { HardhatUserConfig } from "hardhat/config";
+import { Address } from "hardhat-deploy/types";
 import { BigNumber } from "ethers";
 import "solidity-coverage";
 import "hardhat-storage-layout";
-import { DeployParameters } from "moc-main/export/types/types";
+import { DeployParameters } from "moc-main/export/scripts/types";
+import { hardhatDeployParams } from "./config/deployParams-hardhat";
+import { developmentMigrateParams } from "./config/deployParams-development";
+import { rskTestnetMigrationParams, rskTestnetDeployParams } from "./config/deployParams-rskTestnet";
 
 dotenvConfig({ path: resolve(__dirname, "./.env") });
 
-const PCT_BASE = BigNumber.from((1e18).toString());
-const DAY_BLOCK_SPAN = 2880;
-const MONTH_BLOCK_SPAN = DAY_BLOCK_SPAN * 30;
+export type MigrateParameters = {
+  coreParams: {
+    decayBlockSpan: number;
+    successFee: BigNumber;
+    appreciationFactor: BigNumber;
+  };
+  mocAddresses: {
+    mocAppreciationBeneficiaryAddress: Address;
+    maxAbsoluteOpProviderAddress?: Address;
+    maxOpDiffProviderAddress?: Address;
+  };
+  feeParams: {
+    feeRetainer: BigNumber;
+    swapTPforTPFee: BigNumber;
+    swapTPforTCFee: BigNumber;
+    swapTCforTPFee: BigNumber;
+    redeemTCandTPFee: BigNumber;
+    mintTCandTPFee: BigNumber;
+    feeTokenPct: BigNumber;
+  };
+  queueParams: DeployParameters["queueParams"];
+  gasLimit: DeployParameters["gasLimit"];
+  mocV1Address: string;
+};
+
 declare module "hardhat/types/config" {
   export interface HardhatNetworkUserConfig {
-    deployParameters: DeployParameters;
+    deployParameters: { deploy?: DeployParameters; migrate?: MigrateParameters };
   }
   export interface HardhatNetworkConfig {
-    deployParameters: DeployParameters;
+    deployParameters: { deploy?: DeployParameters; migrate?: MigrateParameters };
   }
   export interface HttpNetworkConfig {
-    deployParameters: DeployParameters;
+    deployParameters: { deploy?: DeployParameters; migrate?: MigrateParameters };
   }
 }
 
@@ -52,13 +78,7 @@ if (!process.env.MNEMONIC) {
 } else {
   mnemonic = process.env.MNEMONIC;
 }
-/*
-let alchemyApiKey: string;
-if (!process.env.ALCHEMY_API_KEY) {
-  throw new Error("Please set your ALCHEMY_API_KEY in a .env file");
-} else {
-  alchemyApiKey = process.env.ALCHEMY_API_KEY;
-}*/
+
 const config: HardhatUserConfig = {
   defaultNetwork: "hardhat",
   namedAccounts: {
@@ -75,121 +95,55 @@ const config: HardhatUserConfig = {
         accountsBalance: "100000000000000000000000000000000000",
       },
       chainId: chainIds.hardhat,
+      hardfork: "london", // FIXME: latest evm version supported by rsk explorers, keep it updated
       // TODO: remove this
       allowUnlimitedContractSize: true,
-      deployParameters: {
-        coreParams: {
-          protThrld: PCT_BASE.mul(2), // 2
-          liqThrld: PCT_BASE.mul(104).div(100), // 1.04
-          emaCalculationBlockSpan: DAY_BLOCK_SPAN,
-          successFee: PCT_BASE.mul(10).div(100), // 10%
-          appreciationFactor: PCT_BASE.mul(50).div(100), // 50%
-        },
-        settlementParams: {
-          bes: MONTH_BLOCK_SPAN,
-        },
-        feeParams: {
-          feeRetainer: PCT_BASE.mul(0), // 0%
-          mintFee: PCT_BASE.mul(5).div(100), // 5%
-          redeemFee: PCT_BASE.mul(5).div(100), // 5%
-          swapTPforTPFee: PCT_BASE.mul(1).div(100), // 1%
-          swapTPforTCFee: PCT_BASE.mul(1).div(100), // 1%
-          swapTCforTPFee: PCT_BASE.mul(1).div(100), // 1%
-          redeemTCandTPFee: PCT_BASE.mul(8).div(100), // 8%
-          mintTCandTPFee: PCT_BASE.mul(8).div(100), // 8%
-          feeTokenPct: PCT_BASE.mul(5).div(10), // 50%
-        },
-        ctParams: {
-          name: "CollateralToken",
-          symbol: "CT",
-        },
-        mocAddresses: {
-          governorAddress: "0x26a00af444928d689dDEc7B4D17C0e4A8c9D407A",
-          pauserAddress: "0x26a00aF444928D689DDec7B4D17C0e4a8c9d407b",
-          feeTokenAddress: "0x26a00AF444928d689DDeC7b4d17c0e4A8c9D4060",
-          feeTokenPriceProviderAddress: "0x26A00AF444928d689ddec7b4d17c0E4A8C9D4061",
-          mocFeeFlowAddress: "0x26a00aF444928d689DDEC7b4D17c0E4a8c9D407d",
-          mocAppreciationBeneficiaryAddress: "0x26A00aF444928D689ddEC7B4D17C0E4A8C9d407F",
-          vendorsGuardianAddress: "0x26a00AF444928D689DDeC7b4D17c0E4a8C9d407E",
-        },
-        gasLimit: 30000000, // high value to avoid coverage issue. https://github.com/NomicFoundation/hardhat/issues/3121
-      },
+      deployParameters: { deploy: hardhatDeployParams },
       tags: ["local"],
+    },
+    development: {
+      url: "http://127.0.0.1:8545",
+      deployParameters: { migrate: developmentMigrateParams },
+      tags: ["local", "migration"],
+    },
+    rskTestnetMigration: {
+      accounts: process.env.PK ? [`0x${process.env.PK}`] : { mnemonic },
+      chainId: chainIds.rskTestnet,
+      url: "https://public-node.testnet.rsk.co",
+      deployParameters: { migrate: rskTestnetMigrationParams },
+      tags: ["testnet", "migration"],
     },
     rskTestnet: {
       accounts: process.env.PK ? [`0x${process.env.PK}`] : { mnemonic },
       chainId: chainIds.rskTestnet,
       url: "https://public-node.testnet.rsk.co",
-      deployParameters: {
-        coreParams: {
-          protThrld: PCT_BASE.mul(15).div(10), // 1.5
-          liqThrld: PCT_BASE.mul(104).div(100), // 1.04
-          emaCalculationBlockSpan: DAY_BLOCK_SPAN,
-          successFee: PCT_BASE.mul(20).div(100), // 20%
-          appreciationFactor: PCT_BASE.mul(0).div(100), // 0%
-        },
-        settlementParams: {
-          bes: DAY_BLOCK_SPAN,
-        },
-        feeParams: {
-          feeRetainer: PCT_BASE.div(10), // 10%
-          mintFee: PCT_BASE.div(1000), // 0.1%
-          redeemFee: PCT_BASE.div(1000), // 0.1%
-          swapTPforTPFee: PCT_BASE.div(1000), // 0.1%
-          swapTPforTCFee: PCT_BASE.div(1000), // 0.1%
-          swapTCforTPFee: PCT_BASE.div(1000), // 0.1%
-          redeemTCandTPFee: PCT_BASE.mul(8).div(10000), // 0.08%
-          mintTCandTPFee: PCT_BASE.mul(8).div(10000), // 0.08%
-          feeTokenPct: PCT_BASE.mul(5).div(10), // 50%
-        },
-        ctParams: {
-          name: "RIFPRO",
-          symbol: "RIFP",
-        },
-        tpParams: {
-          tpParams: [
-            {
-              name: "TEST",
-              symbol: "TEST",
-              priceProvider: "0x0e8E63721E49dbde105a4085b3D548D292Edf38A".toLowerCase(),
-              ctarg: PCT_BASE.mul(55).div(10), // 5.5
-              mintFee: PCT_BASE.div(100), // 1%
-              redeemFee: PCT_BASE.div(100), // 1%
-              initialEma: PCT_BASE.mul(6790).div(100000), //0.06790
-              smoothingFactor: PCT_BASE.mul(1104).div(100000), // 0.01104
-            },
-          ],
-        },
-        mocAddresses: {
-          collateralAssetAddress: "0x19F64674D8A5B4E652319F5e239eFd3bc969A1fE".toLowerCase(),
-          governorAddress: "0xf984d6f2afcf057984034ac06f2a2182cb62ce5c",
-          pauserAddress: "0x94b25b38DB7cF2138E8327Fc54543a117fC20E72",
-          mocFeeFlowAddress: "0xcd8a1c9acc980ae031456573e34dc05cd7dae6e3",
-          mocAppreciationBeneficiaryAddress: "0xcd8a1c9acc980ae031456573e34dc05cd7dae6e3",
-          feeTokenAddress: "0x26a00AF444928d689DDeC7b4d17c0e4A8c9D4060",
-          feeTokenPriceProviderAddress: "0x26a00AF444928d689DDeC7b4d17c0e4A8c9D4060",
-          vendorsGuardianAddress: "0x94b25b38DB7cF2138E8327Fc54543a117fC20E72",
-        },
-        gasLimit: 30000000, // high value to avoid coverage issue. https://github.com/NomicFoundation/hardhat/issues/3121
-      },
+      deployParameters: { deploy: rskTestnetDeployParams },
       tags: ["testnet"],
     },
   },
   paths: {
-    artifacts: process.env.DEPLOYING ? "node_modules/moc-main/export/artifacts" : "./artifacts",
+    artifacts: "./artifacts",
     cache: "./cache",
     sources: "./contracts",
     tests: "./test",
   },
   solidity: {
-    version: "0.8.16",
+    version: "0.8.20",
     settings: {
       // https://hardhat.org/hardhat-network/#solidity-optimizer-support
       optimizer: {
         enabled: true,
         runs: 200,
+        details: {
+          yulDetails: {
+            // solves viaIR issue that inline internal functions: https://github.com/ethereum/solidity/issues/13858#issuecomment-1428754261
+            optimizerSteps:
+              "dhfoDgvulfnTUtnIf[xa[r]EscLMcCTUtTOntnfDIulLculVcul[j]Tpeulxa[rul]xa[r]cLgvifCTUca[r]LSsTOtfDnca[r]Iulc]jmul[jul]VcTOculjmul",
+          },
+        },
       },
-      viaIR: process.env.VIA_IR ? true : false,
+      viaIR: process.env.VIA_IR === undefined ? true : process.env.VIA_IR == "true",
+      evmVersion: "london", // FIXME: latest evm version supported by rsk explorers, keep it updated
       outputSelection: {
         "*": {
           "*": ["storageLayout"],
@@ -201,7 +155,7 @@ const config: HardhatUserConfig = {
     outDir: "typechain",
     target: "ethers-v5",
     alwaysGenerateOverloads: false,
-    externalArtifacts: ["node_modules/moc-main/export/artifacts/*.json"],
+    externalArtifacts: ["node_modules/moc-main/export/artifacts/*.json", "./dependencies/mocV1Imports/*.json"],
   },
   gasReporter: {
     enabled: process.env.REPORT_GAS ? true : false,
@@ -229,7 +183,6 @@ const config: HardhatUserConfig = {
     contracts: [
       {
         artifacts: "node_modules/moc-main/export/artifacts",
-        deploy: "node_modules/moc-main/export/deploy/deploy/rc20",
       },
     ],
   },
