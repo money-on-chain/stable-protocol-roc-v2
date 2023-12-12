@@ -4,6 +4,10 @@ pragma solidity 0.8.20;
 import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
 import { IDataProvider } from "../interfaces/IDataProvider.sol";
 
+/**
+ * @title Flux Capacitor Operation Absolute Maximum DataProvider
+ * @notice Allows the Owner, to set the value so that the protocol cold peek it.
+ */
 contract FCMaxAbsoluteOpProvider is Ownable, IDataProvider {
     bytes32 public data;
 

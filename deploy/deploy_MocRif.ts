@@ -1,89 +1,101 @@
 import { HardhatRuntimeEnvironment } from "hardhat/types";
 import { DeployFunction } from "hardhat-deploy/types";
 import { ethers } from "hardhat";
-import { deployUUPSArtifact, waitForTxConfirmation } from "moc-main/export/scripts/utils";
-import { MocRif__factory, MocTC__factory, MoC__factory } from "../typechain";
-import { addPeggedToken, getOrFetchNetworkDeployParams } from "../scripts/utils";
+import {
+  EXECUTOR_ROLE,
+  addPeggedTokensAndChangeGovernor,
+  deployUUPSArtifact,
+  waitForTxConfirmation,
+} from "moc-main/export/scripts/utils";
+import { getNetworkDeployParams } from "../scripts/utils";
 
 const deployFunc: DeployFunction = async (hre: HardhatRuntimeEnvironment) => {
   const { deployments, getNamedAccounts } = hre;
   const { deploy } = deployments;
   const { deployer } = await getNamedAccounts();
-  const { coreParams, settlementParams, feeParams, ctParams, tpParams, mocAddresses, gasLimit } =
-    await getOrFetchNetworkDeployParams(hre);
+  const deployParams = getNetworkDeployParams(hre);
+  if (!deployParams.deploy) throw new Error("No deploy params config found.");
+  const { mocAddresses, coreParams, settlementParams, feeParams, ctParams, queueParams, tpParams, gasLimit } =
+    deployParams.deploy;
   const signer = ethers.provider.getSigner();
 
   const deployedMocExpansionContract = await deployments.getOrNull("MocRifExpansion");
   if (!deployedMocExpansionContract) throw new Error("No MocRifExpansion deployed.");
 
-  const deployedMocVendors = await deployments.getOrNull("MocRifVendorsProxy");
-  if (!deployedMocVendors) throw new Error("No MocRifVendors deployed.");
-  const MocVendors = await ethers.getContractAt("MocVendors", deployedMocVendors.address, signer);
-
-  const deployedMocQueue = await deployments.getOrNull("MocRifQueueProxy");
-  if (!deployedMocQueue) throw new Error("No MocRifQueue deployed.");
-  const mocQueue = await ethers.getContractAt("MocQueue", deployedMocQueue.address, signer);
-
   let {
     collateralAssetAddress,
-    collateralTokenAddress,
     governorAddress,
+    pauserAddress,
     feeTokenAddress,
     feeTokenPriceProviderAddress,
     mocFeeFlowAddress,
     mocAppreciationBeneficiaryAddress,
     tcInterestCollectorAddress,
+    vendorsGuardianAddress,
     maxAbsoluteOpProviderAddress,
     maxOpDiffProviderAddress,
   } = mocAddresses;
 
-  let stopperAddress: string;
+  let stopperAddress = pauserAddress;
 
-  // for live networks we get the real stopper contract address if mocV1 address is provided
-  const network = hre.network.name === "localhost" ? "hardhat" : hre.network.name;
-  if (hre.config.networks[network].mocV1Address) {
-    const mocV1Address = hre.config.networks[network].mocV1Address!;
-    const mocV1 = MoC__factory.connect(mocV1Address, signer);
-    stopperAddress = await mocV1.stopper();
-  } else {
-    stopperAddress = mocAddresses.pauserAddress;
-  }
-
-  if (!stopperAddress) {
+  if (!pauserAddress) {
+    pauserAddress = deployer;
     stopperAddress = deployer;
     console.log(`pauser address for MocRif set at deployer: ${stopperAddress}`);
   }
 
-  // use a governorMock to initialization and later transfer to the real one
-  const governorMock = (
-    await deploy("GovernorMock", {
-      from: deployer,
-    })
-  ).address;
-
-  // if governor address is not provided we keep the mock one
+  // if governor address is not provided we use the mock one
   if (!governorAddress) {
+    const governorMock = (
+      await deploy("GovernorMock", {
+        from: deployer,
+      })
+    ).address;
     governorAddress = governorMock;
     console.log(`using a governorMock for MocRif at: ${governorAddress}`);
   }
 
-  let collateralTokenDeployed;
-  if (!collateralTokenAddress) {
-    collateralTokenAddress = (
-      await deployUUPSArtifact({
-        hre,
-        artifactBaseName: "CollateralToken",
-        contract: "MocTC",
-        initializeArgs: [
-          ctParams.name,
-          ctParams.symbol,
-          deployer, // proper Moc roles are gonna be assigned after it's deployed
-          governorAddress,
-        ],
-      })
-    ).address;
-    collateralTokenDeployed = true;
+  const collateralTokenAddress = (
+    await deployUUPSArtifact({
+      hre,
+      artifactBaseName: "CollateralToken",
+      contract: "MocTC",
+      initializeArgs: [
+        ctParams.name,
+        ctParams.symbol,
+        deployer, // proper Moc roles are gonna be assigned after it's deployed
+        governorAddress,
+      ],
+    })
+  ).address;
+
+  const mocQueue = await deployUUPSArtifact({
+    hre,
+    artifactBaseName: "MocRifQueue",
+    contract: "MocQueue",
+    initializeArgs: [
+      governorAddress,
+      pauserAddress,
+      queueParams.minOperWaitingBlk,
+      queueParams.maxOperPerBatch,
+      queueParams.execFeeParams,
+    ],
+  });
+
+  const mocQueueProxy = await ethers.getContractAt("MocQueue", mocQueue.address, signer);
+
+  // For testing environments, we whitelist deployer as executors
+  if (hre.network.tags.testnet || hre.network.tags.local) {
+    console.log(`Whitelisting queue executor: ${deployer}`);
+    await waitForTxConfirmation(mocQueueProxy.grantRole(EXECUTOR_ROLE, deployer));
   }
+
+  const mocVendorsDeployed = await deployUUPSArtifact({
+    hre,
+    artifactBaseName: "MocRifVendors",
+    contract: "MocVendors",
+    initializeArgs: [vendorsGuardianAddress, governorAddress, pauserAddress],
+  });
 
   if (!maxAbsoluteOpProviderAddress) {
     const deployImplResult = await deploy("FCMaxAbsoluteOpProvider", {
@@ -105,76 +117,79 @@ const deployFunc: DeployFunction = async (hre: HardhatRuntimeEnvironment) => {
     maxOpDiffProviderAddress = deployImplResult.address;
   }
 
+  const initializeArgs = [
+    {
+      initializeCoreParams: {
+        initializeBaseBucketParams: {
+          mocQueueAddress: mocQueue.address,
+          feeTokenAddress,
+          feeTokenPriceProviderAddress,
+          tcTokenAddress: collateralTokenAddress,
+          mocFeeFlowAddress,
+          mocAppreciationBeneficiaryAddress,
+          protThrld: coreParams.protThrld,
+          liqThrld: coreParams.liqThrld,
+          feeRetainer: feeParams.feeRetainer,
+          tcMintFee: feeParams.mintFee,
+          tcRedeemFee: feeParams.redeemFee,
+          swapTPforTPFee: feeParams.swapTPforTPFee,
+          swapTPforTCFee: feeParams.swapTPforTCFee,
+          swapTCforTPFee: feeParams.swapTCforTPFee,
+          redeemTCandTPFee: feeParams.redeemTCandTPFee,
+          mintTCandTPFee: feeParams.mintTCandTPFee,
+          feeTokenPct: feeParams.feeTokenPct,
+          successFee: coreParams.successFee,
+          appreciationFactor: coreParams.appreciationFactor,
+          bes: settlementParams.bes,
+          tcInterestCollectorAddress,
+          tcInterestRate: coreParams.tcInterestRate,
+          tcInterestPaymentBlockSpan: coreParams.tcInterestPaymentBlockSpan,
+          decayBlockSpan: coreParams.decayBlockSpan,
+          maxAbsoluteOpProviderAddress,
+          maxOpDiffProviderAddress,
+        },
+        governorAddress: governorAddress,
+        pauserAddress: stopperAddress,
+        mocCoreExpansion: deployedMocExpansionContract.address,
+        emaCalculationBlockSpan: coreParams.emaCalculationBlockSpan,
+        mocVendors: mocVendorsDeployed.address,
+      },
+      acTokenAddress: collateralAssetAddress,
+    },
+  ];
+
+  console.log("Initializing MocRif with:", initializeArgs[0]);
+
   const mocRif = await deployUUPSArtifact({
     hre,
     contract: "MocRif",
-    initializeArgs: [
-      {
-        initializeCoreParams: {
-          initializeBaseBucketParams: {
-            feeTokenAddress,
-            feeTokenPriceProviderAddress,
-            tcTokenAddress: collateralTokenAddress,
-            mocFeeFlowAddress,
-            mocAppreciationBeneficiaryAddress,
-            protThrld: coreParams.protThrld,
-            liqThrld: coreParams.liqThrld,
-            feeRetainer: feeParams.feeRetainer,
-            tcMintFee: feeParams.mintFee,
-            tcRedeemFee: feeParams.redeemFee,
-            swapTPforTPFee: feeParams.swapTPforTPFee,
-            swapTPforTCFee: feeParams.swapTPforTCFee,
-            swapTCforTPFee: feeParams.swapTCforTPFee,
-            redeemTCandTPFee: feeParams.redeemTCandTPFee,
-            mintTCandTPFee: feeParams.mintTCandTPFee,
-            feeTokenPct: feeParams.feeTokenPct,
-            successFee: coreParams.successFee,
-            appreciationFactor: coreParams.appreciationFactor,
-            bes: settlementParams.bes,
-            tcInterestCollectorAddress,
-            tcInterestRate: coreParams.tcInterestRate,
-            tcInterestPaymentBlockSpan: coreParams.tcInterestPaymentBlockSpan,
-            decayBlockSpan: coreParams.decayBlockSpan,
-            maxAbsoluteOpProviderAddress,
-            maxOpDiffProviderAddress,
-          },
-          governorAddress: governorMock, // at the end we transfer to the real governor
-          pauserAddress: hre.network.tags.migration ? deployer : stopperAddress, // for migration use deployer and set the real one on the changer
-          mocCoreExpansion: deployedMocExpansionContract.address,
-          emaCalculationBlockSpan: coreParams.emaCalculationBlockSpan,
-          mocVendors: MocVendors.address,
-        },
-        acTokenAddress: collateralAssetAddress!,
-        mocQueue: deployedMocQueue.address,
-      },
-    ],
+    initializeArgs,
   });
 
-  if (collateralTokenDeployed) {
-    console.log("Delegating CT roles to Moc");
-    // Assign TC Roles, and renounce deployer ADMIN
-    await waitForTxConfirmation(
-      MocTC__factory.connect(collateralTokenAddress, signer).transferAllRoles(mocRif.address),
-    );
-  }
+  console.log("Delegating CT roles to Moc");
 
-  // TODO: Deployer has admin privileges as this stage
+  const mocTCProxy = await ethers.getContractAt("MocTC", collateralTokenAddress, signer);
+  // Assign TC Roles, and renounce deployer ADMIN
+  await waitForTxConfirmation(mocTCProxy.transferAllRoles(mocRif.address));
+
   console.log(`Registering mocRif bucket as enqueuer: ${mocRif.address}`);
-  await waitForTxConfirmation(mocQueue.registerBucket(mocRif.address, { gasLimit }));
+  await waitForTxConfirmation(mocQueueProxy.registerBucket(mocRif.address, { gasLimit }));
 
-  if (hre.network.tags.migration) {
-    console.log("pausing MocRif until migration from V1 has been completed...");
-    // pause
-    await waitForTxConfirmation(MocRif__factory.connect(mocRif.address, signer).pause({ gasLimit }));
-  }
-
-  // add stable token
-  await addPeggedToken(hre, MocRif__factory.connect(mocRif.address, signer), governorAddress, tpParams?.tpParams);
-
-  // if real governor was provided transfer governance to it
-  if (governorAddress != governorMock) {
-    console.log(`Transferring MocQueue governance to executor: ${governorAddress}`);
-    await waitForTxConfirmation(mocQueue.changeGovernor(governorAddress));
+  if (tpParams) {
+    // for testing we add some Pegged Token and then transfer governance to the real governor
+    const mocRifV2 = await ethers.getContractAt("MocRif", mocRif.address, signer);
+    for (let tpParam of tpParams.tpParams) {
+      if (!tpParam.priceProvider) {
+        const tpPriceProvider = await deploy("PriceProviderMock", {
+          from: deployer,
+          args: [ethers.utils.parseEther("1")],
+          gasLimit,
+        });
+        tpParam.priceProvider = tpPriceProvider.address;
+        console.log(`Deploying Fake PriceProvider for ${tpParam.name} at ${tpPriceProvider.address}`);
+      }
+    }
+    await addPeggedTokensAndChangeGovernor(hre, governorAddress, mocRifV2, tpParams);
   }
 
   return hre.network.live; // prevents re execution on live networks
@@ -182,5 +197,5 @@ const deployFunc: DeployFunction = async (hre: HardhatRuntimeEnvironment) => {
 export default deployFunc;
 
 deployFunc.id = "deployed_MocRif"; // id required to prevent re-execution
-deployFunc.tags = ["MocRif"];
-deployFunc.dependencies = ["MocRifExpansion", "MocRifQueue", "MocRifVendors"];
+deployFunc.tags = ["MocRifDeploy"];
+deployFunc.dependencies = ["MocRifExpansion"];

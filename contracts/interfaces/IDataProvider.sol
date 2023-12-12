@@ -3,8 +3,7 @@ pragma solidity 0.8.20;
 
 /**
  * @title IDataProvider
- * @notice Amphiraos-Oracle Interface for peeking the data from an oracle
- * @dev https://github.com/money-on-chain/Amphiraos-Oracle
+ * @notice Generic interface, to query for any bytes32 sized data from an external provider
  */
 interface IDataProvider {
     /**
