@@ -1,6 +1,6 @@
-# ROC protocol
+# ROC V2 protocol
 
-ROC is an implementation of the Money On Chain main protocol that uses RIF Token as collateral of the system.
+ROC is an implementation of the Money On Chain V2 main protocol that uses RIF Token as collateral of the system.
 For more information, please refer to the [documentation section](https://github.com/money-on-chain/main-sc-protocol/blob/master/docs/README.md) for the _Moc CA RC20_ variation.
 
 ## Getting Started
