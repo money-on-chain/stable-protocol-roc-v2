@@ -44,15 +44,17 @@ const deployFunc: DeployFunction = async (hre: HardhatRuntimeEnvironment) => {
     console.log(`pauser address for MocRif set at deployer: ${stopperAddress}`);
   }
 
-  // if governor address is not provided we use the mock one
+  // We need a governor Mock for intermediate protected actions
+  const governorMock = (
+    await deploy("GovernorMock", {
+      from: deployer,
+    })
+  ).address;
+  console.log(`using a governorMock for MocRif at: ${governorMock}`);
+  let governorProvided = true;
   if (!governorAddress) {
-    const governorMock = (
-      await deploy("GovernorMock", {
-        from: deployer,
-      })
-    ).address;
+    governorProvided = false;
     governorAddress = governorMock;
-    console.log(`using a governorMock for MocRif at: ${governorAddress}`);
   }
 
   const collateralTokenAddress = (
@@ -74,7 +76,7 @@ const deployFunc: DeployFunction = async (hre: HardhatRuntimeEnvironment) => {
     artifactBaseName: "MocRifQueue",
     contract: "MocQueue",
     initializeArgs: [
-      governorAddress,
+      governorMock,
       pauserAddress,
       queueParams.minOperWaitingBlk,
       queueParams.maxOperPerBatch,
@@ -148,7 +150,7 @@ const deployFunc: DeployFunction = async (hre: HardhatRuntimeEnvironment) => {
           maxAbsoluteOpProviderAddress,
           maxOpDiffProviderAddress,
         },
-        governorAddress: governorAddress,
+        governorAddress: tpParams ? governorMock : governorAddress, // Use mock to add TPs
         pauserAddress: stopperAddress,
         mocCoreExpansion: deployedMocExpansionContract.address,
         emaCalculationBlockSpan: coreParams.emaCalculationBlockSpan,
@@ -174,6 +176,15 @@ const deployFunc: DeployFunction = async (hre: HardhatRuntimeEnvironment) => {
 
   console.log(`Registering mocRif bucket as enqueuer: ${mocRif.address}`);
   await waitForTxConfirmation(mocQueueProxy.registerBucket(mocRif.address, { gasLimit }));
+
+  if (governorProvided) {
+    console.log(`Restating Queue governor: ${governorAddress} after registration`);
+    await waitForTxConfirmation(
+      mocQueueProxy.changeGovernor(governorAddress, {
+        gasLimit,
+      }),
+    );
+  }
 
   if (tpParams) {
     // for testing we add some Pegged Token and then transfer governance to the real governor
