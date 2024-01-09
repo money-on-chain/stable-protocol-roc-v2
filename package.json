@@ -11,7 +11,7 @@
     "hardhat-deploy": "0.11.30",
     "hardhat-storage-layout": "0.1.7",
     "solc": "0.8.20",
-    "moc-main": "github:money-on-chain/main-sc-protocol#export-v0.2.4-queue"
+    "moc-main": "github:money-on-chain/main-sc-protocol-v2#v1.0.1-rc"
   },
   "devDependencies": {
     "@commitlint/cli": "17.6.3",
