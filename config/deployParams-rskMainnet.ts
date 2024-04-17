@@ -29,8 +29,8 @@ const commonParams = {
   gasLimit: 6800000,
 };
 
-export const rskTestnetMigrationParams: MigrateParameters = {
-  mocV1Address: "0x7e2F245F7dc8e78576ECB13AEFc0a101E9BE1AD3",
+export const rskMainnetMigrationParams: MigrateParameters = {
+  mocV1Address: "0xCfF3fcaeC2352C672C38d77cb1a064B7D50ce7e1",
   coreParams: {
     appreciationFactor: BigNumber.from(0), // 0%
     successFee: BigNumber.from(0), // 0%
@@ -48,8 +48,7 @@ export const rskTestnetMigrationParams: MigrateParameters = {
     feeTokenPct: PCT_BASE.mul(75).div(100), // 75% (Using feeToken gives 25% cheeper fees)
   },
   mocAddresses: {
-    mocAppreciationBeneficiaryAddress: "0xf69287F5Ca3cC3C6d3981f2412109110cB8af076",
+    mocAppreciationBeneficiaryAddress: "0xC61820bFB8F87391d62Cd3976dDc1d35e0cf7128",
   },
   ...commonParams,
 };
-

@@ -42,7 +42,7 @@ npm run typechain
 ## Deployment
 
 This solution has a fully functional deploy mechanism following [hardhat deploy](https://github.com/wighawag/hardhat-deploy) standard.
-It imports smart contracts and deploy scripts from [MoC-main-sc](https://github.com/money-on-chain/main-sc-protocol) repository and uses them to deploy the RC20 Collateralized Asset version, with custom networks configurations. To add networks for deployment or set new deploy parameters see [hardhat.base.config.ts](hardhat.base.config.ts).
+It imports smart contracts and deploy scripts from [MoC-main-sc](https://github.com/money-on-chain/stable-protocol-core-v2) repository and uses them to deploy the RC20 Collateralized Asset version, with custom networks configurations. To add networks for deployment or set new deploy parameters see [hardhat.base.config.ts](hardhat.base.config.ts).
 
 You can configure a network as `testnet` using [tags](https://github.com/wighawag/hardhat-deploy#tags) mechanism, that will allow you to:
 

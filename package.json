@@ -1,6 +1,6 @@
 {
   "name": "roc-sc-protocol-v2",
-  "version": "1.0.0",
+  "version": "1.0.3",
   "private": true,
   "homepage": "https://www.moneyonchain.com",
   "description": "Money on Chain main smart contract protocol RIF implementation",
@@ -11,7 +11,7 @@
     "hardhat-deploy": "0.11.30",
     "hardhat-storage-layout": "0.1.7",
     "solc": "0.8.20",
-    "moc-main": "github:money-on-chain/main-sc-protocol-v2#v1.0.3-rc"
+    "moc-main": "github:money-on-chain/stable-protocol-core-v2#v1.0.3-rc"
   },
   "devDependencies": {
     "@commitlint/cli": "17.6.3",
@@ -82,6 +82,8 @@
     "deploy-localhost": "hardhat deploy --tags MocRifDeploy",
     "deploy-development-migration": "hardhat deploy --network development --tags MocRifMigrate",
     "deploy-rskTestnet-migration": "hardhat deploy --network rskTestnetMigration --tags MocRifMigrate",
-    "deploy-rskTestnet": "hardhat deploy --network rskTestnet --tags MocRifDeploy"
+    "deploy-rskTestnet": "hardhat deploy --network rskTestnet --tags MocRifDeploy",
+    "deploy-rskAlphaTestnet-migration": "hardhat deploy --network rskAlphaTestnetMigration --tags MocRifMigrate",
+    "deploy-rskMainnet-migration": "hardhat deploy --network rskMainnetMigration --tags MocRifMigrate"
   }
 }

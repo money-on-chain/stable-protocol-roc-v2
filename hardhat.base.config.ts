@@ -18,7 +18,9 @@ import "hardhat-storage-layout";
 import { DeployParameters } from "moc-main/export/scripts/types";
 import { hardhatDeployParams } from "./config/deployParams-hardhat";
 import { developmentMigrateParams } from "./config/deployParams-development";
-import { rskTestnetMigrationParams, rskTestnetDeployParams } from "./config/deployParams-rskTestnet";
+import { rskTestnetMigrationParams } from "./config/deployParams-rskTestnet";
+import { rskMainnetMigrationParams } from "./config/deployParams-rskMainnet";
+import { rskAlphaTestnetMigrationParams, rskAlphaTestnetDeployParams } from "./config/deployParams-rskAlphaTestnet";
 
 dotenvConfig({ path: resolve(__dirname, "./.env") });
 
@@ -68,6 +70,7 @@ const chainIds = {
   rinkeby: 4,
   ropsten: 3,
   rskTestnet: 31,
+  rskMainnet: 30,
   polygonMumbai: 80001,
 };
 
@@ -113,12 +116,26 @@ const config: HardhatUserConfig = {
       deployParameters: { migrate: rskTestnetMigrationParams },
       tags: ["testnet", "migration"],
     },
-    rskTestnet: {
+    rskAlphaTestnetMigration: {
       accounts: process.env.PK ? [`0x${process.env.PK}`] : { mnemonic },
       chainId: chainIds.rskTestnet,
       url: "https://public-node.testnet.rsk.co",
-      deployParameters: { deploy: rskTestnetDeployParams },
+      deployParameters: { migrate: rskAlphaTestnetMigrationParams },
+      tags: ["testnet", "migration"],
+    },
+    rskAlphaTestnet: {
+      accounts: process.env.PK ? [`0x${process.env.PK}`] : { mnemonic },
+      chainId: chainIds.rskTestnet,
+      url: "https://public-node.testnet.rsk.co",
+      deployParameters: { deploy: rskAlphaTestnetDeployParams },
       tags: ["testnet"],
+    },
+    rskMainnetMigration: {
+      accounts: process.env.PK ? [`0x${process.env.PK}`] : { mnemonic },
+      chainId: chainIds.rskMainnet,
+      url: "https://public-node.rsk.co",
+      deployParameters: { migrate: rskMainnetMigrationParams },
+      tags: ["mainnet", "migration"],
     },
   },
   paths: {
