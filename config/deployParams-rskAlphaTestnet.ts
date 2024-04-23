@@ -38,8 +38,6 @@ export const rskAlphaTestnetMigrationParams: MigrateParameters = {
   },
   feeParams: {
     feeRetainer: BigNumber.from(0), // 0%
-    mintFee: PCT_BASE.mul(2).div(1000), // 0.002 = 0.2%
-    redeemFee: PCT_BASE.mul(2).div(1000), // 0.002 = 0.2%
     swapTPforTPFee: PCT_BASE.mul(2).div(1000), // 0.002 = 0.2%
     swapTPforTCFee: PCT_BASE.mul(2).div(1000), // 0.002 = 0.2%
     swapTCforTPFee: PCT_BASE.mul(2).div(1000), // 0.002 = 0.2%

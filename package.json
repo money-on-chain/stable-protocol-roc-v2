@@ -11,7 +11,7 @@
     "hardhat-deploy": "0.11.30",
     "hardhat-storage-layout": "0.1.7",
     "solc": "0.8.20",
-    "moc-main": "github:money-on-chain/stable-protocol-core-v2#v1.0.3-rc"
+    "moc-main": "github:money-on-chain/main-sc-protocol-v2#add-commissionSplitter"
   },
   "devDependencies": {
     "@commitlint/cli": "17.6.3",
@@ -79,6 +79,7 @@
     "prettier:check": "prettier --config .prettierrc --check \"**/*.{js,json,md,sol,ts}\"",
     "release": "standard-version",
     "docgen": "hardhat docgen",
+    "test": "hardhat test --typecheck",
     "deploy-localhost": "hardhat deploy --tags MocRifDeploy",
     "deploy-development-migration": "hardhat deploy --network development --tags MocRifMigrate",
     "deploy-rskTestnet-migration": "hardhat deploy --network rskTestnetMigration --tags MocRifMigrate",

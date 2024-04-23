@@ -97,6 +97,10 @@ const config: HardhatUserConfig = {
         mnemonic,
         accountsBalance: "100000000000000000000000000000000000",
       },
+      forking: {
+        url: "https://public-node.testnet.rsk.co", // TODO: use mainnet node
+        blockNumber: 5049200,
+      },
       chainId: chainIds.hardhat,
       hardfork: "london", // FIXME: latest evm version supported by rsk explorers, keep it updated
       // TODO: remove this
