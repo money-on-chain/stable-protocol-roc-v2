@@ -29,6 +29,7 @@ export type MigrateParameters = {
     decayBlockSpan: number;
     successFee: BigNumber;
     appreciationFactor: BigNumber;
+    allowDifferentRecipient: boolean;
   };
   mocAddresses: {
     mocAppreciationBeneficiaryAddress: Address;

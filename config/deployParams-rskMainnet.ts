@@ -1,11 +1,8 @@
 import { BigNumber } from "ethers";
-import { DeployParameters } from "moc-main/export/scripts/types";
 import { MigrateParameters } from "../hardhat.base.config";
 
 const PCT_BASE = BigNumber.from((1e18).toString());
 const DAY_BLOCK_SPAN = 2880;
-const WEEK_BLOCK_SPAN = DAY_BLOCK_SPAN * 7;
-const MONTH_BLOCK_SPAN = DAY_BLOCK_SPAN * 30;
 
 // Reference gasPrice average on RSK network
 const gasPrice = BigNumber.from("65800000");
@@ -35,11 +32,10 @@ export const rskMainnetMigrationParams: MigrateParameters = {
     appreciationFactor: BigNumber.from(0), // 0%
     successFee: BigNumber.from(0), // 0%
     decayBlockSpan: DAY_BLOCK_SPAN,
+    allowDifferentRecipient: false,
   },
   feeParams: {
-    feeRetainer: BigNumber.from(0), // 0%
-    mintFee: PCT_BASE.mul(2).div(1000), // 0.002 = 0.2%
-    redeemFee: PCT_BASE.mul(2).div(1000), // 0.002 = 0.2%
+    feeRetainer: PCT_BASE.mul(25).div(100), // 25%
     swapTPforTPFee: PCT_BASE.mul(2).div(1000), // 0.002 = 0.2%
     swapTPforTCFee: PCT_BASE.mul(2).div(1000), // 0.002 = 0.2%
     swapTCforTPFee: PCT_BASE.mul(2).div(1000), // 0.002 = 0.2%

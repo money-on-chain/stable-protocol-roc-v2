@@ -35,11 +35,10 @@ export const rskAlphaTestnetMigrationParams: MigrateParameters = {
     appreciationFactor: BigNumber.from(0), // 0%
     successFee: BigNumber.from(0), // 0%
     decayBlockSpan: DAY_BLOCK_SPAN,
+    allowDifferentRecipient: false,
   },
   feeParams: {
-    feeRetainer: BigNumber.from(0), // 0%
-    mintFee: PCT_BASE.mul(2).div(1000), // 0.002 = 0.2%
-    redeemFee: PCT_BASE.mul(2).div(1000), // 0.002 = 0.2%
+    feeRetainer: PCT_BASE.mul(25).div(100), // 25%
     swapTPforTPFee: PCT_BASE.mul(2).div(1000), // 0.002 = 0.2%
     swapTPforTCFee: PCT_BASE.mul(2).div(1000), // 0.002 = 0.2%
     swapTCforTPFee: PCT_BASE.mul(2).div(1000), // 0.002 = 0.2%
@@ -102,10 +101,10 @@ export const rskAlphaTestnetDeployParams: DeployParameters = {
     pauserAddress: "0x5bCdf8A2E61BD238AEe43b99962Ee8BfBda1Beca", // if not provided is set to deployer
     feeTokenAddress: "0x45a97b54021a3F99827641AFe1BFAE574431e6ab",
     feeTokenPriceProviderAddress: "0x8DCE78BbD4D757EF7777Be113277cf5A35283b1E",
-    mocFeeFlowAddress: "0xcd8a1c9acc980ae031456573e34dc05cd7dae6e3",
+    mocFeeFlowAddress: "", // if not provided a new CommissionSplitter.sol will be deployed
     mocAppreciationBeneficiaryAddress: "0xcd8a1c9acc980ae031456573e34dc05cd7dae6e3",
     vendorsGuardianAddress: "0xcd8a1c9acc980ae031456573e34dc05cd7dae6e3",
-    tcInterestCollectorAddress: "0xcd8a1c9acc980ae031456573e34dc05cd7dae6e3",
+    tcInterestCollectorAddress: "", // if not provided a new CommissionSplitter.sol will be deployed
     maxAbsoluteOpProviderAddress: "", // if not provided a new FCMaxAbsoluteOpProvider.sol will be deployed with pauser as owner
     maxOpDiffProviderAddress: "", // if not provided a new FCMaxOpDifferenceProvider.sol will be deployed with pauser as owner
   },

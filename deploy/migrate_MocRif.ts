@@ -1,3 +1,4 @@
+import { BigNumber } from "ethers";
 import { HardhatRuntimeEnvironment } from "hardhat/types";
 import { DeployFunction } from "hardhat-deploy/types";
 import { deployUUPSArtifact } from "moc-main/export/scripts/utils";
@@ -10,11 +11,26 @@ export type RifFullDeployParameters = Omit<DeployParameters, "mocAddresses" | "c
   Omit<MigrateParameters, "mocV1Address"> & {
     mocAddresses: Omit<
       DeployParameters["mocAddresses"],
-      "maxAbsoluteOpProviderAddress" | "maxOpDiffProviderAddress"
+      "maxAbsoluteOpProviderAddress" | "maxOpDiffProviderAddress" | "mocFeeFlowAddress" | "tcInterestCollectorAddress"
     > & {
       collateralTokenAddress: string;
       maxAbsoluteOpProviderAddress?: string;
       maxOpDiffProviderAddress?: string;
+      mocFeeFlowAddress?: string;
+      tcInterestCollectorAddress?: string;
+    };
+    feesSplitterParams: {
+      acTokenAddressRecipient1: string;
+      acTokenAddressRecipient2: string;
+      acTokenPctToRecipient1: BigNumber;
+      feeTokenAddressRecipient1: string;
+      feeTokenAddressRecipient2: string;
+      feeTokenPctToRecipient1: BigNumber;
+    };
+    tcInterestsSplitterParams: {
+      acTokenAddressRecipient1: string;
+      acTokenAddressRecipient2: string;
+      acTokenPctToRecipient1: BigNumber;
     };
   };
 
@@ -47,6 +63,8 @@ const deployFunc: DeployFunction = async (hre: HardhatRuntimeEnvironment) => {
       maxAbsoluteOpProviderAddress,
       maxOpDiffProviderAddress,
     },
+    feesSplitterParams,
+    tcInterestsSplitterParams,
   } = params;
 
   const deployedMocVendors = await deployUUPSArtifact({
@@ -89,6 +107,50 @@ const deployFunc: DeployFunction = async (hre: HardhatRuntimeEnvironment) => {
     maxOpDiffProviderAddress = deployImplResult.address;
   }
 
+  if (!mocFeeFlowAddress) {
+    const initializeArgs = [
+      governorAddress,
+      collateralAssetAddress,
+      feeTokenAddress,
+      feesSplitterParams.acTokenAddressRecipient1,
+      feesSplitterParams.acTokenAddressRecipient2,
+      feesSplitterParams.acTokenPctToRecipient1,
+      feesSplitterParams.feeTokenAddressRecipient1,
+      feesSplitterParams.feeTokenAddressRecipient2,
+      feesSplitterParams.feeTokenPctToRecipient1,
+    ];
+    const deployResult = await deployUUPSArtifact({
+      hre,
+      artifactBaseName: "FeesSplitter",
+      contract: "CommissionSplitter",
+      initializeArgs,
+    });
+    console.log(`FeesSplitter deployed at ${deployResult.address} with:`, initializeArgs);
+    mocFeeFlowAddress = deployResult.address;
+  }
+
+  if (!tcInterestCollectorAddress) {
+    const initializeArgs = [
+      governorAddress,
+      collateralAssetAddress,
+      feeTokenAddress,
+      tcInterestsSplitterParams.acTokenAddressRecipient1,
+      tcInterestsSplitterParams.acTokenAddressRecipient2,
+      tcInterestsSplitterParams.acTokenPctToRecipient1,
+      feesSplitterParams.feeTokenAddressRecipient1, // not used, so copy feesSplitter params
+      feesSplitterParams.feeTokenAddressRecipient2, // not used, so copy feesSplitter params
+      feesSplitterParams.feeTokenPctToRecipient1, // not used, so copy feesSplitter params
+    ];
+    const deployResult = await deployUUPSArtifact({
+      hre,
+      artifactBaseName: "TCInterestsSplitter",
+      contract: "CommissionSplitter",
+      initializeArgs,
+    });
+    console.log(`TCInterestsSplitter deployed at ${deployResult.address} with:`, initializeArgs);
+    tcInterestCollectorAddress = deployResult.address;
+  }
+
   const initializeArgs = [
     {
       initializeCoreParams: {
@@ -119,6 +181,7 @@ const deployFunc: DeployFunction = async (hre: HardhatRuntimeEnvironment) => {
           decayBlockSpan: coreParams.decayBlockSpan,
           maxAbsoluteOpProviderAddress,
           maxOpDiffProviderAddress,
+          allowDifferentRecipient: coreParams.allowDifferentRecipient,
         },
         governorAddress: governorAddress,
         pauserAddress,

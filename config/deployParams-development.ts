@@ -10,12 +10,13 @@ export const developmentMigrateParams: MigrateParameters = {
     decayBlockSpan: DAY_BLOCK_SPAN,
     successFee: PCT_BASE.mul(10).div(100), // 10%
     appreciationFactor: PCT_BASE.mul(50).div(100), // 50%
+    allowDifferentRecipient: false,
   },
   mocAddresses: {
     mocAppreciationBeneficiaryAddress: "0x26a00af444928d689dDEc7B4D17C0e4A8c9D407A",
   },
   feeParams: {
-    feeRetainer: PCT_BASE.mul(0), // 0%
+    feeRetainer: PCT_BASE.mul(25).div(100), // 25%
     swapTPforTPFee: PCT_BASE.mul(1).div(100), // 1%
     swapTPforTCFee: PCT_BASE.mul(1).div(100), // 1%
     swapTCforTPFee: PCT_BASE.mul(1).div(100), // 1%
