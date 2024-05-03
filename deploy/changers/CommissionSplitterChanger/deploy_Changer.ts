@@ -9,9 +9,12 @@ const deployFunc: DeployFunction = async (hre: HardhatRuntimeEnvironment) => {
   const changerParams = getNetworkChangerParams(hre);
   if (!changerParams) throw new Error("No deploy params config found.");
   const {
-    addresses: { upgradeDelegatorAddress, newCommissionSplitterV2Address, mocCoreProxyAddress },
+    addresses: { mocCoreProxyAddress },
     gasLimit,
   } = changerParams;
+
+  const mocRifImp = await deployments.getOrNull("MocRif");
+  if (!mocRifImp) throw new Error("No MocRif_Imp deployed.");
 
   const feesSplitterProxy = await deployments.getOrNull("FeesSplitterProxy");
   if (!feesSplitterProxy) throw new Error("No FeesSplitter deployed.");
@@ -22,13 +25,7 @@ const deployFunc: DeployFunction = async (hre: HardhatRuntimeEnvironment) => {
   const commissionSplitterChanger = (
     await deploy("CommissionSplitterChanger", {
       from: deployer,
-      args: [
-        upgradeDelegatorAddress,
-        mocCoreProxyAddress,
-        newCommissionSplitterV2Address,
-        feesSplitterProxy.address,
-        tcInterestsSplitterProxy.address,
-      ],
+      args: [mocCoreProxyAddress, mocRifImp.address, feesSplitterProxy.address, tcInterestsSplitterProxy.address],
       gasLimit,
     })
   ).address;
@@ -40,4 +37,4 @@ export default deployFunc;
 
 deployFunc.id = "deployed_CommissionSplitterChanger"; // id required to prevent re-execution
 deployFunc.tags = ["CommissionSplitterChanger"];
-deployFunc.dependencies = ["FeesSplitter", "TCInterestsSplitter"];
+deployFunc.dependencies = ["MocRif_Imp", "FeesSplitter", "TCInterestsSplitter"];

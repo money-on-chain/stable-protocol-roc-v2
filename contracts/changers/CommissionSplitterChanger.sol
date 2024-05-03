@@ -18,10 +18,6 @@ contract CommissionSplitterChanger is IChangerContract {
     MocCARC20 public immutable mocCoreProxy;
     // new MocCore implementation contract
     address public immutable newMocCoreImpl;
-    // contract able to make upgrades on V1
-    IUpgradeDelegator public immutable upgradeDelegator;
-    // new commission splitter implementation used to split tokens to MocCoreV2 instead of V1
-    address public immutable newCommissionSplitterV2Impl;
     // current operations fees splitter that will be migrated
     ICurrentCommissionSplitter public immutable commissionSplitterV2Proxy;
     // current TC interests splitter that will be migrated
@@ -37,25 +33,19 @@ contract CommissionSplitterChanger is IChangerContract {
 
     /**
      * @notice constructor
-     * @param upgradeDelegator_ contract able to make upgrades on V1
      * @param mocCoreProxy_ MocCore proxy contract
      * @param newMocCoreImpl_ new MocCore implementation contract
-     * @param newCommissionSplitterV2Impl_  new commission splitter implementation used to split tokens to MocCore V2
      * @param feesSplitterProxy_ new operations fees splitter
      * @param tcInterestsSplitterProxy_ new TC interests splitter
      */
     constructor(
-        IUpgradeDelegator upgradeDelegator_,
         MocCARC20 mocCoreProxy_,
         address newMocCoreImpl_,
-        address newCommissionSplitterV2Impl_,
         CommissionSplitter feesSplitterProxy_,
         CommissionSplitter tcInterestsSplitterProxy_
     ) {
-        upgradeDelegator = upgradeDelegator_;
         mocCoreProxy = mocCoreProxy_;
         newMocCoreImpl = newMocCoreImpl_;
-        newCommissionSplitterV2Impl = newCommissionSplitterV2Impl_;
         feesSplitterProxy = feesSplitterProxy_;
         tcInterestsSplitterProxy = tcInterestsSplitterProxy_;
         commissionSplitterV2Proxy = ICurrentCommissionSplitter(mocCoreProxy.mocFeeFlowAddress());
@@ -93,7 +83,6 @@ contract CommissionSplitterChanger is IChangerContract {
       @dev IMPORTANT: This function should not be overridden
     */
     function _upgrade() internal {
-        upgradeDelegator.upgrade(address(commissionSplitterV2Proxy), newCommissionSplitterV2Impl);
         mocCoreProxy.upgradeTo(newMocCoreImpl);
     }
 
@@ -106,13 +95,9 @@ contract CommissionSplitterChanger is IChangerContract {
       @notice Intended to do the final tweaks after the upgrade, for example initialize the contract
     */
     function _afterUpgrade() internal {
-        // set MocCore as recipient1
-        commissionSplitterV2Proxy.setOutputAddress_1(address(mocCoreProxy));
-        // split both to keep them empty
-        commissionSplitterV2Proxy.split();
+        // commissionSplitterV2 cannot be split because fail transferring balance to MocV1
+        // split commissionSplitterV3 to keep them empty
         commissionSplitterV3Proxy.split();
-        // update MocCore balance to account the new AC tokens
-        mocCoreProxy.refreshACBalance();
 
         // update MocCore setups
         mocCoreProxy.setFeeRetainer(feeRetainer);
@@ -158,6 +143,7 @@ contract CommissionSplitterChanger is IChangerContract {
             return false;
         // // for feeToken we only need to check the token because the splitter ask for its balance but is not used
         if (address(tcInterestsSplitterProxy.feeToken()) != commissionSplitterV2Proxy.tokenGovern()) return false;
+        return true;
     }
 }
 
@@ -185,8 +171,4 @@ interface ICurrentCommissionSplitter {
     function outputTokenGovernAddress_2() external view returns (address outputTokenGovernAddress2);
 
     function outputProportionTokenGovern_1() external view returns (uint256 outputProportionTokenGovern1);
-}
-
-interface IUpgradeDelegator {
-    function upgrade(address proxy_, address implementation_) external;
 }

@@ -32,9 +32,10 @@ export const rskMainnetMigrationParams: MigrateParameters = {
     appreciationFactor: BigNumber.from(0), // 0%
     successFee: BigNumber.from(0), // 0%
     decayBlockSpan: DAY_BLOCK_SPAN,
+    allowDifferentRecipient: false,
   },
   feeParams: {
-    feeRetainer: BigNumber.from(0), // 0%
+    feeRetainer: PCT_BASE.mul(25).div(100), // 25%
     swapTPforTPFee: PCT_BASE.mul(2).div(1000), // 0.002 = 0.2%
     swapTPforTCFee: PCT_BASE.mul(2).div(1000), // 0.002 = 0.2%
     swapTCforTPFee: PCT_BASE.mul(2).div(1000), // 0.002 = 0.2%

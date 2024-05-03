@@ -16,12 +16,13 @@ export const hardhatDeployParams: DeployParameters = {
     tcInterestRate: PCT_BASE.mul(5).div(100000), // 0.005% : weekly 0.0025 / 365 * 7
     tcInterestPaymentBlockSpan: WEEK_BLOCK_SPAN,
     decayBlockSpan: DAY_BLOCK_SPAN,
+    allowDifferentRecipient: false,
   },
   settlementParams: {
     bes: MONTH_BLOCK_SPAN,
   },
   feeParams: {
-    feeRetainer: PCT_BASE.mul(0), // 0%
+    feeRetainer: PCT_BASE.mul(25).div(100), // 25%
     mintFee: PCT_BASE.mul(5).div(100), // 5%
     redeemFee: PCT_BASE.mul(5).div(100), // 5%
     swapTPforTPFee: PCT_BASE.mul(1).div(100), // 1%

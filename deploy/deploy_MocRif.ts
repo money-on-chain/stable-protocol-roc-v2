@@ -142,6 +142,7 @@ const deployFunc: DeployFunction = async (hre: HardhatRuntimeEnvironment) => {
           decayBlockSpan: coreParams.decayBlockSpan,
           maxAbsoluteOpProviderAddress,
           maxOpDiffProviderAddress,
+          allowDifferentRecipient: coreParams.allowDifferentRecipient,
         },
         governorAddress: tpParams ? governorMock : governorAddress, // Use mock to add TPs
         pauserAddress: stopperAddress,
