@@ -31,6 +31,7 @@ const deployFunc: DeployFunction = async (hre: HardhatRuntimeEnvironment) => {
     mocAppreciationBeneficiaryAddress,
     tcInterestCollectorAddress,
     vendorsGuardianAddress,
+    mocVendorsAddress,
     maxAbsoluteOpProviderAddress,
     maxOpDiffProviderAddress,
   } = mocAddresses;
@@ -85,12 +86,15 @@ const deployFunc: DeployFunction = async (hre: HardhatRuntimeEnvironment) => {
 
   const mocQueueProxy = await ethers.getContractAt("MocQueue", mocQueue.address, signer);
 
-  const mocVendorsDeployed = await deployUUPSArtifact({
-    hre,
-    artifactBaseName: "MocRifVendors",
-    contract: "MocVendors",
-    initializeArgs: [vendorsGuardianAddress, governorAddress, pauserAddress],
-  });
+  if (!mocVendorsAddress) {
+    const mocVendorsDeployed = await deployUUPSArtifact({
+      hre,
+      artifactBaseName: "MocRifVendors",
+      contract: "MocVendors",
+      initializeArgs: [vendorsGuardianAddress, governorAddress, pauserAddress],
+    });
+    mocVendorsAddress = mocVendorsDeployed.address;
+  }
 
   if (!maxAbsoluteOpProviderAddress) {
     const deployImplResult = await deploy("FCMaxAbsoluteOpProvider", {
@@ -148,7 +152,7 @@ const deployFunc: DeployFunction = async (hre: HardhatRuntimeEnvironment) => {
         pauserAddress: stopperAddress,
         mocCoreExpansion: deployedMocExpansionContract.address,
         emaCalculationBlockSpan: coreParams.emaCalculationBlockSpan,
-        mocVendors: mocVendorsDeployed.address,
+        mocVendors: mocVendorsAddress,
       },
       acTokenAddress: collateralAssetAddress,
     },
