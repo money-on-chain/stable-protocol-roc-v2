@@ -101,10 +101,11 @@ export const rskAlphaTestnetDeployParams: DeployParameters = {
     pauserAddress: "0x5bCdf8A2E61BD238AEe43b99962Ee8BfBda1Beca", // if not provided is set to deployer
     feeTokenAddress: "0x45a97b54021a3F99827641AFe1BFAE574431e6ab",
     feeTokenPriceProviderAddress: "0x8DCE78BbD4D757EF7777Be113277cf5A35283b1E",
-    mocFeeFlowAddress: "", // if not provided a new CommissionSplitter.sol will be deployed
+    mocFeeFlowAddress: "0xcd8a1c9acc980ae031456573e34dc05cd7dae6e3",
     mocAppreciationBeneficiaryAddress: "0xcd8a1c9acc980ae031456573e34dc05cd7dae6e3",
     vendorsGuardianAddress: "0xcd8a1c9acc980ae031456573e34dc05cd7dae6e3",
-    tcInterestCollectorAddress: "", // if not provided a new CommissionSplitter.sol will be deployed
+    tcInterestCollectorAddress: "0xcd8a1c9acc980ae031456573e34dc05cd7dae6e3",
+    mocVendorsAddress: "", // if not provided a new MocVendors will be deployed
     maxAbsoluteOpProviderAddress: "", // if not provided a new FCMaxAbsoluteOpProvider.sol will be deployed with pauser as owner
     maxOpDiffProviderAddress: "", // if not provided a new FCMaxOpDifferenceProvider.sol will be deployed with pauser as owner
   },
