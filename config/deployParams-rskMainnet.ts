@@ -45,6 +45,9 @@ export const rskMainnetMigrationParams: MigrateParameters = {
   },
   mocAddresses: {
     mocAppreciationBeneficiaryAddress: "0xC61820bFB8F87391d62Cd3976dDc1d35e0cf7128",
+    mocVendorsAddress: "0x5F69df7e853686a794c13be029FF228642C07012", // if not provided a new MocVendors will be deployed
+    maxAbsoluteOpProviderAddress: "0x99aCDaF05b900a4Db37B0FaA7270855b186135cD", // if not provided a new FCMaxAbsoluteOpProvider.sol will be deployed with pauser as owner
+    maxOpDiffProviderAddress: "0x60744BE41058Aa876153CdBeE75aD281Ab1a9738", // if not provided a new FCMaxOpDifferenceProvider.sol will be deployed with pauser as owner
   },
   ...commonParams,
 };

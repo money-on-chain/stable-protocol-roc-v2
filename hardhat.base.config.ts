@@ -35,6 +35,7 @@ export type MigrateParameters = {
     mocAppreciationBeneficiaryAddress: Address;
     maxAbsoluteOpProviderAddress?: Address;
     maxOpDiffProviderAddress?: Address;
+    mocVendorsAddress?: Address;
   };
   feeParams: {
     feeRetainer: BigNumber;
