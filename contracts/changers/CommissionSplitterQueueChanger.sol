@@ -2,12 +2,25 @@
 pragma solidity 0.8.20;
 
 import { IChangerContract } from "../interfaces/IChangerContract.sol";
+import { IDataProvider } from "../interfaces/IDataProvider.sol";
 import { MocCARC20 } from "moc-main/contracts/collateral/rc20/MocCARC20.sol";
-// TODO: "moc-main": "github:money-on-chain/main-sc-protocol-v2#add-commissionSplitter"
+import { MocQueue } from "moc-main/contracts/queue/MocQueue.sol";
+// TODO: "moc-main": "github:money-on-chain/main-sc-protocol-v2#remove-fc-halting-queue-feature-export"
 //        install library with the audited tag
 import { CommissionSplitter } from "moc-main/contracts/auxiliary/CommissionSplitter.sol";
 
-contract CommissionSplitterChanger is IChangerContract {
+/**
+  In this changer we change:
+
+  1) Set Fee flow output to new commission splitter
+  2) Set TCInterest output to new commission splitter
+  3) New implementation of MoCQueue (fix bug)
+  4) New feeTokenPriceProvider get the price from OKU swap
+  5) Before upgrade split() to get the funds of the old commission splitter
+
+ */
+
+contract CommissionSplitterQueueChanger is IChangerContract {
     uint256 public constant PRECISION = 10 ** 18;
     // ------- Custom Errors -------
     error WrongSetup();
@@ -16,53 +29,42 @@ contract CommissionSplitterChanger is IChangerContract {
 
     // MocCore proxy contract
     MocCARC20 public immutable mocCoreProxy;
-    // new MocCore implementation contract
-    address public immutable newMocCoreImpl;
+    // MocQueue proxy contract
+    MocQueue public immutable mocQueueProxy;
+    // new MocQueue implementation contract
+    address public immutable newMocQueueImpl;
+    // Fee Token price provider
+    IDataProvider public feeTokenPriceProvider;
+
     // current operations fees splitter that will be migrated
     ICurrentCommissionSplitter public immutable commissionSplitterV2Proxy;
     // current TC interests splitter that will be migrated
     ICurrentCommissionSplitter public immutable commissionSplitterV3Proxy;
+
     // new operations fees splitter
     CommissionSplitter public immutable feesSplitterProxy;
-    // new TC interests splitter
-    CommissionSplitter public immutable tcInterestsSplitterProxy;
-    // pct retain on fees to be re-injected as Collateral, while paying fees with AC [PREC]
-    // replace the acTokenPctToRecipient1 used on the current CommissionSplitterV2
-    uint256 public immutable feeRetainer;
-    uint256 public immutable acTokenPctToRecipient1;
 
     /**
      * @notice constructor
      * @param mocCoreProxy_ MocCore proxy contract
-     * @param newMocCoreImpl_ new MocCore implementation contract
-     * @param feesSplitterProxy_ new operations fees splitter
-     * @param tcInterestsSplitterProxy_ new TC interests splitter
+     * @param newMocQueueImpl_ new MocQueue implementation contract
+     * @param feeTokenPriceProvider_ new Fee Token price provider address
+     * @param feesSplitterProxy_ new Commission splitter
      */
     constructor(
         MocCARC20 mocCoreProxy_,
-        address newMocCoreImpl_,
-        CommissionSplitter feesSplitterProxy_,
-        CommissionSplitter tcInterestsSplitterProxy_
+        address newMocQueueImpl_,
+        IDataProvider feeTokenPriceProvider_,
+        CommissionSplitter feesSplitterProxy_
     ) {
         mocCoreProxy = mocCoreProxy_;
-        newMocCoreImpl = newMocCoreImpl_;
+        newMocQueueImpl = newMocQueueImpl_;
+        feeTokenPriceProvider = feeTokenPriceProvider_;
         feesSplitterProxy = feesSplitterProxy_;
-        tcInterestsSplitterProxy = tcInterestsSplitterProxy_;
+
         commissionSplitterV2Proxy = ICurrentCommissionSplitter(mocCoreProxy.mocFeeFlowAddress());
         commissionSplitterV3Proxy = ICurrentCommissionSplitter(mocCoreProxy.tcInterestCollectorAddress());
-
-        uint256 outputProportion1 = commissionSplitterV2Proxy.outputProportion_1();
-        uint256 outputProportion2 = commissionSplitterV2Proxy.outputProportion_2();
-
-        // we need to map the new percentages
-        // 100% = A + B + C
-        // 100% - A = B + C => B' + C' is the new 100%
-        // 100% = (B / 100% - A) + (C / 100% - A)
-
-        // [PREC]
-        feeRetainer = outputProportion1;
-        // [PREC] = ([PREC] * [PREC]) / ([PREC] - [PREC])
-        acTokenPctToRecipient1 = (outputProportion2 * PRECISION) / (PRECISION - outputProportion1);
+        mocQueueProxy = MocQueue(mocCoreProxy.mocQueue());
     }
 
     /**
@@ -83,7 +85,7 @@ contract CommissionSplitterChanger is IChangerContract {
       @dev IMPORTANT: This function should not be overridden
     */
     function _upgrade() internal {
-        mocCoreProxy.upgradeTo(newMocCoreImpl);
+        mocQueueProxy.upgradeTo(newMocQueueImpl);
     }
 
     /**
@@ -100,50 +102,22 @@ contract CommissionSplitterChanger is IChangerContract {
         commissionSplitterV3Proxy.split();
 
         // update MocCore setups
-        mocCoreProxy.setFeeRetainer(feeRetainer);
         mocCoreProxy.setMocFeeFlowAddress(address(feesSplitterProxy));
-        mocCoreProxy.setTCInterestCollectorAddress(address(tcInterestsSplitterProxy));
-
-        // enforce the percentage calculated
-        feesSplitterProxy.setAcTokenPctToRecipient1(acTokenPctToRecipient1);
+        mocCoreProxy.setTCInterestCollectorAddress(address(feesSplitterProxy));
+        mocCoreProxy.setFeeTokenPriceProviderAddress(address(feeTokenPriceProvider));
 
         //revert if any commission splitter configuration is wrong;
         if (!validateSetups()) revert WrongSetup();
     }
 
     function validateSetups() public view returns (bool ok) {
+
         /////////////////////////////////////////
         // feesSplitterProxy verifications /////
         ///////////////////////////////////////
         if (feesSplitterProxy.governor() != mocCoreProxy.governor()) return false;
         if (address(feesSplitterProxy.acToken()) != commissionSplitterV2Proxy.reserveToken()) return false;
-        // recipient1 is not used anymore and is replaced with the fee retainer
-        if (feesSplitterProxy.acTokenAddressRecipient1() != commissionSplitterV2Proxy.outputAddress_2()) return false;
-        if (feesSplitterProxy.acTokenAddressRecipient2() != commissionSplitterV2Proxy.outputAddress_3()) return false;
-        // acToken percentages are not validated because it was enforced on this changer
-
         if (address(feesSplitterProxy.feeToken()) != commissionSplitterV2Proxy.tokenGovern()) return false;
-        if (feesSplitterProxy.feeTokenAddressRecipient1() != commissionSplitterV2Proxy.outputTokenGovernAddress_1())
-            return false;
-        if (feesSplitterProxy.feeTokenAddressRecipient2() != commissionSplitterV2Proxy.outputTokenGovernAddress_2())
-            return false;
-        if (feesSplitterProxy.feeTokenPctToRecipient1() != commissionSplitterV2Proxy.outputProportionTokenGovern_1())
-            return false;
-
-        ////////////////////////////////////////////////
-        // tcInterestsSplitterProxy verifications /////
-        //////////////////////////////////////////////
-        if (tcInterestsSplitterProxy.governor() != mocCoreProxy.governor()) return false;
-        if (address(tcInterestsSplitterProxy.acToken()) != commissionSplitterV3Proxy.reserveToken()) return false;
-        if (tcInterestsSplitterProxy.acTokenAddressRecipient1() != commissionSplitterV3Proxy.outputAddress_1())
-            return false;
-        if (tcInterestsSplitterProxy.acTokenAddressRecipient2() != commissionSplitterV3Proxy.outputAddress_2())
-            return false;
-        if (tcInterestsSplitterProxy.acTokenPctToRecipient1() != commissionSplitterV3Proxy.outputProportion_1())
-            return false;
-        // // for feeToken we only need to check the token because the splitter ask for its balance but is not used
-        if (address(tcInterestsSplitterProxy.feeToken()) != commissionSplitterV2Proxy.tokenGovern()) return false;
-        return true;
     }
 }
 

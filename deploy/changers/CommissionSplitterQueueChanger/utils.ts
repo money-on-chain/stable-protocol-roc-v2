@@ -1,18 +1,18 @@
 import { HardhatRuntimeEnvironment } from "hardhat/types";
 import { ethers } from "hardhat";
-import { getNetworkChangerParams } from "../../../config/changers/commissionSplitter-params";
+import { getNetworkChangerParams } from "../../../config/changers/commissionSplitterQueue-params";
 import { ICurrentCommissionSplitter__factory, MocCARC20__factory } from "../../../typechain";
 
 export const fetchNetworkDeployParams = async (hre: HardhatRuntimeEnvironment) => {
   const changerParams = getNetworkChangerParams(hre);
   if (!changerParams) throw new Error("No deploy params config found.");
   const {
-    addresses: { mocCoreProxyAddress },
+    changer,
   } = changerParams;
 
   const signer = ethers.provider.getSigner();
 
-  const mocProxy = MocCARC20__factory.connect(mocCoreProxyAddress, signer);
+  const mocProxy = MocCARC20__factory.connect(changer.mocCoreProxyAddress, signer);
   const commissionSplitterV2Proxy = ICurrentCommissionSplitter__factory.connect(
     await mocProxy.mocFeeFlowAddress(),
     signer,

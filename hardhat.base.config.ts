@@ -121,6 +121,13 @@ const config: HardhatUserConfig = {
       deployParameters: { migrate: rskTestnetMigrationParams },
       tags: ["testnet", "migration"],
     },
+    rskTestnet: {
+      accounts: process.env.PK ? [`0x${process.env.PK}`] : { mnemonic },
+      chainId: chainIds.rskTestnet,
+      url: "https://public-node.testnet.rsk.co",
+      deployParameters: { migrate: rskTestnetMigrationParams },
+      tags: ["testnet"],
+    },
     rskAlphaTestnetMigration: {
       accounts: process.env.PK ? [`0x${process.env.PK}`] : { mnemonic },
       chainId: chainIds.rskTestnet,

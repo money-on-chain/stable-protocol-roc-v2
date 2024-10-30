@@ -1,22 +1,27 @@
 import { DeployFunction } from "hardhat-deploy/types";
 import { HardhatRuntimeEnvironment } from "hardhat/types";
 import { deployUUPSArtifact } from "moc-main/export/scripts/utils";
-import { fetchNetworkDeployParams } from "./utils";
+import { getNetworkChangerParams } from "../../../config/changers/commissionSplitterQueue-params";
 
 const deployFunc: DeployFunction = async (hre: HardhatRuntimeEnvironment) => {
-  const { governorAddress, acTokenAddress, feeTokenAddress, feesSplitterParams } = await fetchNetworkDeployParams(hre);
+
+  const changerParams = getNetworkChangerParams(hre);
+  if (!changerParams) throw new Error("No deploy params config found.");
+  const {
+    feesSplitterParams,
+  } = changerParams;
 
   await deployUUPSArtifact({
     hre,
     artifactBaseName: "FeesSplitter",
     contract: "CommissionSplitter",
     initializeArgs: [
-      governorAddress,
-      acTokenAddress,
-      feeTokenAddress,
+      feesSplitterParams.governorAddress,
+      feesSplitterParams.acTokenAddress,
+      feesSplitterParams.feeTokenAddress,
       feesSplitterParams.acTokenAddressRecipient1,
       feesSplitterParams.acTokenAddressRecipient2,
-      0, // not relevant, it will be overwritten on the changer
+      feesSplitterParams.acTokenPctToRecipient1,
       feesSplitterParams.feeTokenAddressRecipient1,
       feesSplitterParams.feeTokenAddressRecipient2,
       feesSplitterParams.feeTokenPctToRecipient1,
