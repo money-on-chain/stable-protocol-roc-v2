@@ -127,6 +127,7 @@ const config: HardhatUserConfig = {
       url: "https://public-node.testnet.rsk.co",
       deployParameters: { migrate: rskTestnetMigrationParams },
       tags: ["testnet"],
+      gasPrice: 65000000
     },
     rskAlphaTestnetMigration: {
       accounts: process.env.PK ? [`0x${process.env.PK}`] : { mnemonic },
