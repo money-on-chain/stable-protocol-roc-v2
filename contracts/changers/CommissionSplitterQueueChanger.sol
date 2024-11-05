@@ -118,6 +118,7 @@ contract CommissionSplitterQueueChanger is IChangerContract {
         if (feesSplitterProxy.governor() != mocCoreProxy.governor()) return false;
         if (address(feesSplitterProxy.acToken()) != commissionSplitterV2Proxy.reserveToken()) return false;
         if (address(feesSplitterProxy.feeToken()) != commissionSplitterV2Proxy.tokenGovern()) return false;
+        return true;
     }
 }
 
