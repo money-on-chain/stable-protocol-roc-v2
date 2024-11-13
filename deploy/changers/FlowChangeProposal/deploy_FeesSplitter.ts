@@ -1,7 +1,7 @@
 import { DeployFunction } from "hardhat-deploy/types";
 import { HardhatRuntimeEnvironment } from "hardhat/types";
 import { deployUUPSArtifact } from "moc-main/export/scripts/utils";
-import { getNetworkChangerParams } from "../../../config/changers/commissionSplitterQueue-params";
+import { getNetworkChangerParams } from "../../../config/changers/flowChangeProposal-params";
 
 const deployFunc: DeployFunction = async (hre: HardhatRuntimeEnvironment) => {
 

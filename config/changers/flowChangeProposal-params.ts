@@ -1,13 +1,19 @@
 import { HardhatRuntimeEnvironment } from "hardhat/types";
 import { BigNumber } from "ethers";
 
-
 const PCT_BASE = BigNumber.from((1e18).toString());
+const DAY_BLOCK_SPAN = 3756;
+const WEEK_BLOCK_SPAN = DAY_BLOCK_SPAN * 7;
+const MONTH_BLOCK_SPAN = DAY_BLOCK_SPAN * 30;
 
 type ChangerParams = {
   changer: {
     mocCoreProxyAddress: string,
-    feeTokenPriceProvider: string
+    feeTokenPriceProvider: string,
+    tCInterestPaymentBlockSpan: BigNumber,
+    settlementBlockSpan: BigNumber,
+    decayBlockSpan: BigNumber,
+    emaCalculationBlockSpan: BigNumber
   },
   feesSplitterParams: {
     governorAddress: string,
@@ -26,7 +32,11 @@ type ChangerParams = {
 export const rskTestnetChangerParams: ChangerParams = {
   changer: {
     mocCoreProxyAddress: "0xa416934264515bb381E3b746f10f22D5c6f9431a",
-    feeTokenPriceProvider: "0x8DCE78BbD4D757EF7777Be113277cf5A35283b1E"
+    feeTokenPriceProvider: "0x8DCE78BbD4D757EF7777Be113277cf5A35283b1E",
+    tCInterestPaymentBlockSpan: WEEK_BLOCK_SPAN,
+    settlementBlockSpan: MONTH_BLOCK_SPAN,
+    decayBlockSpan: DAY_BLOCK_SPAN,
+    emaCalculationBlockSpan: DAY_BLOCK_SPAN
   },
   feesSplitterParams: {
     governorAddress: "0x7b716178771057195bB511f0B1F7198EEE62Bc22",
@@ -45,7 +55,11 @@ export const rskTestnetChangerParams: ChangerParams = {
 export const rskAlphaTestnetChangerParams: ChangerParams = {
   changer: {
     mocCoreProxyAddress: "",
-    feeTokenPriceProvider: ""
+    feeTokenPriceProvider: "",
+    tCInterestPaymentBlockSpan: WEEK_BLOCK_SPAN,
+    settlementBlockSpan: MONTH_BLOCK_SPAN,
+    decayBlockSpan: DAY_BLOCK_SPAN,
+    emaCalculationBlockSpan: DAY_BLOCK_SPAN
   },
   feesSplitterParams: {
     governorAddress: "0x7b716178771057195bB511f0B1F7198EEE62Bc22",
@@ -64,7 +78,11 @@ export const rskAlphaTestnetChangerParams: ChangerParams = {
 export const rskMainnetChangerParams: ChangerParams = {
   changer: {
     mocCoreProxyAddress: "",
-    feeTokenPriceProvider: ""
+    feeTokenPriceProvider: "",
+    tCInterestPaymentBlockSpan: WEEK_BLOCK_SPAN,
+    settlementBlockSpan: MONTH_BLOCK_SPAN,
+    decayBlockSpan: DAY_BLOCK_SPAN,
+    emaCalculationBlockSpan: DAY_BLOCK_SPAN
   },
   feesSplitterParams: {
     governorAddress: "",
@@ -81,7 +99,7 @@ export const rskMainnetChangerParams: ChangerParams = {
 };
 
 export const deployChangerParamsr: Record<string, ChangerParams> = {
-  hardhat: rskTestnetChangerParams, // TODO: use mainnet params
+  hardhat: rskTestnetChangerParams,
   rskTestnet: rskTestnetChangerParams,
   rskAlphaTestnet: rskAlphaTestnetChangerParams,
   rskMainnet: rskMainnetChangerParams,

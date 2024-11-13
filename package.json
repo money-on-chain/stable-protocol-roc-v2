@@ -88,6 +88,6 @@
     "deploy-rskMainnet-migration": "hardhat deploy --network rskMainnetMigration --tags MocRifMigrate",
     "deploy-MocQueue-rskTestnet": "hardhat deploy --network rskTestnet --tags MocQueue_Imp",
     "deploy-FeesSplitter-rskTestnet": "hardhat deploy --network rskTestnet --tags FeesSplitter",
-    "deploy-Changer-rskTestnet": "hardhat deploy --network rskTestnet --tags CommissionSplitterQueueChanger"
+    "deploy-Changer-Proposal-rskTestnet": "hardhat deploy --network rskTestnet --tags FlowChangeProposal"
   }
 }

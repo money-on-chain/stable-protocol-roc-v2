@@ -1,6 +1,6 @@
 import { HardhatRuntimeEnvironment } from "hardhat/types";
 import { DeployFunction } from "hardhat-deploy/types";
-import { getNetworkChangerParams } from "../../../config/changers/commissionSplitterQueue-params";
+import { getNetworkChangerParams } from "../../../config/changers/flowChangeProposal-params";
 
 const deployFunc: DeployFunction = async (hre: HardhatRuntimeEnvironment) => {
   const { deployments, getNamedAccounts } = hre;
@@ -19,24 +19,30 @@ const deployFunc: DeployFunction = async (hre: HardhatRuntimeEnvironment) => {
   const feesSplitterProxy = await deployments.getOrNull("FeesSplitterProxy");
   if (!feesSplitterProxy) throw new Error("No FeesSplitter deployed.");
 
-  const commissionSplitterQueueChanger = (
-    await deploy("CommissionSplitterQueueChanger", {
+  console.log("Deploying Changer ...")
+
+  const flowChangeProposal = (
+    await deploy("FlowChangeProposal", {
       from: deployer,
       args: [
         changer.mocCoreProxyAddress,
         mocQueueImp.address,
         changer.feeTokenPriceProvider,
-        feesSplitterProxy.address
+        feesSplitterProxy.address,
+        changer.tCInterestPaymentBlockSpan.toString(),
+        changer.settlementBlockSpan.toString(),
+        changer.decayBlockSpan.toString(),
+        changer.emaCalculationBlockSpan.toString()
         ],
       gasLimit,
     })
   ).address;
-  console.log(`CommissionSplitterQueueChanger deployed at: ${commissionSplitterQueueChanger}`);
+  console.log(`FlowChangeProposal deployed at: ${flowChangeProposal}`);
 
   return hre.network.live; // prevents re execution on live networks
 };
 export default deployFunc;
 
-deployFunc.id = "deployed_CommissionSplitterQueueChanger"; // id required to prevent re-execution
-deployFunc.tags = ["CommissionSplitterQueueChanger"];
+deployFunc.id = "deployed_FlowChangeProposal"; // id required to prevent re-execution
+deployFunc.tags = ["FlowChangeProposal"];
 deployFunc.dependencies = ["MocQueue_Imp", "FeesSplitter"];

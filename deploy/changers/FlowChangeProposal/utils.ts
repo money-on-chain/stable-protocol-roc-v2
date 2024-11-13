@@ -1,6 +1,6 @@
 import { HardhatRuntimeEnvironment } from "hardhat/types";
 import { ethers } from "hardhat";
-import { getNetworkChangerParams } from "../../../config/changers/commissionSplitterQueue-params";
+import { getNetworkChangerParams } from "../../../config/changers/flowChangeProposal-params";
 import { ICurrentCommissionSplitter__factory, MocCARC20__factory } from "../../../typechain";
 
 export const fetchNetworkDeployParams = async (hre: HardhatRuntimeEnvironment) => {

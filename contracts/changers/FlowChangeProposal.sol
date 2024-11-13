@@ -2,10 +2,6 @@
 pragma solidity 0.8.20;
 
 import { IChangerContract } from "../interfaces/IChangerContract.sol";
-import { IDataProvider } from "../interfaces/IDataProvider.sol";
-//import { MocCARC20 } from "moc-main/contracts/collateral/rc20/MocCARC20.sol";
-//import { MocQueue } from "moc-main/contracts/queue/MocQueue.sol";
-//import { CommissionSplitter } from "moc-main/contracts/auxiliary/CommissionSplitter.sol";
 
 /**
   In this changer we change:
@@ -14,6 +10,10 @@ import { IDataProvider } from "../interfaces/IDataProvider.sol";
   2) Set TCInterest output to new commission splitter
   3) New implementation of MoCQueue (fix bug)
   4) New feeTokenPriceProvider get the price from OKU swap
+  5) Update amount of blocks to wait for next TC interest payment
+  6) Update amount of blocks between settlements
+  7) Update Flux capacitor decay block span
+  8) Update how many blocks should pass between EMA calculations
  */
 
 interface IMocCARC20 {
@@ -24,6 +24,14 @@ interface IMocCARC20 {
     function setFeeTokenPriceProviderAddress(address mocFeeTokenPriceProviderAddress_) external;
 
     function mocQueue() external view returns (address mocQueue_);
+
+    function setTCInterestPaymentBlockSpan(uint256 tcInterestPaymentBlockSpan_) external;
+
+    function setBes(uint256 bes_) external;
+
+    function setDecayBlockSpan(uint256 decayBlockSpan_) external;
+
+    function setEmaCalculationBlockSpan(uint256 blockSpan_) external;
 }
 
 interface IMocQueue {
@@ -31,7 +39,7 @@ interface IMocQueue {
 }
 
 
-contract CommissionSplitterQueueChanger is IChangerContract {
+contract FlowChangeProposal is IChangerContract {
     // ------- Storage -------
 
     // MocCore proxy contract
@@ -41,9 +49,17 @@ contract CommissionSplitterQueueChanger is IChangerContract {
     // new MocQueue implementation contract
     address public immutable newMocQueueImpl;
     // Fee Token price provider
-    IDataProvider public feeTokenPriceProvider;
-    // new operations fees splitter for both TCInterest & MoCFee collector
+    address public feeTokenPriceProvider;
+    // New operations fees splitter for both TCInterest & MoCFee collector
     address public immutable feesSplitterProxy;
+    // Amount of blocks to wait for next TC interest payment
+    uint256 public tCInterestPaymentBlockSpan;
+    // Number of blocks between settlements
+    uint256 public settlementBlockSpan;
+    // Flux capacitor decay block span
+    uint256 public decayBlockSpan;
+    // How many blocks should pass between EMA calculations
+    uint256 public emaCalculationBlockSpan;
 
     /**
      * @notice constructor
@@ -51,17 +67,29 @@ contract CommissionSplitterQueueChanger is IChangerContract {
      * @param newMocQueueImpl_ new MocQueue implementation contract
      * @param feeTokenPriceProvider_ new Fee Token price provider address
      * @param feesSplitterProxy_ new Commission splitter for both TCInterest & MoCFee collector
+     * @param tCInterestPaymentBlockSpan_ Amount of blocks to wait for next TC interest payment
+     * @param settlementBlockSpan_ Number of blocks between settlements
+     * @param decayBlockSpan_ Flux capacitor decay block span
+     * @param emaCalculationBlockSpan_ How many blocks should pass between EMA calculations
      */
     constructor(
         IMocCARC20 mocCoreProxy_,
         address newMocQueueImpl_,
-        IDataProvider feeTokenPriceProvider_,
-        address feesSplitterProxy_
+        address feeTokenPriceProvider_,
+        address feesSplitterProxy_,
+        uint256 tCInterestPaymentBlockSpan_,
+        uint256 settlementBlockSpan_,
+        uint256 decayBlockSpan_,
+        uint256 emaCalculationBlockSpan_
     ) {
         mocCoreProxy = mocCoreProxy_;
         newMocQueueImpl = newMocQueueImpl_;
         feeTokenPriceProvider = feeTokenPriceProvider_;
         feesSplitterProxy = feesSplitterProxy_;
+        tCInterestPaymentBlockSpan = tCInterestPaymentBlockSpan_;
+        settlementBlockSpan = settlementBlockSpan_;
+        decayBlockSpan = decayBlockSpan_;
+        emaCalculationBlockSpan = emaCalculationBlockSpan_;
         mocQueueProxy = IMocQueue(mocCoreProxy.mocQueue());
     }
 
@@ -98,7 +126,12 @@ contract CommissionSplitterQueueChanger is IChangerContract {
         // update MocCore setups
         mocCoreProxy.setMocFeeFlowAddress(feesSplitterProxy);
         mocCoreProxy.setTCInterestCollectorAddress(feesSplitterProxy);
-        mocCoreProxy.setFeeTokenPriceProviderAddress(address(feeTokenPriceProvider));
+        mocCoreProxy.setFeeTokenPriceProviderAddress(feeTokenPriceProvider);
+
+        mocCoreProxy.setTCInterestPaymentBlockSpan(tCInterestPaymentBlockSpan);
+        mocCoreProxy.setBes(settlementBlockSpan);
+        mocCoreProxy.setDecayBlockSpan(decayBlockSpan);
+        mocCoreProxy.setEmaCalculationBlockSpan(emaCalculationBlockSpan);
     }
 
 }
