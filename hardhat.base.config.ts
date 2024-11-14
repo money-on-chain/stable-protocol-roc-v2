@@ -185,7 +185,7 @@ const config: HardhatUserConfig = {
     outDir: "typechain",
     target: "ethers-v5",
     alwaysGenerateOverloads: false,
-    externalArtifacts: ["node_modules/moc-main/export/artifacts/*.json", "./dependencies/mocV1Imports/*.json"],
+    externalArtifacts: ["node_modules/moc-main/export/artifacts/*.json", "./dependencies/mocV1Imports/*.json", "./dependencies/*.json"],
   },
   gasReporter: {
     enabled: process.env.REPORT_GAS ? true : false,

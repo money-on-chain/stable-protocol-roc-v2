@@ -10,6 +10,7 @@ import { CommissionSplitterV2__factory } from "../typechain/factories/dependenci
 import { CommissionSplitterV3__factory } from "../typechain/factories/dependencies/mocV1Imports/CommissionSplitterV3__factory";
 import { RifFullDeployParameters } from "../deploy/migrate_MocRif";
 import { CommissionSplitterV2 } from "../typechain/dependencies/mocV1Imports/CommissionSplitterV2";
+import { CommissionSplitter } from "../typechain/dependencies/CommissionSplitter";
 
 export const getNetworkDeployParams = (hre: HardhatRuntimeEnvironment) => {
   const network = hre.network.name === "localhost" ? "hardhat" : hre.network.name;
