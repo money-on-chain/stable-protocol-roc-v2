@@ -45,7 +45,7 @@ async function main() {
   contractInfo.FlowChangeProposal.mocCoreProxy = await changer.mocCoreProxy();
   console.log('mocCoreProxy: ', contractInfo.FlowChangeProposal.mocCoreProxy);
   contractInfo.FlowChangeProposal.mocQueueProxy = await changer.mocQueueProxy();
-  console.log('mocCoreProxy: ', contractInfo.FlowChangeProposal.mocQueueProxy);
+  console.log('mocQueueProxy: ', contractInfo.FlowChangeProposal.mocQueueProxy);
   contractInfo.FlowChangeProposal.newMocQueueImpl = await changer.newMocQueueImpl();
   console.log('newMocQueueImpl: ', contractInfo.FlowChangeProposal.newMocQueueImpl);
   contractInfo.FlowChangeProposal.feeTokenPriceProvider = await changer.feeTokenPriceProvider();

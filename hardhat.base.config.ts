@@ -99,8 +99,8 @@ const config: HardhatUserConfig = {
         accountsBalance: "100000000000000000000000000000000000",
       },
       forking: {
-        url: "https://public-node.testnet.rsk.co", // TODO: use mainnet node
-        blockNumber: 5049200,
+        url: "https://rpc.testnet.rootstock.io/Lgi4Te7Fpti2h1yfKWYSKpNLLnmM5R-T", // TODO: use mainnet node
+        blockNumber: 5759612,
       },
       chainId: chainIds.hardhat,
       hardfork: "london", // FIXME: latest evm version supported by rsk explorers, keep it updated
@@ -207,7 +207,7 @@ const config: HardhatUserConfig = {
     disambiguatePaths: false,
   },
   mocha: {
-    timeout: 100000,
+    timeout: 900000,
   },
   external: {
     contracts: [
