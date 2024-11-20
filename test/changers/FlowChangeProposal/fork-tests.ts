@@ -9,6 +9,7 @@ import {
   MocRC20__factory,
   MocRC20,
   CommissionSplitter,
+  CommissionSplitter__factory,
   MocQueue,
   MocQueue__factory,
 } from "../../../typechain";
@@ -109,74 +110,6 @@ describe("Feature: MoC multicollateral upgrade - fork", () => {
         expect(await changer.feesSplitterProxy()).to.equal(await mocCore.mocFeeFlowAddress());
       });
 
-      describe("WHEN send 10 RIF to Commission Splitter and execute split", async () => {
-        before(async () => {
-
-          ({ mocCore, changer, feesSplitter, tcInterestsSplitter } = await fixtureDeployed()());
-          const signer = ethers.provider.getSigner();
-          rifToken = MocRC20__factory.connect(await mocCore.acToken(), signer);
-          const commissionAddr = await mocCore.tcInterestCollectorAddress();
-
-          const acTokenAddressRecipient1 = await tcInterestsSplitter.acTokenAddressRecipient1();
-          const acTokenAddressRecipient2 = await tcInterestsSplitter.acTokenAddressRecipient2();
-          const recipient1RifBalance = await rifToken.balanceOf(acTokenAddressRecipient1);
-          const recipient2RifBalance = await rifToken.balanceOf(acTokenAddressRecipient2);
-          const recipient2RifBalance = await rifToken.balanceOf(acTokenAddressRecipient2);
-          const commissionRifBalance = await rifToken.balanceOf(commissionAddr);
-
-          console.log("BEFORE")
-          console.log("======")
-          console.log("Recipient 1: ", acTokenAddressRecipient1)
-          console.log("Recipient 1 Balance: ", recipient1RifBalance)
-          console.log("Recipient 2: ", acTokenAddressRecipient2)
-          console.log("Recipient 2 Balance: ", recipient2RifBalance)
-          console.log("Recipient Commission: ", commissionAddr)
-          console.log("Recipient Commission Balance: ", commissionRifBalance)
-          console.log("")
-
-          await rifToken.connect(await ethers.getSigner(holderAddress)).transfer(commissionAddr, pEth(10));
-          await helpers.mine(1);
-
-
-          await feesSplitter.split();
-          await helpers.mine(1);
-
-          const recipient1RifBalanceAfter = await rifToken.balanceOf(acTokenAddressRecipient1);
-          const recipient2RifBalanceAfter = await rifToken.balanceOf(acTokenAddressRecipient2);
-          const commissionRifBalanceAfter = await rifToken.balanceOf(commissionAddr);
-
-          const diff1 = recipient1RifBalanceAfter.sub(
-            recipient1RifBalance,
-          );
-          const diff1a = recipient1RifBalanceAfter.sub(
-            5,
-          );
-          const diff2 = recipient1RifBalanceAfter.sub(
-            recipient2RifBalance,
-          );
-          const diff2a = recipient2RifBalanceAfter.sub(
-            5,
-          );
-
-          console.log("AFTER")
-          console.log("======")
-          console.log("Recipient 1: ", acTokenAddressRecipient1)
-          console.log("Recipient 1 Balance: ", recipient1RifBalanceAfter)
-          console.log("Recipient 2: ", acTokenAddressRecipient2)
-          console.log("Recipient 2 Balance: ", recipient2RifBalanceAfter)
-          console.log("Recipient Commission: ", commissionAddr)
-          console.log("Recipient Commission Balance: ", commissionRifBalanceAfter)
-          console.log("Recipient 1 diff: ", diff1)
-          console.log("Recipient 1 diffa: ", diff1a)
-          console.log("Recipient 2 diff: ", diff2)
-          console.log("Recipient 2 diffa: ", diff2a)
-
-        });
-        it("THEN balance are ok", async () => {
-
-        });
-      });
-
       describe("WHEN Rif tokens are sent to mocCore", async () => {
         before(async () => {
           // send RIF tokens to mocCore to the nACcb not accounted on TC interest payments issue
@@ -194,7 +127,6 @@ describe("Feature: MoC multicollateral upgrade - fork", () => {
           recipient1RifBalance,
         );
         const commissionSplitterV3Amount = commissionSplitterRIFBalance.mul(50).div(100);
-
 
         assertPrec(diff, commissionSplitterV3Amount);
       });

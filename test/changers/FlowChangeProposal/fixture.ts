@@ -11,7 +11,7 @@ import {
 
 export type Contracts = {
   mocCore: MocCARC20;
-  changer: CommissionSplitterChanger;
+  changer: FlowChangeProposal;
   feesSplitter: CommissionSplitter;
   tcInterestsSplitter: CommissionSplitter;
 };
@@ -27,14 +27,14 @@ export const fixtureDeployed = (): (() => Promise<Contracts>) => {
 
     const mocCore = MocCARC20__factory.connect(changerParams.changer.mocCoreProxyAddress, signer);
 
-    const changerDeployed = await deployments.getOrNull("FlowChangeProposal");
-    if (!changerDeployed) throw new Error("No FlowChangeProposal deployed.");
-    const changer = FlowChangeProposal__factory.connect(changerDeployed.address, signer);
-
     const feesSplitterDeployed = await deployments.getOrNull("FeesSplitterProxy");
     if (!feesSplitterDeployed) throw new Error("No FeesSplitter deployed.");
     const feesSplitter = CommissionSplitter__factory.connect(feesSplitterDeployed.address, signer);
-    const tcInterestsSplitter = CommissionSplitter__factory.connect(feesSplitterDeployed.address, signer);;
+    const tcInterestsSplitter = feesSplitter;
+
+    const changerDeployed = await deployments.getOrNull("FlowChangeProposal");
+    if (!changerDeployed) throw new Error("No FlowChangeProposal deployed.");
+    const changer = FlowChangeProposal__factory.connect(changerDeployed.address, signer);
 
     return {
       mocCore,
