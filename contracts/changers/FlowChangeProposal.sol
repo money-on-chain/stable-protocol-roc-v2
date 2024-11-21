@@ -51,10 +51,12 @@ contract FlowChangeProposal is IChangerContract {
     address public immutable newMocQueueImpl;
     // Fee Token price provider
     address public feeTokenPriceProvider;
-    // New operations fees splitter for both TCInterest & MoCFee collector
+    // new operations fees splitter
     address public immutable feesSplitterProxy;
+    // new TC interests splitter
+    address public immutable tcInterestsSplitterProxy;
     // Amount of blocks to wait for next TC interest payment
-    uint256 public tCInterestPaymentBlockSpan;
+    uint256 public tcInterestPaymentBlockSpan;
     // Number of blocks between settlements
     uint256 public settlementBlockSpan;
     // Flux capacitor decay block span
@@ -67,8 +69,9 @@ contract FlowChangeProposal is IChangerContract {
      * @param mocCoreProxy_ MocCore proxy contract
      * @param newMocQueueImpl_ new MocQueue implementation contract
      * @param feeTokenPriceProvider_ new Fee Token price provider address
-     * @param feesSplitterProxy_ new Commission splitter for both TCInterest & MoCFee collector
-     * @param tCInterestPaymentBlockSpan_ Amount of blocks to wait for next TC interest payment
+     * @param feesSplitterProxy_ new Commission splitter for MoCFee collector
+     * @param tcInterestsSplitterProxy_ new Commission splitter for both TCInterest
+     * @param tcInterestPaymentBlockSpan_ Amount of blocks to wait for next TC interest payment
      * @param settlementBlockSpan_ Number of blocks between settlements
      * @param decayBlockSpan_ Flux capacitor decay block span
      * @param emaCalculationBlockSpan_ How many blocks should pass between EMA calculations
@@ -78,7 +81,8 @@ contract FlowChangeProposal is IChangerContract {
         address newMocQueueImpl_,
         address feeTokenPriceProvider_,
         address feesSplitterProxy_,
-        uint256 tCInterestPaymentBlockSpan_,
+        address tcInterestsSplitterProxy_,
+        uint256 tcInterestPaymentBlockSpan_,
         uint256 settlementBlockSpan_,
         uint256 decayBlockSpan_,
         uint256 emaCalculationBlockSpan_
@@ -87,7 +91,8 @@ contract FlowChangeProposal is IChangerContract {
         newMocQueueImpl = newMocQueueImpl_;
         feeTokenPriceProvider = feeTokenPriceProvider_;
         feesSplitterProxy = feesSplitterProxy_;
-        tCInterestPaymentBlockSpan = tCInterestPaymentBlockSpan_;
+        tcInterestsSplitterProxy = tcInterestsSplitterProxy_;
+        tcInterestPaymentBlockSpan = tcInterestPaymentBlockSpan_;
         settlementBlockSpan = settlementBlockSpan_;
         decayBlockSpan = decayBlockSpan_;
         emaCalculationBlockSpan = emaCalculationBlockSpan_;
@@ -126,10 +131,10 @@ contract FlowChangeProposal is IChangerContract {
     function _afterUpgrade() internal {
         // update MocCore setups
         mocCoreProxy.setMocFeeFlowAddress(feesSplitterProxy);
-        mocCoreProxy.setTCInterestCollectorAddress(feesSplitterProxy);
+        mocCoreProxy.setTCInterestCollectorAddress(tcInterestsSplitterProxy);
         mocCoreProxy.setFeeTokenPriceProviderAddress(feeTokenPriceProvider);
 
-        mocCoreProxy.setTCInterestPaymentBlockSpan(tCInterestPaymentBlockSpan);
+        mocCoreProxy.setTCInterestPaymentBlockSpan(tcInterestPaymentBlockSpan);
         mocCoreProxy.setBes(settlementBlockSpan);
         mocCoreProxy.setDecayBlockSpan(decayBlockSpan);
         mocCoreProxy.setEmaCalculationBlockSpan(emaCalculationBlockSpan);

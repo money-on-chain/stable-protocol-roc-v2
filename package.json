@@ -85,9 +85,6 @@
     "deploy-rskTestnet-migration": "hardhat deploy --network rskTestnetMigration --tags MocRifMigrate",
     "deploy-rskTestnet": "hardhat deploy --network rskTestnet --tags MocRifDeploy",
     "deploy-rskAlphaTestnet-migration": "hardhat deploy --network rskAlphaTestnetMigration --tags MocRifMigrate",
-    "deploy-rskMainnet-migration": "hardhat deploy --network rskMainnetMigration --tags MocRifMigrate",
-    "deploy-MocQueue-rskTestnet": "hardhat deploy --network rskTestnet --tags MocQueue_Imp",
-    "deploy-FeesSplitter-rskTestnet": "hardhat deploy --network rskTestnet --tags FeesSplitter",
-    "deploy-Changer-Proposal-rskTestnet": "hardhat deploy --network rskTestnet --tags FlowChangeProposal"
+    "deploy-rskMainnet-migration": "hardhat deploy --network rskMainnetMigration --tags MocRifMigrate"
   }
 }

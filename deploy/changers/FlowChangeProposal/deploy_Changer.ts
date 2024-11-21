@@ -19,6 +19,9 @@ const deployFunc: DeployFunction = async (hre: HardhatRuntimeEnvironment) => {
   const feesSplitterProxy = await deployments.getOrNull("FeesSplitterProxy");
   if (!feesSplitterProxy) throw new Error("No FeesSplitter deployed.");
 
+  const tcInterestSplitterProxy = await deployments.getOrNull("TCInterestSplitterProxy");
+  if (!tcInterestSplitterProxy) throw new Error("No tcInterestSplitterProxy deployed.");
+
   console.log("Deploying Changer ...")
 
   const flowChangeProposal = (
@@ -29,7 +32,8 @@ const deployFunc: DeployFunction = async (hre: HardhatRuntimeEnvironment) => {
         mocQueueImp.address,
         changer.feeTokenPriceProvider,
         feesSplitterProxy.address,
-        changer.tCInterestPaymentBlockSpan.toString(),
+        tcInterestSplitterProxy.address,
+        changer.tcInterestPaymentBlockSpan.toString(),
         changer.settlementBlockSpan.toString(),
         changer.decayBlockSpan.toString(),
         changer.emaCalculationBlockSpan.toString()
@@ -45,4 +49,4 @@ export default deployFunc;
 
 deployFunc.id = "deployed_FlowChangeProposal"; // id required to prevent re-execution
 deployFunc.tags = ["FlowChangeProposal"];
-deployFunc.dependencies = ["MocQueue_Imp", "FeesSplitter"];
+deployFunc.dependencies = ["MocQueue_Imp", "FeesSplitter", "TCInterestSplitter"];

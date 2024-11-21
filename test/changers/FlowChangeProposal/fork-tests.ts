@@ -70,9 +70,6 @@ describe("Feature: MoC multicollateral upgrade - fork", () => {
       /*it("MoCQueue implementation is changed", async () => {
         expect(await mocQueue.implementation()).to.equal(await changer.newMocQueueImpl());
       });*/
-      it("tcInterestCollectorAddress & mocFeeFlowAddress both pointing to the same Commission Splitter", async () => {
-        expect(await mocCore.tcInterestCollectorAddress()).to.equal(await mocCore.mocFeeFlowAddress());
-      });
       it("TC Interest Payment BlockSpan is changed", async () => {
         assertPrec(
           await changer.tCInterestPaymentBlockSpan(),
@@ -101,7 +98,7 @@ describe("Feature: MoC multicollateral upgrade - fork", () => {
         expect(await changer.feeTokenPriceProvider()).to.equal(await mocCore.feeTokenPriceProvider());
       });
       it("TC Interest Collector Address is changed", async () => {
-        expect(await changer.feesSplitterProxy()).to.equal(await mocCore.tcInterestCollectorAddress());
+        expect(await changer.tcInterestsSplitterProxy()).to.equal(await mocCore.tcInterestCollectorAddress());
       });
       it("MOC Fee Flow Address is changed", async () => {
         expect(await changer.feesSplitterProxy()).to.equal(await mocCore.mocFeeFlowAddress());

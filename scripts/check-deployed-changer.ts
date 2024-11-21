@@ -26,6 +26,9 @@ async function main() {
   const feesSplitterProxy = await deployments.getOrNull("FeesSplitterProxy");
   if (!feesSplitterProxy) throw new Error("No FeesSplitter deployed.");
 
+  const tcInterestSplitterProxy = await deployments.getOrNull("TCInterestSplitterProxy");
+  if (!tcInterestSplitterProxy) throw new Error("No tcInterestSplitterProxy deployed.");
+
   const flowChangeProposal = await deployments.getOrNull("FlowChangeProposal");
   if (!flowChangeProposal) throw new Error("No Changer deployed.");
 
@@ -35,6 +38,7 @@ async function main() {
 
   const changer = FlowChangeProposal__factory.connect(flowChangeProposal.address, signer);
   const feesSplitter = CommissionSplitter__factory.connect(feesSplitterProxy.address, signer);
+  const tcInterestSplitter = CommissionSplitter__factory.connect(tcInterestSplitterProxy.address, signer);
   const mocCore = MocCARC20__factory.connect(changerParams.changer.mocCoreProxyAddress, signer);
 
 
@@ -52,8 +56,10 @@ async function main() {
   console.log('feeTokenPriceProvider: ', contractInfo.FlowChangeProposal.feeTokenPriceProvider);
   contractInfo.FlowChangeProposal.feesSplitterProxy = await changer.feesSplitterProxy();
   console.log('feesSplitterProxy: ', contractInfo.FlowChangeProposal.feesSplitterProxy);
-  contractInfo.FlowChangeProposal.tCInterestPaymentBlockSpan = await changer.tCInterestPaymentBlockSpan();
-  console.log('tCInterestPaymentBlockSpan: ', contractInfo.FlowChangeProposal.tCInterestPaymentBlockSpan.toString());
+  contractInfo.FlowChangeProposal.tcInterestsSplitterProxy = await changer.tcInterestsSplitterProxy();
+  console.log('tcInterestsSplitterProxy: ', contractInfo.FlowChangeProposal.tcInterestsSplitterProxy);
+  contractInfo.FlowChangeProposal.tcInterestPaymentBlockSpan = await changer.tcInterestPaymentBlockSpan();
+  console.log('tcInterestPaymentBlockSpan: ', contractInfo.FlowChangeProposal.tcInterestPaymentBlockSpan.toString());
   contractInfo.FlowChangeProposal.settlementBlockSpan = await changer.settlementBlockSpan();
   console.log('settlementBlockSpan: ', contractInfo.FlowChangeProposal.settlementBlockSpan.toString());
   contractInfo.FlowChangeProposal.decayBlockSpan = await changer.decayBlockSpan();
@@ -83,6 +89,27 @@ async function main() {
   contractInfo.feesSplitter.feeTokenPctToRecipient1 = await feesSplitter.feeTokenPctToRecipient1();
   console.log('feeTokenPctToRecipient1: ', contractInfo.feesSplitter.feeTokenPctToRecipient1.toString());
   console.log('');
+  console.log('tcInterestSplitter contract: ', tcInterestSplitter.address);
+  console.log('=====================');
+  console.log('')
+  contractInfo.tcInterestSplitter = {}
+  contractInfo.tcInterestSplitter.acToken = await tcInterestSplitter.acToken();
+  console.log('acToken: ', contractInfo.tcInterestSplitter.acToken);
+  contractInfo.tcInterestSplitter.feeToken = await tcInterestSplitter.feeToken();
+  console.log('feeToken: ', contractInfo.tcInterestSplitter.feeToken);
+  contractInfo.tcInterestSplitter.acTokenAddressRecipient1 = await tcInterestSplitter.acTokenAddressRecipient1();
+  console.log('acTokenAddressRecipient1: ', contractInfo.tcInterestSplitter.acTokenAddressRecipient1);
+  contractInfo.tcInterestSplitter.acTokenAddressRecipient2 = await tcInterestSplitter.acTokenAddressRecipient2();
+  console.log('acTokenAddressRecipient2: ', contractInfo.tcInterestSplitter.acTokenAddressRecipient2);
+  contractInfo.tcInterestSplitter.acTokenPctToRecipient1 = await tcInterestSplitter.acTokenPctToRecipient1();
+  console.log('acTokenPctToRecipient1: ', contractInfo.tcInterestSplitter.acTokenPctToRecipient1.toString());
+  contractInfo.tcInterestSplitter.feeTokenAddressRecipient1 = await tcInterestSplitter.feeTokenAddressRecipient1();
+  console.log('feeTokenAddressRecipient1: ', contractInfo.tcInterestSplitter.feeTokenAddressRecipient1);
+  contractInfo.tcInterestSplitter.feeTokenAddressRecipient2 = await tcInterestSplitter.feeTokenAddressRecipient2();
+  console.log('feeTokenAddressRecipient2: ', contractInfo.tcInterestSplitter.feeTokenAddressRecipient2);
+  contractInfo.tcInterestSplitter.feeTokenPctToRecipient1 = await tcInterestSplitter.feeTokenPctToRecipient1();
+  console.log('feeTokenPctToRecipient1: ', contractInfo.tcInterestSplitter.feeTokenPctToRecipient1.toString());
+  console.log('');
   console.log('')
   console.log('MocCARC20 contract:', mocCore.address);
   console.log('==================');
@@ -103,15 +130,15 @@ async function main() {
   console.log('2. tcInterestCollectorAddress: ', contractInfo.mocCore.tcInterestCollectorAddress);
   if (
       contractInfo.mocCore.tcInterestCollectorAddress.toLowerCase() !==
-      feesSplitter.address.toLowerCase()
+      tcInterestSplitter.address.toLowerCase()
     )
   {
-    console.log('--> ERROR!: Need to be iqual to feesSplitter address');
+    console.log('--> ERROR!: Need to be iqual to tcInterestSplitter address');
   } else {
     console.log('--> OK');
   }
   contractInfo.mocCore.feeTokenPriceProvider = await mocCore.feeTokenPriceProvider();
-  console.log('feeTokenPriceProvider: ', contractInfo.mocCore.feeTokenPriceProvider);
+  console.log('3. feeTokenPriceProvider: ', contractInfo.mocCore.feeTokenPriceProvider);
   if (
       contractInfo.mocCore.feeTokenPriceProvider.toLowerCase() !==
       contractInfo.FlowChangeProposal.feeTokenPriceProvider.toLowerCase()
@@ -122,10 +149,10 @@ async function main() {
     console.log('--> OK');
   }
   contractInfo.mocCore.tcInterestPaymentBlockSpan = await mocCore.tcInterestPaymentBlockSpan();
-  console.log('tcInterestPaymentBlockSpan: ', contractInfo.mocCore.tcInterestPaymentBlockSpan.toString());
+  console.log('4. tcInterestPaymentBlockSpan: ', contractInfo.mocCore.tcInterestPaymentBlockSpan.toString());
   if (
       contractInfo.mocCore.tcInterestPaymentBlockSpan.toString() !==
-      contractInfo.FlowChangeProposal.tCInterestPaymentBlockSpan.toString()
+      contractInfo.FlowChangeProposal.tcInterestPaymentBlockSpan.toString()
     )
   {
     console.log('--> ERROR!: No the same as the changer!');
@@ -133,7 +160,7 @@ async function main() {
     console.log('--> OK');
   }
   contractInfo.mocCore.bes = await mocCore.bes();
-  console.log('bes: ', contractInfo.mocCore.bes.toString());
+  console.log('5. bes: ', contractInfo.mocCore.bes.toString());
   if (
       contractInfo.mocCore.bes.toString() !==
       contractInfo.FlowChangeProposal.settlementBlockSpan.toString()
@@ -144,7 +171,7 @@ async function main() {
     console.log('--> OK');
   }
   contractInfo.mocCore.decayBlockSpan = await mocCore.decayBlockSpan();
-  console.log('decayBlockSpan: ', contractInfo.mocCore.decayBlockSpan.toString());
+  console.log('6. decayBlockSpan: ', contractInfo.mocCore.decayBlockSpan.toString());
   if (
       contractInfo.mocCore.decayBlockSpan.toString() !==
       contractInfo.FlowChangeProposal.decayBlockSpan.toString()
@@ -155,7 +182,7 @@ async function main() {
     console.log('--> OK');
   }
   contractInfo.mocCore.emaCalculationBlockSpan = await mocCore.emaCalculationBlockSpan();
-  console.log('emaCalculationBlockSpan: ', contractInfo.mocCore.emaCalculationBlockSpan.toString());
+  console.log('7. emaCalculationBlockSpan: ', contractInfo.mocCore.emaCalculationBlockSpan.toString());
   if (
       contractInfo.mocCore.emaCalculationBlockSpan.toString() !==
       contractInfo.FlowChangeProposal.emaCalculationBlockSpan.toString()
