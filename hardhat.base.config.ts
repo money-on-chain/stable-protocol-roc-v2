@@ -150,6 +150,13 @@ const config: HardhatUserConfig = {
       deployParameters: { migrate: rskMainnetMigrationParams },
       tags: ["mainnet", "migration"],
     },
+    rskMainnet: {
+      accounts: process.env.PK ? [`0x${process.env.PK}`] : { mnemonic },
+      chainId: chainIds.rskMainnet,
+      url: "https://public-node.rsk.co",
+      deployParameters: { migrate: rskMainnetMigrationParams },
+      tags: ["mainnet"],
+    },
   },
   paths: {
     artifacts: "./artifacts",
