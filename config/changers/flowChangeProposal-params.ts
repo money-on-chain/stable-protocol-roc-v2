@@ -111,7 +111,7 @@ export const rskAlphaTestnetChangerParams: ChangerParams = {
 export const rskMainnetChangerParams: ChangerParams = {
   changer: {
     mocCoreProxyAddress: "0xA27024Ed70035E46dba712609fc2Afa1c97aA36A",
-    feeTokenPriceProvider: "0x1Cf8A231BCdE2FfBc84bEA287A1D4BE08e63B331",
+    feeTokenPriceProvider: "0x4fE0f11966DE88a0F8b489017F52d13D9eC1230f",
     tcInterestPaymentBlockSpan: WEEK_BLOCK_SPAN,
     settlementBlockSpan: MONTH_BLOCK_SPAN,
     decayBlockSpan: DAY_BLOCK_SPAN,
