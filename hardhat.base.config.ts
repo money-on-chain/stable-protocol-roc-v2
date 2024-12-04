@@ -21,6 +21,7 @@ import { developmentMigrateParams } from "./config/deployParams-development";
 import { rskTestnetMigrationParams } from "./config/deployParams-rskTestnet";
 import { rskMainnetMigrationParams } from "./config/deployParams-rskMainnet";
 import { rskAlphaTestnetMigrationParams, rskAlphaTestnetDeployParams } from "./config/deployParams-rskAlphaTestnet";
+import { rskAlphaTestnetQADeployParams } from "./config/deployParams-rskAlphaTestnetQA";
 
 dotenvConfig({ path: resolve(__dirname, "./.env") });
 
@@ -141,6 +142,13 @@ const config: HardhatUserConfig = {
       chainId: chainIds.rskTestnet,
       url: "https://public-node.testnet.rsk.co",
       deployParameters: { deploy: rskAlphaTestnetDeployParams },
+      tags: ["testnet"],
+    },
+    rskAlphaTestnetQA: {
+      accounts: process.env.PK ? [`0x${process.env.PK}`] : { mnemonic },
+      chainId: chainIds.rskTestnet,
+      url: "https://rpc.testnet.rootstock.io/Lgi4Te7Fpti2h1yfKWYSKpNLLnmM5R-T",
+      deployParameters: { deploy: rskAlphaTestnetQADeployParams },
       tags: ["testnet"],
     },
     rskMainnetMigration: {
