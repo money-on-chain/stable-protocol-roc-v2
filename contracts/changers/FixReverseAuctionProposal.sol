@@ -20,9 +20,8 @@ interface IMoCState {
 }
 
 interface IUpgradeDelegator {
-     function upgrade(address proxy_, address implementation_) external;
+    function upgrade(address proxy_, address implementation_) external;
 }
-
 
 contract FixReverseAuctionProposal is IChangerContract {
     // ------- Storage -------
@@ -105,8 +104,4 @@ contract FixReverseAuctionProposal is IChangerContract {
         // Update ROC Fee Token Price Provider RIF/USD
         rocCoreProxy.setFeeTokenPriceProviderAddress(rocFeeTokenPriceProvider);
     }
-
 }
-
-
-

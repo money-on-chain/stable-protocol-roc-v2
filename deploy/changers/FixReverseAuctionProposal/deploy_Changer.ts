@@ -8,12 +8,9 @@ const deployFunc: DeployFunction = async (hre: HardhatRuntimeEnvironment) => {
   const { deployer } = await getNamedAccounts();
   const changerParams = getNetworkChangerParams(hre);
   if (!changerParams) throw new Error("No deploy params config found.");
-  const {
-    changer,
-    gasLimit
-  } = changerParams;
+  const { changer, gasLimit } = changerParams;
 
-  console.log("Deploying Changer ...")
+  console.log("Deploying Changer ...");
 
   const fixReverseAuctionProposal = (
     await deploy("FixReverseAuctionProposal", {
@@ -25,8 +22,8 @@ const deployFunc: DeployFunction = async (hre: HardhatRuntimeEnvironment) => {
         changer.mocFeeTokenPriceProvider,
         changer.rocFeeTokenPriceProvider,
         changer.revAucBTC2MOCProxy,
-        changer.revAucBTC2MOCNewImplement
-        ],
+        changer.revAucBTC2MOCNewImplement,
+      ],
       gasLimit,
     })
   ).address;

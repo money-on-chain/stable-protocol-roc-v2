@@ -1,18 +1,15 @@
 import { HardhatRuntimeEnvironment } from "hardhat/types";
-import { BigNumber } from "ethers";
-
-const PCT_BASE = BigNumber.from((1e18).toString());
 
 type ChangerParams = {
   changer: {
-    rocCoreProxy: string,
-    mocMocStateProxy: string,
-    upgradeDelegator: string,
-    mocFeeTokenPriceProvider: string,
-    rocFeeTokenPriceProvider: string,
-    revAucBTC2MOCProxy: string,
-    revAucBTC2MOCNewImplement: string
-  },
+    rocCoreProxy: string;
+    mocMocStateProxy: string;
+    upgradeDelegator: string;
+    mocFeeTokenPriceProvider: string;
+    rocFeeTokenPriceProvider: string;
+    revAucBTC2MOCProxy: string;
+    revAucBTC2MOCNewImplement: string;
+  };
   gasLimit: number;
 };
 
@@ -24,7 +21,7 @@ export const rskTestnetChangerParams: ChangerParams = {
     mocFeeTokenPriceProvider: "",
     rocFeeTokenPriceProvider: "",
     revAucBTC2MOCProxy: "",
-    revAucBTC2MOCNewImplement: ""
+    revAucBTC2MOCNewImplement: "",
   },
   gasLimit: 6800000,
 };
@@ -37,7 +34,7 @@ export const rskAlphaTestnetChangerParams: ChangerParams = {
     mocFeeTokenPriceProvider: "",
     rocFeeTokenPriceProvider: "",
     revAucBTC2MOCProxy: "",
-    revAucBTC2MOCNewImplement: ""
+    revAucBTC2MOCNewImplement: "",
   },
   gasLimit: 6800000,
 };
@@ -50,7 +47,7 @@ export const rskAlphaTestnetQAChangerParams: ChangerParams = {
     mocFeeTokenPriceProvider: "",
     rocFeeTokenPriceProvider: "",
     revAucBTC2MOCProxy: "",
-    revAucBTC2MOCNewImplement: ""
+    revAucBTC2MOCNewImplement: "",
   },
   gasLimit: 6800000,
 };
@@ -63,7 +60,7 @@ export const rskMainnetChangerParams: ChangerParams = {
     mocFeeTokenPriceProvider: "0x11683439c9509C135ee4F7bB6e23835e1d86ECBA",
     rocFeeTokenPriceProvider: "0xC6f37A4DF82B21aC382442BC73D668B3B2F4Cef0",
     revAucBTC2MOCProxy: "0xc8863D91604A12CE6073CA6A01d00172bb9Bd508",
-    revAucBTC2MOCNewImplement: "0xb3eC05D6971ea5D86d38eb1EA0284733876ab6f4"
+    revAucBTC2MOCNewImplement: "0xb3eC05D6971ea5D86d38eb1EA0284733876ab6f4",
   },
   gasLimit: 6800000,
 };
