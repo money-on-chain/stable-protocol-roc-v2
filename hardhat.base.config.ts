@@ -118,6 +118,14 @@ const config: HardhatUserConfig = {
       deployParameters: { migrate: rskTestnetMigrationParams },
       tags: ["testnet", "migration"],
     },
+    rskTestnet: {
+      accounts: process.env.PK ? [`0x${process.env.PK}`] : { mnemonic },
+      chainId: chainIds.rskTestnet,
+      url: "https://rpc.testnet.rootstock.io/Lgi4Te7Fpti2h1yfKWYSKpNLLnmM5R-T", /*https://rpc.testnet.rootstock.io/Lgi4Te7Fpti2h1yfKWYSKpNLLnmM5R-T*/
+      deployParameters: { migrate: rskTestnetMigrationParams },
+      tags: ["testnet"],
+      gasPrice: 69000000
+    },
     rskAlphaTestnetMigration: {
       accounts: process.env.PK ? [`0x${process.env.PK}`] : { mnemonic },
       chainId: chainIds.rskTestnet,
@@ -138,6 +146,13 @@ const config: HardhatUserConfig = {
       url: "https://public-node.rsk.co",
       deployParameters: { migrate: rskMainnetMigrationParams },
       tags: ["mainnet", "migration"],
+    },
+    rskMainnet: {
+      accounts: process.env.PK ? [`0x${process.env.PK}`] : { mnemonic },
+      chainId: chainIds.rskMainnet,
+      url: "https://public-node.rsk.co",
+      deployParameters: { migrate: rskMainnetMigrationParams },
+      tags: ["mainnet"],
     },
   },
   paths: {
