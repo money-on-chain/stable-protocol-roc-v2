@@ -9,6 +9,13 @@ type ChangerParams = {
     rocFeeTokenPriceProvider: string;
     revAucBTC2MOCProxy: string;
     revAucBTC2MOCNewImplement: string;
+    mocCommissionSplitterV2: string;
+    rocCommissionSplitterV2: string;
+    mocFeeTokenAddressRecipient2: string;
+    rocFeeTokenAddressRecipient2: string;
+    revAuctionRIF2BTC: string;
+    revAuctionBTC2RIF: string;
+    revAuctionFee: number;
   };
   gasLimit: number;
 };
@@ -22,6 +29,13 @@ export const rskTestnetChangerParams: ChangerParams = {
     rocFeeTokenPriceProvider: "0x4F9724e78e7Cd521c879b6B9eE7D5b4e7df3cfbC",
     revAucBTC2MOCProxy: "0xb908E56e1f386d6F955569a687d5286F7e49A90F",
     revAucBTC2MOCNewImplement: "0xc2d83b071aC905c0083a4Be4547631Cf197Bcc28",
+    mocCommissionSplitterV2: "",
+    rocCommissionSplitterV2: "",
+    mocFeeTokenAddressRecipient2: "",
+    rocFeeTokenAddressRecipient2: "",
+    revAuctionRIF2BTC: "",
+    revAuctionBTC2RIF: "",
+    revAuctionFee: 3000,
   },
   gasLimit: 6800000,
 };
@@ -35,6 +49,13 @@ export const rskAlphaTestnetChangerParams: ChangerParams = {
     rocFeeTokenPriceProvider: "0x4F9724e78e7Cd521c879b6B9eE7D5b4e7df3cfbC",
     revAucBTC2MOCProxy: "0xb908E56e1f386d6F955569a687d5286F7e49A90F",
     revAucBTC2MOCNewImplement: "0xc2d83b071aC905c0083a4Be4547631Cf197Bcc28",
+    mocCommissionSplitterV2: "0xA260d5A35Be13dE8c55234f67Cd776058c3fc94b",
+    rocCommissionSplitterV2: "0x45da0053c4108F3C99672c98D5B6Abbb8921E21b",
+    mocFeeTokenAddressRecipient2: "0xCD8A1c9aCc980ae031456573e34dC05cD7daE6e3",
+    rocFeeTokenAddressRecipient2: "0xCD8A1c9aCc980ae031456573e34dC05cD7daE6e3",
+    revAuctionRIF2BTC: "0xb908E56e1f386d6F955569a687d5286F7e49A90F",
+    revAuctionBTC2RIF: "0xb908E56e1f386d6F955569a687d5286F7e49A90F",
+    revAuctionFee: 3000,
   },
   gasLimit: 6800000,
 };
@@ -48,6 +69,13 @@ export const rskAlphaTestnetQAChangerParams: ChangerParams = {
     rocFeeTokenPriceProvider: "",
     revAucBTC2MOCProxy: "",
     revAucBTC2MOCNewImplement: "",
+    mocCommissionSplitterV2: "",
+    rocCommissionSplitterV2: "",
+    mocFeeTokenAddressRecipient2: "",
+    rocFeeTokenAddressRecipient2: "",
+    revAuctionRIF2BTC: "",
+    revAuctionBTC2RIF: "",
+    revAuctionFee: 3000,
   },
   gasLimit: 6800000,
 };
@@ -61,6 +89,13 @@ export const rskMainnetChangerParams: ChangerParams = {
     rocFeeTokenPriceProvider: "0xC6f37A4DF82B21aC382442BC73D668B3B2F4Cef0",
     revAucBTC2MOCProxy: "0xc8863d91604A12cE6073cA6A01D00172BB9BD508",
     revAucBTC2MOCNewImplement: "0xB3ec05D6971Ea5D86D38EB1Ea0284733876aB6F4",
+    mocCommissionSplitterV2: "0x60cEEf03AA1AA96263e297D220EE4EBc3c6b6E47",
+    rocCommissionSplitterV2: "0x9C66296938d849802fFa879A20fdC11B58C55851",
+    mocFeeTokenAddressRecipient2: "0x7002dD3027947aB98cA3DDC28F93F2450281453A",
+    rocFeeTokenAddressRecipient2: "0x09A84d61c1A10f1D5fb3267DFb00D16ca0DaCC30",
+    revAuctionRIF2BTC: "0x3533bd069ed7da74c2274869cd930778e8edf1e0",
+    revAuctionBTC2RIF: "0x2ae2870424e1bad972157c860c9e06f870e15b2f",
+    revAuctionFee: 3000,
   },
   gasLimit: 6800000,
 };

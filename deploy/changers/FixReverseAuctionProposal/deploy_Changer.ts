@@ -23,6 +23,13 @@ const deployFunc: DeployFunction = async (hre: HardhatRuntimeEnvironment) => {
         changer.rocFeeTokenPriceProvider,
         changer.revAucBTC2MOCProxy,
         changer.revAucBTC2MOCNewImplement,
+        changer.mocCommissionSplitterV2,
+        changer.rocCommissionSplitterV2,
+        changer.mocFeeTokenAddressRecipient2,
+        changer.rocFeeTokenAddressRecipient2,
+        changer.revAuctionRIF2BTC,
+        changer.revAuctionBTC2RIF,
+        changer.revAuctionFee,
       ],
       gasLimit,
     })
