@@ -4,12 +4,9 @@ import { deployUUPSArtifact } from "moc-main/export/scripts/utils";
 import { getNetworkChangerParams } from "../../../config/changers/flowChangeProposal-params";
 
 const deployFunc: DeployFunction = async (hre: HardhatRuntimeEnvironment) => {
-
   const changerParams = getNetworkChangerParams(hre);
   if (!changerParams) throw new Error("No deploy params config found.");
-  const {
-    tcInterestSplitterParams,
-  } = changerParams;
+  const { tcInterestSplitterParams } = changerParams;
 
   await deployUUPSArtifact({
     hre,

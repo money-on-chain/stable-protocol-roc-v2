@@ -9,6 +9,10 @@ import {
   CommissionSplitter,
 } from "../../../typechain";
 
+import feesSplitterProxy from "../../../deployments/rskMainnet/FeesSplitterProxy.json";
+import tcInterestSplitterProxy from "../../../deployments/rskMainnet/TCInterestSplitterProxy.json";
+import flowChangeProposal from "../../../deployments/rskMainnet/FlowChangeProposal.json";
+
 export type Contracts = {
   mocCore: MocCARC20;
   changer: FlowChangeProposal;
@@ -18,27 +22,15 @@ export type Contracts = {
 
 export const fixtureDeployed = (): (() => Promise<Contracts>) => {
   return deployments.createFixture(async ({ ethers }) => {
-    await deployments.fixture(["FlowChangeProposal"]);
-
     const changerParams = getNetworkChangerParams(hre);
     if (!changerParams) throw new Error("No deploy params config found.");
 
     const signer = ethers.provider.getSigner();
 
     const mocCore = MocCARC20__factory.connect(changerParams.changer.mocCoreProxyAddress, signer);
-
-    const feesSplitterProxy = await deployments.getOrNull("FeesSplitterProxy");
-    if (!feesSplitterProxy) throw new Error("No FeesSplitter deployed.");
-
-    const tcInterestSplitterProxy = await deployments.getOrNull("TCInterestSplitterProxy");
-    if (!tcInterestSplitterProxy) throw new Error("No tcInterestSplitterProxy deployed.");
-
     const feesSplitter = CommissionSplitter__factory.connect(feesSplitterProxy.address, signer);
     const tcInterestsSplitter = CommissionSplitter__factory.connect(tcInterestSplitterProxy.address, signer);
-
-    const changerDeployed = await deployments.getOrNull("FlowChangeProposal");
-    if (!changerDeployed) throw new Error("No FlowChangeProposal deployed.");
-    const changer = FlowChangeProposal__factory.connect(changerDeployed.address, signer);
+    const changer = FlowChangeProposal__factory.connect(flowChangeProposal.address, signer);
 
     return {
       mocCore,

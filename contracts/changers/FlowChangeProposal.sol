@@ -36,9 +36,8 @@ interface IMocCARC20 {
 }
 
 interface IMocQueue {
-     function upgradeTo(address newMocQueueImpl_) external;
+    function upgradeTo(address newMocQueueImpl_) external;
 }
-
 
 contract FlowChangeProposal is IChangerContract {
     // ------- Storage -------
@@ -139,8 +138,4 @@ contract FlowChangeProposal is IChangerContract {
         mocCoreProxy.setDecayBlockSpan(decayBlockSpan);
         mocCoreProxy.setEmaCalculationBlockSpan(emaCalculationBlockSpan);
     }
-
 }
-
-
-

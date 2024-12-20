@@ -8,10 +8,7 @@ const deployFunc: DeployFunction = async (hre: HardhatRuntimeEnvironment) => {
   const { deployer } = await getNamedAccounts();
   const changerParams = getNetworkChangerParams(hre);
   if (!changerParams) throw new Error("No deploy params config found.");
-  const {
-    changer,
-    gasLimit
-  } = changerParams;
+  const { changer, gasLimit } = changerParams;
 
   const mocQueueImp = await deployments.getOrNull("MocQueue");
   if (!mocQueueImp) throw new Error("No mocQueueImp deployed.");
@@ -22,7 +19,7 @@ const deployFunc: DeployFunction = async (hre: HardhatRuntimeEnvironment) => {
   const tcInterestSplitterProxy = await deployments.getOrNull("TCInterestSplitterProxy");
   if (!tcInterestSplitterProxy) throw new Error("No tcInterestSplitterProxy deployed.");
 
-  console.log("Deploying Changer ...")
+  console.log("Deploying Changer ...");
 
   const flowChangeProposal = (
     await deploy("FlowChangeProposal", {
@@ -33,11 +30,11 @@ const deployFunc: DeployFunction = async (hre: HardhatRuntimeEnvironment) => {
         changer.feeTokenPriceProvider,
         feesSplitterProxy.address,
         tcInterestSplitterProxy.address,
-        changer.tcInterestPaymentBlockSpan.toString(),
-        changer.settlementBlockSpan.toString(),
-        changer.decayBlockSpan.toString(),
-        changer.emaCalculationBlockSpan.toString()
-        ],
+        changer.tcInterestPaymentBlockSpan,
+        changer.settlementBlockSpan,
+        changer.decayBlockSpan,
+        changer.emaCalculationBlockSpan,
+      ],
       gasLimit,
     })
   ).address;

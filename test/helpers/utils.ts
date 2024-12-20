@@ -9,3 +9,16 @@ export function pEth(eth: string | number): BigNumber {
   else ethStr = eth;
   return ethers.utils.parseEther(ethStr);
 }
+
+export enum OperType {
+  none, // avoid using zero as Type
+  mintTC,
+  redeemTC,
+  mintTP,
+  redeemTP,
+  mintTCandTP,
+  redeemTCandTP,
+  swapTCforTP,
+  swapTPforTC,
+  swapTPforTP,
+}
