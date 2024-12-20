@@ -1,0 +1,373 @@
+{
+  "address": "0xE326C14ee61C343f701846e17D0d41eBd16aeBf9",
+  "abi": [
+    {
+      "inputs": [
+        {
+          "internalType": "contract IMocCARC20",
+          "name": "rocCoreProxy_",
+          "type": "address"
+        },
+        {
+          "internalType": "contract IMoCState",
+          "name": "mocMocStateProxy_",
+          "type": "address"
+        },
+        {
+          "internalType": "contract IUpgradeDelegator",
+          "name": "upgradeDelegator_",
+          "type": "address"
+        },
+        {
+          "internalType": "address",
+          "name": "mocFeeTokenPriceProvider_",
+          "type": "address"
+        },
+        {
+          "internalType": "address",
+          "name": "rocFeeTokenPriceProvider_",
+          "type": "address"
+        },
+        {
+          "internalType": "address",
+          "name": "revAucBTC2MOCProxy_",
+          "type": "address"
+        },
+        {
+          "internalType": "address",
+          "name": "revAucBTC2MOCNewImplement_",
+          "type": "address"
+        },
+        {
+          "internalType": "contract IMOCCommissionSplitterV2",
+          "name": "mocCommissionSplitterV2_",
+          "type": "address"
+        },
+        {
+          "internalType": "contract IROCCommissionSplitterV2",
+          "name": "rocCommissionSplitterV2_",
+          "type": "address"
+        },
+        {
+          "internalType": "address payable",
+          "name": "mocFeeTokenAddressRecipient2_",
+          "type": "address"
+        },
+        {
+          "internalType": "address payable",
+          "name": "rocFeeTokenAddressRecipient2_",
+          "type": "address"
+        },
+        {
+          "internalType": "contract IReverseAuctionUniswapToken",
+          "name": "revAuctionRIF2BTC_",
+          "type": "address"
+        },
+        {
+          "internalType": "contract IReverseAuctionUniswapToken",
+          "name": "revAuctionBTC2RIF_",
+          "type": "address"
+        },
+        {
+          "internalType": "uint24",
+          "name": "revAuctionFee_",
+          "type": "uint24"
+        }
+      ],
+      "stateMutability": "nonpayable",
+      "type": "constructor"
+    },
+    {
+      "inputs": [],
+      "name": "execute",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "mocCommissionSplitterV2",
+      "outputs": [
+        {
+          "internalType": "contract IMOCCommissionSplitterV2",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "mocFeeTokenAddressRecipient2",
+      "outputs": [
+        {
+          "internalType": "address payable",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "mocFeeTokenPriceProvider",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "mocMocStateProxy",
+      "outputs": [
+        {
+          "internalType": "contract IMoCState",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "revAucBTC2MOCNewImplement",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "revAucBTC2MOCProxy",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "revAuctionBTC2RIF",
+      "outputs": [
+        {
+          "internalType": "contract IReverseAuctionUniswapToken",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "revAuctionFee",
+      "outputs": [
+        {
+          "internalType": "uint24",
+          "name": "",
+          "type": "uint24"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "revAuctionRIF2BTC",
+      "outputs": [
+        {
+          "internalType": "contract IReverseAuctionUniswapToken",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "rocCommissionSplitterV2",
+      "outputs": [
+        {
+          "internalType": "contract IROCCommissionSplitterV2",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "rocCoreProxy",
+      "outputs": [
+        {
+          "internalType": "contract IMocCARC20",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "rocFeeTokenAddressRecipient2",
+      "outputs": [
+        {
+          "internalType": "address payable",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "rocFeeTokenPriceProvider",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "upgradeDelegator",
+      "outputs": [
+        {
+          "internalType": "contract IUpgradeDelegator",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    }
+  ],
+  "transactionHash": "0x815710de8b7cfb191f746c6bb6598af95d7c70d7f513776a986c7f77496539e9",
+  "receipt": {
+    "to": null,
+    "from": "0xEA14c08764c9e5F212c916E11a5c47Eaf92571e4",
+    "contractAddress": "0xE326C14ee61C343f701846e17D0d41eBd16aeBf9",
+    "transactionIndex": 0,
+    "gasUsed": "576109",
+    "logsBloom": "0x00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+    "blockHash": "0x69fb46122cc1b05861fca809d59f04d2a7bfc3821a8ce6b931bbbd1eaf27e1b1",
+    "transactionHash": "0x815710de8b7cfb191f746c6bb6598af95d7c70d7f513776a986c7f77496539e9",
+    "logs": [],
+    "blockNumber": 7032118,
+    "cumulativeGasUsed": "576109",
+    "status": 1,
+    "byzantium": true
+  },
+  "args": [
+    "0xA27024Ed70035E46dba712609fc2Afa1c97aA36A",
+    "0xb9C42EFc8ec54490a37cA91c423F7285Fa01e257",
+    "0x131564703310a294C1bFDC09D10EC0659f18E253",
+    "0x11683439c9509C135ee4F7bB6e23835e1d86ECBA",
+    "0xC6f37A4DF82B21aC382442BC73D668B3B2F4Cef0",
+    "0xc8863d91604A12cE6073cA6A01D00172BB9BD508",
+    "0xB3ec05D6971Ea5D86D38EB1Ea0284733876aB6F4",
+    "0x60cEEf03AA1AA96263e297D220EE4EBc3c6b6E47",
+    "0x9C66296938d849802fFa879A20fdC11B58C55851",
+    "0x7002dD3027947aB98cA3DDC28F93F2450281453A",
+    "0x09A84d61c1A10f1D5fb3267DFb00D16ca0DaCC30",
+    "0x3533bd069ed7da74c2274869cd930778e8edf1e0",
+    "0x2ae2870424e1bad972157c860c9e06f870e15b2f",
+    3000
+  ],
+  "numDeployments": 1,
+  "solcInputHash": "1d98d7117339c0eb0eae878186cb67ec",
+  "metadata": "{\"compiler\":{\"version\":\"0.8.20+commit.a1b79de6\"},\"language\":\"Solidity\",\"output\":{\"abi\":[{\"inputs\":[{\"internalType\":\"contract IMocCARC20\",\"name\":\"rocCoreProxy_\",\"type\":\"address\"},{\"internalType\":\"contract IMoCState\",\"name\":\"mocMocStateProxy_\",\"type\":\"address\"},{\"internalType\":\"contract IUpgradeDelegator\",\"name\":\"upgradeDelegator_\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"mocFeeTokenPriceProvider_\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"rocFeeTokenPriceProvider_\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"revAucBTC2MOCProxy_\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"revAucBTC2MOCNewImplement_\",\"type\":\"address\"},{\"internalType\":\"contract IMOCCommissionSplitterV2\",\"name\":\"mocCommissionSplitterV2_\",\"type\":\"address\"},{\"internalType\":\"contract IROCCommissionSplitterV2\",\"name\":\"rocCommissionSplitterV2_\",\"type\":\"address\"},{\"internalType\":\"address payable\",\"name\":\"mocFeeTokenAddressRecipient2_\",\"type\":\"address\"},{\"internalType\":\"address payable\",\"name\":\"rocFeeTokenAddressRecipient2_\",\"type\":\"address\"},{\"internalType\":\"contract IReverseAuctionUniswapToken\",\"name\":\"revAuctionRIF2BTC_\",\"type\":\"address\"},{\"internalType\":\"contract IReverseAuctionUniswapToken\",\"name\":\"revAuctionBTC2RIF_\",\"type\":\"address\"},{\"internalType\":\"uint24\",\"name\":\"revAuctionFee_\",\"type\":\"uint24\"}],\"stateMutability\":\"nonpayable\",\"type\":\"constructor\"},{\"inputs\":[],\"name\":\"execute\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"mocCommissionSplitterV2\",\"outputs\":[{\"internalType\":\"contract IMOCCommissionSplitterV2\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"mocFeeTokenAddressRecipient2\",\"outputs\":[{\"internalType\":\"address payable\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"mocFeeTokenPriceProvider\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"mocMocStateProxy\",\"outputs\":[{\"internalType\":\"contract IMoCState\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"revAucBTC2MOCNewImplement\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"revAucBTC2MOCProxy\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"revAuctionBTC2RIF\",\"outputs\":[{\"internalType\":\"contract IReverseAuctionUniswapToken\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"revAuctionFee\",\"outputs\":[{\"internalType\":\"uint24\",\"name\":\"\",\"type\":\"uint24\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"revAuctionRIF2BTC\",\"outputs\":[{\"internalType\":\"contract IReverseAuctionUniswapToken\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"rocCommissionSplitterV2\",\"outputs\":[{\"internalType\":\"contract IROCCommissionSplitterV2\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"rocCoreProxy\",\"outputs\":[{\"internalType\":\"contract IMocCARC20\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"rocFeeTokenAddressRecipient2\",\"outputs\":[{\"internalType\":\"address payable\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"rocFeeTokenPriceProvider\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"upgradeDelegator\",\"outputs\":[{\"internalType\":\"contract IUpgradeDelegator\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"}],\"devdoc\":{\"kind\":\"dev\",\"methods\":{\"constructor\":{\"params\":{\"mocCommissionSplitterV2_\":\"MoC Commission Splitter V2\",\"mocFeeTokenAddressRecipient2_\":\"MOC Output Token MOC Destination Recipient 2\",\"mocFeeTokenPriceProvider_\":\"new Fee Token Price Provider address for MOC/USD\",\"mocMocStateProxy_\":\"MoCState proxy contract MOC V1\",\"revAucBTC2MOCNewImplement_\":\"Implementation of the RevAuction BTC2MOC\",\"revAucBTC2MOCProxy_\":\"Proxy of the RevAuction BTC2MOC\",\"revAuctionBTC2RIF_\":\"Reverse Auction BTC2RIF\",\"revAuctionFee_\":\"Reverse Auction Uniswap Token Fee\",\"revAuctionRIF2BTC_\":\"Reverse Auction RIF2BTC\",\"rocCommissionSplitterV2_\":\"RoC Commission Splitter V2\",\"rocCoreProxy_\":\"RoC Core proxy contract ROC V2\",\"rocFeeTokenAddressRecipient2_\":\"ROC Output Token MOC Destination Recipient 2\",\"rocFeeTokenPriceProvider_\":\"new Fee Token Price Provider address for MOC/RIF\",\"upgradeDelegator_\":\"Upgrade Delegator for OMOC\"}},\"execute()\":{\"details\":\"Should be called by the governor, but this contract does not check that explicitly because it is not its responsibility in the current architecture IMPORTANT: This function should not be overridden, you should only redefine _beforeUpgrade and _afterUpgrade methods to use this template\"}},\"version\":1},\"userdoc\":{\"kind\":\"user\",\"methods\":{\"constructor\":{\"notice\":\"constructor\"},\"execute()\":{\"notice\":\"Execute the changes.\"}},\"version\":1}},\"settings\":{\"compilationTarget\":{\"contracts/changers/FixReverseAuctionProposal.sol\":\"FixReverseAuctionProposal\"},\"evmVersion\":\"london\",\"libraries\":{\":__CACHE_BREAKER__\":\"0x00000000d41867734bbee4c6863d9255b2b06ac1\"},\"metadata\":{\"bytecodeHash\":\"ipfs\",\"useLiteralContent\":true},\"optimizer\":{\"details\":{\"constantOptimizer\":true,\"cse\":true,\"deduplicate\":true,\"inliner\":true,\"jumpdestRemover\":true,\"orderLiterals\":true,\"peephole\":true,\"yul\":true,\"yulDetails\":{\"optimizerSteps\":\"dhfoDgvulfnTUtnIf[xa[r]EscLMcCTUtTOntnfDIulLculVcul[j]Tpeulxa[rul]xa[r]cLgvifCTUca[r]LSsTOtfDnca[r]Iulc]jmul[jul]VcTOculjmul:fDnTOc\",\"stackAllocation\":true}},\"runs\":200},\"remappings\":[],\"viaIR\":true},\"sources\":{\"contracts/changers/FixReverseAuctionProposal.sol\":{\"content\":\"// SPDX-License-Identifier: UNLICENSED\\npragma solidity 0.8.20;\\n\\nimport { IChangerContract } from \\\"../interfaces/IChangerContract.sol\\\";\\n\\n/**\\n  In this changer we change:\\n\\n  1) Upgrade new Implementation of RevAuction BTC2MOC\\n  2) Set nre Fee Token Price Provider address for MOC/USD\\n  3) Set new Fee Token Price Provider address for MOC/RIF\\n  4) MOC Fix Address output Commission Splitter V2 MoC Token output 2\\n  5) ROC Fix Address output Commission Splitter V2 MoC Token output 2\\n  6) Set new Fee to Rev Auction RIF2BTC\\n  7) Set new Fee to Rev Auction BTC2RIF\\n */\\n\\ninterface IMocCARC20 {\\n    function setFeeTokenPriceProviderAddress(address mocFeeTokenPriceProviderAddress_) external;\\n}\\n\\ninterface IMoCState {\\n    function setMoCPriceProvider(address mocProviderAddress_) external;\\n}\\n\\ninterface IUpgradeDelegator {\\n    function upgrade(address proxy_, address implementation_) external;\\n}\\n\\ninterface IMOCCommissionSplitterV2 {\\n    function setOutputTokenGovernAddress_2(address payable _outputTokenGovernAddress_2) external;\\n}\\n\\ninterface IROCCommissionSplitterV2 {\\n    function setFeeTokenAddressRecipient2(address payable feeTokenAddressRecipient2_) external;\\n}\\n\\ninterface IReverseAuctionUniswapToken {\\n    function setFee(uint24 fee) external;\\n}\\n\\ncontract FixReverseAuctionProposal is IChangerContract {\\n    // ------- Storage -------\\n\\n    // MocCore proxy contract V2 - Project ROC\\n    IMocCARC20 public immutable rocCoreProxy;\\n    // MocState proxy contract V1 - Project MOC\\n    IMoCState public immutable mocMocStateProxy;\\n    // Upgrade Delegator for OMOC\\n    IUpgradeDelegator public immutable upgradeDelegator;\\n    // MoC Fee Token price provider\\n    address public mocFeeTokenPriceProvider;\\n    // RoC Fee Token price provider\\n    address public rocFeeTokenPriceProvider;\\n    // revAuction BTC2MOC proxy\\n    address public immutable revAucBTC2MOCProxy;\\n    // revAuction BTC2MOC new implementation\\n    address public immutable revAucBTC2MOCNewImplement;\\n    // MoC Commission Splitter V2\\n    IMOCCommissionSplitterV2 public immutable mocCommissionSplitterV2;\\n    // ROC Commission Splitter V2\\n    IROCCommissionSplitterV2 public immutable rocCommissionSplitterV2;\\n    // MOC Output Token MOC Destination Recipient 2\\n    address payable public immutable mocFeeTokenAddressRecipient2;\\n    // ROC Output Token MOC Destination Recipient 2\\n    address payable public immutable rocFeeTokenAddressRecipient2;\\n    // Reverse Auction RIF2BTC\\n    IReverseAuctionUniswapToken public immutable revAuctionRIF2BTC;\\n    // Reverse Auction BTC2RIF\\n    IReverseAuctionUniswapToken public immutable revAuctionBTC2RIF;\\n    // Rev Auction Fee\\n    uint24 public immutable revAuctionFee;\\n\\n    /**\\n     * @notice constructor\\n     * @param rocCoreProxy_ RoC Core proxy contract ROC V2\\n     * @param mocMocStateProxy_ MoCState proxy contract MOC V1\\n     * @param upgradeDelegator_ Upgrade Delegator for OMOC\\n     * @param mocFeeTokenPriceProvider_ new Fee Token Price Provider address for MOC/USD\\n     * @param rocFeeTokenPriceProvider_ new Fee Token Price Provider address for MOC/RIF\\n     * @param revAucBTC2MOCProxy_ Proxy of the RevAuction BTC2MOC\\n     * @param revAucBTC2MOCNewImplement_ Implementation of the RevAuction BTC2MOC\\n     * @param mocCommissionSplitterV2_ MoC Commission Splitter V2\\n     * @param rocCommissionSplitterV2_ RoC Commission Splitter V2\\n     * @param mocFeeTokenAddressRecipient2_ MOC Output Token MOC Destination Recipient 2\\n     * @param rocFeeTokenAddressRecipient2_ ROC Output Token MOC Destination Recipient 2\\n     * @param revAuctionRIF2BTC_ Reverse Auction RIF2BTC\\n     * @param revAuctionBTC2RIF_ Reverse Auction BTC2RIF\\n     * @param revAuctionFee_ Reverse Auction Uniswap Token Fee\\n     */\\n    constructor(\\n        IMocCARC20 rocCoreProxy_,\\n        IMoCState mocMocStateProxy_,\\n        IUpgradeDelegator upgradeDelegator_,\\n        address mocFeeTokenPriceProvider_,\\n        address rocFeeTokenPriceProvider_,\\n        address revAucBTC2MOCProxy_,\\n        address revAucBTC2MOCNewImplement_,\\n        IMOCCommissionSplitterV2 mocCommissionSplitterV2_,\\n        IROCCommissionSplitterV2 rocCommissionSplitterV2_,\\n        address payable mocFeeTokenAddressRecipient2_,\\n        address payable rocFeeTokenAddressRecipient2_,\\n        IReverseAuctionUniswapToken revAuctionRIF2BTC_,\\n        IReverseAuctionUniswapToken revAuctionBTC2RIF_,\\n        uint24 revAuctionFee_\\n    ) {\\n        rocCoreProxy = rocCoreProxy_;\\n        mocMocStateProxy = mocMocStateProxy_;\\n        upgradeDelegator = upgradeDelegator_;\\n        mocFeeTokenPriceProvider = mocFeeTokenPriceProvider_;\\n        rocFeeTokenPriceProvider = rocFeeTokenPriceProvider_;\\n        revAucBTC2MOCProxy = revAucBTC2MOCProxy_;\\n        revAucBTC2MOCNewImplement = revAucBTC2MOCNewImplement_;\\n        mocCommissionSplitterV2 = mocCommissionSplitterV2_;\\n        rocCommissionSplitterV2 = rocCommissionSplitterV2_;\\n        mocFeeTokenAddressRecipient2 = mocFeeTokenAddressRecipient2_;\\n        rocFeeTokenAddressRecipient2 = rocFeeTokenAddressRecipient2_;\\n        revAuctionRIF2BTC = revAuctionRIF2BTC_;\\n        revAuctionBTC2RIF = revAuctionBTC2RIF_;\\n        revAuctionFee = revAuctionFee_;\\n    }\\n\\n    /**\\n      @notice Execute the changes.\\n      @dev Should be called by the governor, but this contract does not check that explicitly\\n      because it is not its responsibility in the current architecture\\n      IMPORTANT: This function should not be overridden, you should only redefine\\n      _beforeUpgrade and _afterUpgrade methods to use this template\\n    */\\n    function execute() external {\\n        _beforeUpgrade();\\n        _upgrade();\\n        _afterUpgrade();\\n    }\\n\\n    /**\\n      @notice Upgrade the proxy to the newImplementation\\n      @dev IMPORTANT: This function should not be overridden\\n    */\\n    function _upgrade() internal {\\n        upgradeDelegator.upgrade(revAucBTC2MOCProxy, revAucBTC2MOCNewImplement);\\n    }\\n\\n    /**\\n      @notice Intended to prepare the system for the upgrade\\n    */\\n    function _beforeUpgrade() internal view {}\\n\\n    /**\\n      @notice Intended to do the final tweaks after the upgrade, for example initialize the contract\\n    */\\n    function _afterUpgrade() internal {\\n        // Update MOC Fee Token Price Provider MOC/USD\\n        mocMocStateProxy.setMoCPriceProvider(mocFeeTokenPriceProvider);\\n        // Update ROC Fee Token Price Provider RIF/USD\\n        rocCoreProxy.setFeeTokenPriceProviderAddress(rocFeeTokenPriceProvider);\\n        // MOC Output Token MOC Destination Recipient 2\\n        mocCommissionSplitterV2.setOutputTokenGovernAddress_2(mocFeeTokenAddressRecipient2);\\n        // ROC Output Token MOC Destination Recipient 2\\n        rocCommissionSplitterV2.setFeeTokenAddressRecipient2(rocFeeTokenAddressRecipient2);\\n        // Change Fee to rev auction RIF2BTC\\n        revAuctionRIF2BTC.setFee(revAuctionFee);\\n        // Change Fee to rev auction BTC2RIF\\n        revAuctionBTC2RIF.setFee(revAuctionFee);\\n    }\\n}\\n\",\"keccak256\":\"0x426d93c94e7f662bf16f1157dbd01ce07c7efba426945a36c84dd57786bd5d89\",\"license\":\"UNLICENSED\"},\"contracts/interfaces/IChangerContract.sol\":{\"content\":\"// SPDX-License-Identifier: UNLICENSED\\npragma solidity 0.8.20;\\n\\n/**\\n  @title IChangerContract\\n  @notice This interface is the one used by the governance system.\\n  @dev If you plan to do some changes to a system governed by this project you should write a contract\\n  that does those changes, like a recipe. This contract MUST not have ANY kind of public or external function\\n  that modifies the state of this ChangeContract, otherwise you could run into front-running issues when the governance\\n  system is fully in place.\\n */\\ninterface IChangerContract {\\n    /**\\n    @notice Override this function with a recipe of the changes to be done when this ChangeContract\\n    is executed\\n   */\\n    function execute() external;\\n}\\n\",\"keccak256\":\"0x2f30103bbdefcd63e9a98e7462ec95c54df9455fa086e789af0a0f6483daae79\",\"license\":\"UNLICENSED\"}},\"version\":1}",
+  "bytecode": "0x3461024757610b1038819003610200601f8201601f19168101906001600160401b0382119082101761024c576101c0928291604052610200391261024757610200516001600160a01b03811681036102475761022051906001600160a01b03821682036102475761024051916001600160a01b038316830361024757610086610260610262565b92610092610280610262565b61009d6102a0610262565b946100a96102c0610262565b6102e0516001600160a01b03811681036102475761030051916001600160a01b038316830361024757610120986100e1610320610262565b946100ed610340610262565b966100f9610360610262565b98610105610380610262565b9a6101a061020001519c8d62ffffff8116036102475760805260a05260c052600080546001600160a01b039384166001600160a01b0319918216179091556001805492909316911617905560e0526101005287526101405261016052610180526101a0526101c0526101e0908152604051610899929091908361027784396080518381816102960152610461015260a0518381816101cd0152610408015260c05183818161036701526107b9015260e05183818161025301526103a101526101005183818161031c01526103d101525182818161021001526104bc015261014051828181610533015261074c01526101605182818161014b01526104fa015261018051828181610108015261057101526101a0518281816102d901526105aa01526101c05182818161062601526107fc01525181818161019501526105ec0152f35b600080fd5b634e487b7160e01b600052604160045260246000fd5b51906001600160a01b03821682036102475756fe608060408181526004918236101561001657600080fd5b600092833560e01c9182632ead3074146107e85750816333d2e956146107a457816344f060641461077b578163531e107b14610737578163614619541461034b57508063615a36f7146103085780636b140e4e146102c55780637e00ac85146102825780638def23341461023f578063a792022d146101fc578063bf694775146101b9578063d097336e1461017a578063ddb46e5d14610137578063e61fb293146100f45763f2dd0152146100ca57600080fd5b346100f057816003193601126100f057905490516001600160a01b039091168152602090f35b5080fd5b50346100f057816003193601126100f057517f00000000000000000000000000000000000000000000000000000000000000006001600160a01b03168152602090f35b50346100f057816003193601126100f057517f00000000000000000000000000000000000000000000000000000000000000006001600160a01b03168152602090f35b50346100f057816003193601126100f0576020905162ffffff7f0000000000000000000000000000000000000000000000000000000000000000168152f35b50346100f057816003193601126100f057517f00000000000000000000000000000000000000000000000000000000000000006001600160a01b03168152602090f35b50346100f057816003193601126100f057517f00000000000000000000000000000000000000000000000000000000000000006001600160a01b03168152602090f35b50346100f057816003193601126100f057517f00000000000000000000000000000000000000000000000000000000000000006001600160a01b03168152602090f35b50346100f057816003193601126100f057517f00000000000000000000000000000000000000000000000000000000000000006001600160a01b03168152602090f35b50346100f057816003193601126100f057517f00000000000000000000000000000000000000000000000000000000000000006001600160a01b03168152602090f35b50346100f057816003193601126100f057517f00000000000000000000000000000000000000000000000000000000000000006001600160a01b03168152602090f35b8383346100f057816003193601126100f0576001600160a01b037f000000000000000000000000000000000000000000000000000000000000000081169190823b156107335781519463266a23b160e21b8652817f00000000000000000000000000000000000000000000000000000000000000001681870152848660448183602498877f0000000000000000000000000000000000000000000000000000000000000000168a8401525af1801561072957610714575b849550817f00000000000000000000000000000000000000000000000000000000000000001682865416813b1561068b5786918683928751948593849262aeeb1160e61b8452888401525af180156106cb579086916106ff575b5050817f0000000000000000000000000000000000000000000000000000000000000000168260015416813b1561068b57869186839287519485938492630f1e5e2b60e01b8452888401525af180156106cb579086916106ea575b5050817f000000000000000000000000000000000000000000000000000000000000000016803b156106ae578580918686518094819363c574dd3360e01b8352887f000000000000000000000000000000000000000000000000000000000000000016888401525af180156106cb579086916106d5575b5050817f000000000000000000000000000000000000000000000000000000000000000016803b156106ae5785809186865180948193631545ee9160e01b8352887f000000000000000000000000000000000000000000000000000000000000000016888401525af180156106cb579086916106b2575b5050817f00000000000000000000000000000000000000000000000000000000000000001693843b156106ae5783519263755dab1160e11b93848152878184818362ffffff7f0000000000000000000000000000000000000000000000000000000000000000169b8c8a8401525af180156106a45790889161068f575b50507f00000000000000000000000000000000000000000000000000000000000000001692833b1561068b578680948651978895869485528401525af1908115610682575061066e5750f35b816106789161082b565b61067f5780f35b80fd5b513d84823e3d90fd5b8680fd5b816106999161082b565b61068b578689610622565b86513d8a823e3d90fd5b8580fd5b816106bc9161082b565b6106c75784876105a5565b8480fd5b84513d88823e3d90fd5b816106df9161082b565b6106c757848761052e565b816106f49161082b565b6106c75784876104b7565b816107099161082b565b6106c757848761045c565b939094816107219161082b565b928490610402565b83513d87823e3d90fd5b8380fd5b5050346100f057816003193601126100f057517f00000000000000000000000000000000000000000000000000000000000000006001600160a01b03168152602090f35b5050346100f057816003193601126100f05760015490516001600160a01b039091168152602090f35b5050346100f057816003193601126100f057517f00000000000000000000000000000000000000000000000000000000000000006001600160a01b03168152602090f35b8490346100f057816003193601126100f0577f00000000000000000000000000000000000000000000000000000000000000006001600160a01b03168152602090f35b90601f8019910116810190811067ffffffffffffffff82111761084d57604052565b634e487b7160e01b600052604160045260246000fdfea2646970667358221220f9ff25049593632db2f6e7e0213c8c3f03549c5bb401bc88c237c528efc543e764736f6c63430008140033",
+  "deployedBytecode": "0x608060408181526004918236101561001657600080fd5b600092833560e01c9182632ead3074146107e85750816333d2e956146107a457816344f060641461077b578163531e107b14610737578163614619541461034b57508063615a36f7146103085780636b140e4e146102c55780637e00ac85146102825780638def23341461023f578063a792022d146101fc578063bf694775146101b9578063d097336e1461017a578063ddb46e5d14610137578063e61fb293146100f45763f2dd0152146100ca57600080fd5b346100f057816003193601126100f057905490516001600160a01b039091168152602090f35b5080fd5b50346100f057816003193601126100f057517f00000000000000000000000000000000000000000000000000000000000000006001600160a01b03168152602090f35b50346100f057816003193601126100f057517f00000000000000000000000000000000000000000000000000000000000000006001600160a01b03168152602090f35b50346100f057816003193601126100f0576020905162ffffff7f0000000000000000000000000000000000000000000000000000000000000000168152f35b50346100f057816003193601126100f057517f00000000000000000000000000000000000000000000000000000000000000006001600160a01b03168152602090f35b50346100f057816003193601126100f057517f00000000000000000000000000000000000000000000000000000000000000006001600160a01b03168152602090f35b50346100f057816003193601126100f057517f00000000000000000000000000000000000000000000000000000000000000006001600160a01b03168152602090f35b50346100f057816003193601126100f057517f00000000000000000000000000000000000000000000000000000000000000006001600160a01b03168152602090f35b50346100f057816003193601126100f057517f00000000000000000000000000000000000000000000000000000000000000006001600160a01b03168152602090f35b50346100f057816003193601126100f057517f00000000000000000000000000000000000000000000000000000000000000006001600160a01b03168152602090f35b8383346100f057816003193601126100f0576001600160a01b037f000000000000000000000000000000000000000000000000000000000000000081169190823b156107335781519463266a23b160e21b8652817f00000000000000000000000000000000000000000000000000000000000000001681870152848660448183602498877f0000000000000000000000000000000000000000000000000000000000000000168a8401525af1801561072957610714575b849550817f00000000000000000000000000000000000000000000000000000000000000001682865416813b1561068b5786918683928751948593849262aeeb1160e61b8452888401525af180156106cb579086916106ff575b5050817f0000000000000000000000000000000000000000000000000000000000000000168260015416813b1561068b57869186839287519485938492630f1e5e2b60e01b8452888401525af180156106cb579086916106ea575b5050817f000000000000000000000000000000000000000000000000000000000000000016803b156106ae578580918686518094819363c574dd3360e01b8352887f000000000000000000000000000000000000000000000000000000000000000016888401525af180156106cb579086916106d5575b5050817f000000000000000000000000000000000000000000000000000000000000000016803b156106ae5785809186865180948193631545ee9160e01b8352887f000000000000000000000000000000000000000000000000000000000000000016888401525af180156106cb579086916106b2575b5050817f00000000000000000000000000000000000000000000000000000000000000001693843b156106ae5783519263755dab1160e11b93848152878184818362ffffff7f0000000000000000000000000000000000000000000000000000000000000000169b8c8a8401525af180156106a45790889161068f575b50507f00000000000000000000000000000000000000000000000000000000000000001692833b1561068b578680948651978895869485528401525af1908115610682575061066e5750f35b816106789161082b565b61067f5780f35b80fd5b513d84823e3d90fd5b8680fd5b816106999161082b565b61068b578689610622565b86513d8a823e3d90fd5b8580fd5b816106bc9161082b565b6106c75784876105a5565b8480fd5b84513d88823e3d90fd5b816106df9161082b565b6106c757848761052e565b816106f49161082b565b6106c75784876104b7565b816107099161082b565b6106c757848761045c565b939094816107219161082b565b928490610402565b83513d87823e3d90fd5b8380fd5b5050346100f057816003193601126100f057517f00000000000000000000000000000000000000000000000000000000000000006001600160a01b03168152602090f35b5050346100f057816003193601126100f05760015490516001600160a01b039091168152602090f35b5050346100f057816003193601126100f057517f00000000000000000000000000000000000000000000000000000000000000006001600160a01b03168152602090f35b8490346100f057816003193601126100f0577f00000000000000000000000000000000000000000000000000000000000000006001600160a01b03168152602090f35b90601f8019910116810190811067ffffffffffffffff82111761084d57604052565b634e487b7160e01b600052604160045260246000fdfea2646970667358221220f9ff25049593632db2f6e7e0213c8c3f03549c5bb401bc88c237c528efc543e764736f6c63430008140033",
+  "devdoc": {
+    "kind": "dev",
+    "methods": {
+      "constructor": {
+        "params": {
+          "mocCommissionSplitterV2_": "MoC Commission Splitter V2",
+          "mocFeeTokenAddressRecipient2_": "MOC Output Token MOC Destination Recipient 2",
+          "mocFeeTokenPriceProvider_": "new Fee Token Price Provider address for MOC/USD",
+          "mocMocStateProxy_": "MoCState proxy contract MOC V1",
+          "revAucBTC2MOCNewImplement_": "Implementation of the RevAuction BTC2MOC",
+          "revAucBTC2MOCProxy_": "Proxy of the RevAuction BTC2MOC",
+          "revAuctionBTC2RIF_": "Reverse Auction BTC2RIF",
+          "revAuctionFee_": "Reverse Auction Uniswap Token Fee",
+          "revAuctionRIF2BTC_": "Reverse Auction RIF2BTC",
+          "rocCommissionSplitterV2_": "RoC Commission Splitter V2",
+          "rocCoreProxy_": "RoC Core proxy contract ROC V2",
+          "rocFeeTokenAddressRecipient2_": "ROC Output Token MOC Destination Recipient 2",
+          "rocFeeTokenPriceProvider_": "new Fee Token Price Provider address for MOC/RIF",
+          "upgradeDelegator_": "Upgrade Delegator for OMOC"
+        }
+      },
+      "execute()": {
+        "details": "Should be called by the governor, but this contract does not check that explicitly because it is not its responsibility in the current architecture IMPORTANT: This function should not be overridden, you should only redefine _beforeUpgrade and _afterUpgrade methods to use this template"
+      }
+    },
+    "version": 1
+  },
+  "userdoc": {
+    "kind": "user",
+    "methods": {
+      "constructor": {
+        "notice": "constructor"
+      },
+      "execute()": {
+        "notice": "Execute the changes."
+      }
+    },
+    "version": 1
+  },
+  "storageLayout": {
+    "storage": [
+      {
+        "astId": 7587,
+        "contract": "contracts/changers/FixReverseAuctionProposal.sol:FixReverseAuctionProposal",
+        "label": "mocFeeTokenPriceProvider",
+        "offset": 0,
+        "slot": "0",
+        "type": "t_address"
+      },
+      {
+        "astId": 7589,
+        "contract": "contracts/changers/FixReverseAuctionProposal.sol:FixReverseAuctionProposal",
+        "label": "rocFeeTokenPriceProvider",
+        "offset": 0,
+        "slot": "1",
+        "type": "t_address"
+      }
+    ],
+    "types": {
+      "t_address": {
+        "encoding": "inplace",
+        "label": "address",
+        "numberOfBytes": "20"
+      }
+    }
+  }
+}
