@@ -21,6 +21,7 @@ import { developmentMigrateParams } from "./config/deployParams-development";
 import { rskTestnetMigrationParams } from "./config/deployParams-rskTestnet";
 import { rskMainnetMigrationParams } from "./config/deployParams-rskMainnet";
 import { rskAlphaTestnetMigrationParams, rskAlphaTestnetDeployParams } from "./config/deployParams-rskAlphaTestnet";
+import { rskAlphaTestnetQADeployParams } from "./config/deployParams-rskAlphaTestnetQA";
 
 dotenvConfig({ path: resolve(__dirname, "./.env") });
 
@@ -84,6 +85,20 @@ if (!process.env.MNEMONIC) {
   mnemonic = process.env.MNEMONIC;
 }
 
+let rskTestnetApiKey: string;
+if (!process.env.RSK_TESTNET_API_KEY) {
+  throw new Error("Please set your RSK_TESTNET_API_KEY in a .env file");
+} else {
+  rskTestnetApiKey = process.env.RSK_TESTNET_API_KEY;
+}
+
+let rskMainnetApiKey: string;
+if (!process.env.RSK_MAINNET_API_KEY) {
+  throw new Error("Please set your RSK_MAINNET_API_KEY in a .env file");
+} else {
+  rskMainnetApiKey = process.env.RSK_MAINNET_API_KEY;
+}
+
 const config: HardhatUserConfig = {
   defaultNetwork: "hardhat",
   namedAccounts: {
@@ -98,6 +113,10 @@ const config: HardhatUserConfig = {
       accounts: {
         mnemonic,
         accountsBalance: "100000000000000000000000000000000000",
+      },
+      forking: {
+        url: "https://public-node.rsk.co",
+        blockNumber: 6935900,
       },
       chainId: chainIds.hardhat,
       hardfork: "london", // FIXME: latest evm version supported by rsk explorers, keep it updated
@@ -114,30 +133,52 @@ const config: HardhatUserConfig = {
     rskTestnetMigration: {
       accounts: process.env.PK ? [`0x${process.env.PK}`] : { mnemonic },
       chainId: chainIds.rskTestnet,
-      url: "https://public-node.testnet.rsk.co",
+      url: "https://rpc.testnet.rootstock.io/" + rskTestnetApiKey,
       deployParameters: { migrate: rskTestnetMigrationParams },
       tags: ["testnet", "migration"],
+    },
+    rskTestnet: {
+      accounts: process.env.PK ? [`0x${process.env.PK}`] : { mnemonic },
+      chainId: chainIds.rskTestnet,
+      url: "https://rpc.testnet.rootstock.io/" + rskTestnetApiKey,
+      deployParameters: { migrate: rskTestnetMigrationParams },
+      tags: ["testnet"],
+      gasPrice: 69000000,
     },
     rskAlphaTestnetMigration: {
       accounts: process.env.PK ? [`0x${process.env.PK}`] : { mnemonic },
       chainId: chainIds.rskTestnet,
-      url: "https://public-node.testnet.rsk.co",
+      url: "https://rpc.testnet.rootstock.io/" + rskTestnetApiKey,
       deployParameters: { migrate: rskAlphaTestnetMigrationParams },
       tags: ["testnet", "migration"],
     },
     rskAlphaTestnet: {
       accounts: process.env.PK ? [`0x${process.env.PK}`] : { mnemonic },
       chainId: chainIds.rskTestnet,
-      url: "https://public-node.testnet.rsk.co",
+      url: "https://rpc.testnet.rootstock.io/" + rskTestnetApiKey,
       deployParameters: { deploy: rskAlphaTestnetDeployParams },
+      tags: ["testnet"],
+    },
+    rskAlphaTestnetQA: {
+      accounts: process.env.PK ? [`0x${process.env.PK}`] : { mnemonic },
+      chainId: chainIds.rskTestnet,
+      url: "https://rpc.testnet.rootstock.io/Lgi4Te7Fpti2h1yfKWYSKpNLLnmM5R-T",
+      deployParameters: { deploy: rskAlphaTestnetQADeployParams },
       tags: ["testnet"],
     },
     rskMainnetMigration: {
       accounts: process.env.PK ? [`0x${process.env.PK}`] : { mnemonic },
       chainId: chainIds.rskMainnet,
-      url: "https://public-node.rsk.co",
+      url: "https://rpc.mainnet.rootstock.io/" + rskMainnetApiKey,
       deployParameters: { migrate: rskMainnetMigrationParams },
       tags: ["mainnet", "migration"],
+    },
+    rskMainnet: {
+      accounts: process.env.PK ? [`0x${process.env.PK}`] : { mnemonic },
+      chainId: chainIds.rskMainnet,
+      url: "https://public-node.rsk.co",
+      deployParameters: { migrate: rskMainnetMigrationParams },
+      tags: ["mainnet"],
     },
   },
   paths: {
@@ -196,7 +237,7 @@ const config: HardhatUserConfig = {
     disambiguatePaths: false,
   },
   mocha: {
-    timeout: 100000,
+    timeout: 900000,
   },
   external: {
     contracts: [
