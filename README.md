@@ -44,7 +44,7 @@ npm run typechain
 This solution has a fully functional deploy mechanism following [hardhat deploy](https://github.com/wighawag/hardhat-deploy) standard.
 It imports smart contracts and deploy scripts from [MoC-main-sc](https://github.com/money-on-chain/stable-protocol-core-v2) repository and uses them to deploy the RC20 Collateralized Asset version, with custom networks configurations. To add networks for deployment or set new deploy parameters see [hardhat.base.config.ts](hardhat.base.config.ts).
 
-You can configure a network as `testnet` using [tags](https://github.com/wighawag/hardhat-deploy#tags) mechanism, that will allow you to:
+You can configure a network as `testing` using [tags](https://github.com/wighawag/hardhat-deploy#tags) mechanism, that will allow you to:
 
 1. deploy and initialize the protocol using a governor mocked to skip governance system
 2. initialize the protocol with Pegged Tokens
@@ -56,23 +56,25 @@ For the deployer account, you can either set you mnemonic in the `.env` file, or
 
 ### Deploy scripts
 
-There are mainly to ways to deploy the system, from scratch using a full configuration file, or migrating it from v1. For that, there are two different set of deploy scripts and commands.
-
-To deploy contracts in rsk testnet
+To deploy the contracts on a given network, there are two predefine npm tasks, for localhost and rskTesntet networks:
 
 ```bash
-npm run deploy-rskTestnet
+npm run deploy-<NETWORK>
 ```
 
-To migrate contracts in rsk testnet from a V1 instance
+Where `<NETWORK> = { localhost, rskTesntet }`, is the name of the configuration on [./hardhat.base.config](./hardhat.base.config.ts)
 
-```bash
-npm run deploy-rskTestnet-migration
-```
-
-A deployments folder will be created with a sub folder for each network. There you will find a json file for each contract deployed that includes the address and ABI.
+A deployments folder will be created with a sub folder for each network. There you will find a json file for each contract deployed that includes the address and ABI. Naturally, if you want to reset this network deployment, you need to delete it.
 
 Keep in mind that all the contracts are upgradeable using [UUPS](https://eips.ethereum.org/EIPS/eip-1822) proxy pattern, so to interact with them you must use the contract implementation ABI but calling the contract proxy address.
+
+#### Adding new Buckets (only testing)
+
+Once there is a deploy with a base bucket, you can add extra buckets by using moc-core dedicated script. You can run it following the instructions on [exported dependencies](./node_modules/moc-main/export/scripts/addBucket/add-bucket.md) and configuring the bucket params in  [add-bucket.config](./node_modules/moc-main/export/scripts/addBucket/add-bucket.config.js):
+
+`npx hardhat --network <NETWORK> run ./node_modules/moc-main/export/scripts/addBucket/add-rc20-bucket.js`
+
+Currently, this is script is just for testing, as it depends on a MockedGovernor to execute the changer
 
 ## Built With
 

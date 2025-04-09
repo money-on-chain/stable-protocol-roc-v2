@@ -1,8 +1,10 @@
-import "@nomiclabs/hardhat-ethers";
 import "@nomiclabs/hardhat-solhint";
-import "@nomicfoundation/hardhat-chai-matchers";
+import "@nomicfoundation/hardhat-toolbox";
 import "@openzeppelin/hardhat-upgrades";
 import "@typechain/hardhat";
+import "@nomicfoundation/hardhat-ethers";
+import "@nomicfoundation/hardhat-chai-matchers";
+import "@tenderly/hardhat-tenderly";
 import { resolve } from "path";
 import { config as dotenvConfig } from "dotenv";
 import "hardhat-contract-sizer";
@@ -11,56 +13,26 @@ import "hardhat-docgen";
 import "hardhat-gas-reporter";
 import { removeConsoleLog } from "hardhat-preprocessor";
 import { HardhatUserConfig } from "hardhat/config";
-import { Address } from "hardhat-deploy/types";
-import { BigNumber } from "ethers";
 import "solidity-coverage";
 import "hardhat-storage-layout";
-import { DeployParameters } from "moc-main/export/scripts/types";
-import { hardhatDeployParams } from "./config/deployParams-hardhat";
-import { developmentMigrateParams } from "./config/deployParams-development";
-import { rskTestnetMigrationParams } from "./config/deployParams-rskTestnet";
-import { rskMainnetMigrationParams } from "./config/deployParams-rskMainnet";
-import { rskAlphaTestnetMigrationParams, rskAlphaTestnetDeployParams } from "./config/deployParams-rskAlphaTestnet";
-import { rskAlphaTestnetQADeployParams } from "./config/deployParams-rskAlphaTestnetQA";
 
 dotenvConfig({ path: resolve(__dirname, "./.env") });
 
-export type MigrateParameters = {
-  coreParams: {
-    decayBlockSpan: number;
-    successFee: BigNumber;
-    appreciationFactor: BigNumber;
-    allowDifferentRecipient: boolean;
-  };
-  mocAddresses: {
-    mocAppreciationBeneficiaryAddress: Address;
-    maxAbsoluteOpProviderAddress?: Address;
-    maxOpDiffProviderAddress?: Address;
-    mocVendorsAddress?: Address;
-  };
-  feeParams: {
-    feeRetainer: BigNumber;
-    swapTPforTPFee: BigNumber;
-    swapTPforTCFee: BigNumber;
-    swapTCforTPFee: BigNumber;
-    redeemTCandTPFee: BigNumber;
-    mintTCandTPFee: BigNumber;
-    feeTokenPct: BigNumber;
-  };
-  queueParams: DeployParameters["queueParams"];
-  gasLimit: DeployParameters["gasLimit"];
-  mocV1Address: string;
-};
-
 declare module "hardhat/types/config" {
-  export interface HardhatNetworkUserConfig {
-    deployParameters: { deploy?: DeployParameters; migrate?: MigrateParameters };
+  interface HardhatUserConfig {
+    tenderly?: {
+      project?: string;
+      username?: string;
+      privateVerification?: boolean;
+    };
   }
-  export interface HardhatNetworkConfig {
-    deployParameters: { deploy?: DeployParameters; migrate?: MigrateParameters };
-  }
-  export interface HttpNetworkConfig {
-    deployParameters: { deploy?: DeployParameters; migrate?: MigrateParameters };
+
+  interface HardhatConfig {
+    tenderly?: {
+      project?: string;
+      username?: string;
+      privateVerification?: boolean;
+    };
   }
 }
 
@@ -74,7 +46,6 @@ const chainIds = {
   ropsten: 3,
   rskTestnet: 31,
   rskMainnet: 30,
-  polygonMumbai: 80001,
 };
 
 // Ensure that we have all the environment variables we need.
@@ -107,6 +78,7 @@ const config: HardhatUserConfig = {
     alice: 2,
     bob: 3,
     charlie: 4,
+    pauser: 6,
   },
   networks: {
     hardhat: {
@@ -114,72 +86,49 @@ const config: HardhatUserConfig = {
         mnemonic,
         accountsBalance: "100000000000000000000000000000000000",
       },
-      forking: {
-        url: "https://public-node.rsk.co",
-        blockNumber: 6935900,
-      },
       chainId: chainIds.hardhat,
       hardfork: "london", // FIXME: latest evm version supported by rsk explorers, keep it updated
-      // TODO: remove this
-      allowUnlimitedContractSize: true,
-      deployParameters: { deploy: hardhatDeployParams },
-      tags: ["local"],
-    },
-    development: {
-      url: "http://127.0.0.1:8545",
-      deployParameters: { migrate: developmentMigrateParams },
-      tags: ["local", "migration"],
-    },
-    rskTestnetMigration: {
-      accounts: process.env.PK ? [`0x${process.env.PK}`] : { mnemonic },
-      chainId: chainIds.rskTestnet,
-      url: "https://rpc.testnet.rootstock.io/" + rskTestnetApiKey,
-      deployParameters: { migrate: rskTestnetMigrationParams },
-      tags: ["testnet", "migration"],
-    },
-    rskTestnet: {
-      accounts: process.env.PK ? [`0x${process.env.PK}`] : { mnemonic },
-      chainId: chainIds.rskTestnet,
-      url: "https://rpc.testnet.rootstock.io/" + rskTestnetApiKey,
-      deployParameters: { migrate: rskTestnetMigrationParams },
-      tags: ["testnet"],
-      gasPrice: 69000000,
-    },
-    rskAlphaTestnetMigration: {
-      accounts: process.env.PK ? [`0x${process.env.PK}`] : { mnemonic },
-      chainId: chainIds.rskTestnet,
-      url: "https://rpc.testnet.rootstock.io/" + rskTestnetApiKey,
-      deployParameters: { migrate: rskAlphaTestnetMigrationParams },
-      tags: ["testnet", "migration"],
+      tags: ["testing", "local"],
     },
     rskAlphaTestnet: {
       accounts: process.env.PK ? [`0x${process.env.PK}`] : { mnemonic },
       chainId: chainIds.rskTestnet,
       url: "https://rpc.testnet.rootstock.io/" + rskTestnetApiKey,
-      deployParameters: { deploy: rskAlphaTestnetDeployParams },
-      tags: ["testnet"],
+      tags: ["testing"],
+      verify: {
+        etherscan: {
+          apiUrl: "https://rootstock-testnet.blockscout.com/api/",
+          apiKey: "API_KEY",
+        },
+      },
     },
-    rskAlphaTestnetQA: {
+    rskTestnet: {
       accounts: process.env.PK ? [`0x${process.env.PK}`] : { mnemonic },
       chainId: chainIds.rskTestnet,
-      url: "https://rpc.testnet.rootstock.io/Lgi4Te7Fpti2h1yfKWYSKpNLLnmM5R-T",
-      deployParameters: { deploy: rskAlphaTestnetQADeployParams },
-      tags: ["testnet"],
-    },
-    rskMainnetMigration: {
-      accounts: process.env.PK ? [`0x${process.env.PK}`] : { mnemonic },
-      chainId: chainIds.rskMainnet,
-      url: "https://rpc.mainnet.rootstock.io/" + rskMainnetApiKey,
-      deployParameters: { migrate: rskMainnetMigrationParams },
-      tags: ["mainnet", "migration"],
+      url: "https://rpc.testnet.rootstock.io/" + rskTestnetApiKey,
+      tags: ["testing"],
+      verify: {
+        etherscan: {
+          apiUrl: "https://rootstock-testnet.blockscout.com/api/",
+          apiKey: "API_KEY",
+        },
+      },
     },
     rskMainnet: {
       accounts: process.env.PK ? [`0x${process.env.PK}`] : { mnemonic },
       chainId: chainIds.rskMainnet,
-      url: "https://public-node.rsk.co",
-      deployParameters: { migrate: rskMainnetMigrationParams },
+      url: "https://rpc.mainnet.rootstock.io/" + rskMainnetApiKey,
       tags: ["mainnet"],
+      verify: {
+        etherscan: {
+          apiUrl: "https://rootstock.blockscout.com/api/",
+          apiKey: "API_KEY",
+        },
+      },
     },
+  },
+  tenderly: {
+    privateVerification: false,
   },
   paths: {
     artifacts: "./artifacts",
@@ -188,34 +137,81 @@ const config: HardhatUserConfig = {
     tests: "./test",
   },
   solidity: {
-    version: "0.8.20",
-    settings: {
-      // https://hardhat.org/hardhat-network/#solidity-optimizer-support
-      optimizer: {
-        enabled: true,
-        runs: 200,
-        details: {
-          yulDetails: {
-            // solves viaIR issue that inline internal functions: https://github.com/ethereum/solidity/issues/13858#issuecomment-1428754261
-            optimizerSteps:
-              "dhfoDgvulfnTUtnIf[xa[r]EscLMcCTUtTOntnfDIulLculVcul[j]Tpeulxa[rul]xa[r]cLgvifCTUca[r]LSsTOtfDnca[r]Iulc]jmul[jul]VcTOculjmul",
+    compilers: [
+      {
+        version: "0.8.16",
+        settings: {
+          // https://hardhat.org/hardhat-network/#solidity-optimizer-support
+          optimizer: {
+            enabled: true,
+            runs: 200,
+          },
+          evmVersion: "london",
+          outputSelection: {
+            "*": {
+              "*": ["storageLayout"],
+            },
           },
         },
       },
-      viaIR: process.env.VIA_IR === undefined ? true : process.env.VIA_IR == "true",
-      evmVersion: "london", // FIXME: latest evm version supported by rsk explorers, keep it updated
-      outputSelection: {
-        "*": {
-          "*": ["storageLayout"],
+      {
+        version: "0.8.20",
+        settings: {
+          // https://hardhat.org/hardhat-network/#solidity-optimizer-support
+          optimizer: {
+            enabled: true,
+            runs: 200,
+            details: {
+              yulDetails: {
+                // solves viaIR issue that inline internal functions: https://github.com/ethereum/solidity/issues/13858#issuecomment-1428754261
+                optimizerSteps:
+                  "dhfoDgvulfnTUtnIf[xa[r]EscLMcCTUtTOntnfDIulLculVcul[j]Tpeulxa[rul]xa[r]cLgvifCTUca[r]LSsTOtfDnca[r]Iulc]jmul[jul]VcTOculjmul",
+              },
+            },
+          },
+          viaIR: process.env.VIA_IR === undefined ? true : process.env.VIA_IR == "true",
+          evmVersion: "london",
+          outputSelection: {
+            "*": {
+              "*": ["storageLayout"],
+            },
+          },
         },
       },
-    },
+      {
+        version: "0.8.24",
+        settings: {
+          // https://hardhat.org/hardhat-network/#solidity-optimizer-support
+          optimizer: {
+            enabled: true,
+            runs: 200,
+            details: {
+              yulDetails: {
+                // solves viaIR issue that inline internal functions: https://github.com/ethereum/solidity/issues/13858#issuecomment-1428754261
+                optimizerSteps:
+                  "dhfoDgvulfnTUtnIf[xa[r]EscLMcCTUtTOntnfDIulLculVcul[j]Tpeulxa[rul]xa[r]cLgvifCTUca[r]LSsTOtfDnca[r]Iulc]jmul[jul]VcTOculjmul",
+              },
+            },
+          },
+          viaIR: process.env.VIA_IR === undefined ? true : process.env.VIA_IR == "true",
+          evmVersion: "london", // FIXME: latest evm version supported by rsk explorers, keep it updated
+          outputSelection: {
+            "*": {
+              "*": ["storageLayout"],
+            },
+          },
+        },
+      },
+    ],
   },
   typechain: {
     outDir: "typechain",
-    target: "ethers-v5",
+    target: "ethers-v6",
     alwaysGenerateOverloads: false,
-    externalArtifacts: ["node_modules/moc-main/export/artifacts/*.json", "./dependencies/mocV1Imports/*.json"],
+    externalArtifacts: [
+      "node_modules/moc-main/export/artifacts/*.json",
+      "node_modules/moc-main-v1.0.6/export/artifacts/*.json",
+    ],
   },
   gasReporter: {
     enabled: process.env.REPORT_GAS ? true : false,
@@ -229,7 +225,7 @@ const config: HardhatUserConfig = {
     path: "./docs",
     clear: true,
     runOnCompile: false,
-    except: ["^contracts/echidna/", "^contracts/mocks/"],
+    except: ["^contracts/mocks/"],
   },
   contractSizer: {
     alphaSort: true,
