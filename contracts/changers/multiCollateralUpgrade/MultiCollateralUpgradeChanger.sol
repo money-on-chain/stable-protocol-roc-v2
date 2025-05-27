@@ -128,7 +128,6 @@ contract MultiCollateralUpgradeChanger is IChangeContract {
         // all rebalance params are in 0 because there is not another bucket available
         BucketParams memory bucketParams = BucketParams({
             acCoinbasePriceProvider: IPriceProvider(address(0)),
-            maxACtoSwapProvider: IDataProvider(address(0)),
             rtcThrld: 0,
             microLiquidationThrld: 0,
             penaltyRate: 0
