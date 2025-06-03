@@ -82,7 +82,7 @@
     "deploy-localhost": "hardhat deploy --tags MocRifDeploy",
     "deploy-development-migration": "hardhat deploy --network development --tags MocRifMigrate",
     "deploy-rskTestnet-migration": "hardhat deploy --network rskTestnetMigration --tags MocRifMigrate",
-    "deploy-rskTestnet": "hardhat deploy --network rskTestnet --tags MocRifDeploy",
+    "deploy-rskAlphaTestnet": "hardhat deploy --network rskAlphaTestnet --tags MocRifDeploy",
     "deploy-rskAlphaTestnet-migration": "hardhat deploy --network rskAlphaTestnetMigration --tags MocRifMigrate",
     "deploy-rskMainnet-migration": "hardhat deploy --network rskMainnetMigration --tags MocRifMigrate"
   }

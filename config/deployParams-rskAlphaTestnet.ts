@@ -62,6 +62,7 @@ export const rskAlphaTestnetDeployParams: DeployParameters = {
     tcInterestRate: PCT_BASE.mul(5).div(100000), // 0.005% : weekly 0.0025 / 365 * 7
     tcInterestPaymentBlockSpan: WEEK_BLOCK_SPAN,
     decayBlockSpan: DAY_BLOCK_SPAN,
+    allowDifferentRecipient: false,
   },
   settlementParams: {
     bes: MONTH_BLOCK_SPAN,
@@ -100,14 +101,14 @@ export const rskAlphaTestnetDeployParams: DeployParameters = {
     collateralAssetAddress: "0x19F64674D8A5B4E652319F5e239eFd3bc969A1fE",
     pauserAddress: "0x5bCdf8A2E61BD238AEe43b99962Ee8BfBda1Beca", // if not provided is set to deployer
     feeTokenAddress: "0x45a97b54021a3F99827641AFe1BFAE574431e6ab",
-    feeTokenPriceProviderAddress: "0x8DCE78BbD4D757EF7777Be113277cf5A35283b1E",
-    mocFeeFlowAddress: "0xcd8a1c9acc980ae031456573e34dc05cd7dae6e3",
-    mocAppreciationBeneficiaryAddress: "0xcd8a1c9acc980ae031456573e34dc05cd7dae6e3",
-    vendorsGuardianAddress: "0xcd8a1c9acc980ae031456573e34dc05cd7dae6e3",
-    tcInterestCollectorAddress: "0xcd8a1c9acc980ae031456573e34dc05cd7dae6e3",
-    mocVendorsAddress: "", // if not provided a new MocVendors will be deployed
-    maxAbsoluteOpProviderAddress: "", // if not provided a new FCMaxAbsoluteOpProvider.sol will be deployed with pauser as owner
-    maxOpDiffProviderAddress: "", // if not provided a new FCMaxOpDifferenceProvider.sol will be deployed with pauser as owner
+    feeTokenPriceProviderAddress: "0x4F9724e78e7Cd521c879b6B9eE7D5b4e7df3cfbC",
+    mocFeeFlowAddress: "0x499072990571C49Ef9369624885581b9C5aF0B11",
+    mocAppreciationBeneficiaryAddress: "0xf69287F5Ca3cC3C6d3981f2412109110cB8af076",
+    vendorsGuardianAddress: "0xf69287F5Ca3cC3C6d3981f2412109110cB8af076",
+    tcInterestCollectorAddress: "0xD1FF3909dCa7C755F38e4FF04ce7170b4940d89B",
+    mocVendorsAddress: "0x86C6269699F8aBDC6b49E5552F50342437858CAb",
+    maxAbsoluteOpProviderAddress: "0x14D227fa8666772E7d1B49Ce47A736f4909091A4",
+    maxOpDiffProviderAddress: "0x842852733E793aFa3829eEf356ED47FEb7641D34",
   },
   ...commonParams,
 };
