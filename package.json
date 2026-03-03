@@ -1,6 +1,6 @@
 {
   "name": "roc-sc-protocol-v2",
-  "version": "1.0.7",
+  "version": "1.0.8",
   "private": true,
   "homepage": "https://www.moneyonchain.com",
   "description": "Money on Chain main smart contract protocol RIF implementation",
@@ -11,11 +11,12 @@
     "hardhat-deploy": "0.11.30",
     "hardhat-storage-layout": "0.1.7",
     "solc": "0.8.20",
-    "moc-main": "github:money-on-chain/stable-protocol-core-v2#v1.0.7-rc"
+    "moc-main": "github:money-on-chain/stable-protocol-core-v2#v1.0.8"
   },
   "devDependencies": {
     "@commitlint/cli": "17.6.3",
     "@commitlint/config-conventional": "17.6.3",
+    "@nomicfoundation/hardhat-network-helpers": "1.0.8",
     "@nomicfoundation/hardhat-toolbox": "2.0.2",
     "@nomiclabs/hardhat-solhint": "3.0.1",
     "@openzeppelin/contracts": "4.9.0",
@@ -52,6 +53,9 @@
     "typechain": "8.2.0",
     "typescript": "5.0.4"
   },
+  "overrides": {
+    "@nomicfoundation/hardhat-network-helpers": "1.0.8"
+  },
   "comments": {
     "dependencies": "hardhat-solhint and hardhat-prettier includes old versions, that's why specific dependencies are added"
   },
@@ -77,13 +81,17 @@
     "lint-fix": "eslint --fix --config ./.eslintrc.yaml --ignore-path ./.eslintignore --ext .js,.ts .",
     "prettier": "prettier --config .prettierrc --write \"**/*.{js,json,md,sol,ts}\"",
     "prettier:check": "prettier --config .prettierrc --check \"**/*.{js,json,md,sol,ts}\"",
+    "test": "hardhat test",
     "release": "standard-version",
     "docgen": "hardhat docgen",
     "deploy-localhost": "hardhat deploy --tags MocRifDeploy",
     "deploy-development-migration": "hardhat deploy --network development --tags MocRifMigrate",
     "deploy-rskTestnet-migration": "hardhat deploy --network rskTestnetMigration --tags MocRifMigrate",
-    "deploy-rskTestnet": "hardhat deploy --network rskTestnet --tags MocRifDeploy",
+    "deploy-rskAlphaTestnet": "hardhat deploy --network rskAlphaTestnet --tags MocRifDeploy",
     "deploy-rskAlphaTestnet-migration": "hardhat deploy --network rskAlphaTestnetMigration --tags MocRifMigrate",
-    "deploy-rskMainnet-migration": "hardhat deploy --network rskMainnetMigration --tags MocRifMigrate"
+    "deploy-rskMainnet-migration": "hardhat deploy --network rskMainnetMigration --tags MocRifMigrate",
+    "deploy-localhost-mocVendorsUpgrade": "hardhat deploy --tags MocVendorsUpgradeChanger",
+    "deploy-rskTestnet-mocVendorsUpgrade": "hardhat deploy --network rskTestnet --tags MocVendorsUpgradeChanger",
+    "deploy-rskMainnet-mocVendorsUpgrade": "hardhat deploy --network rskMainnet --tags MocVendorsUpgradeChanger"
   }
 }
