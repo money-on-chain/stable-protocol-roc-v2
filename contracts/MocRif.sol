@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity 0.8.24;
 
-import { MocCARC20 } from "moc-main/contracts/collateral/rc20/MocCARC20.sol";
+import { MocCARC20 } from "moc-main-latest/contracts/collateral/rc20/MocCARC20.sol";
 
 /**
   @title MocRif

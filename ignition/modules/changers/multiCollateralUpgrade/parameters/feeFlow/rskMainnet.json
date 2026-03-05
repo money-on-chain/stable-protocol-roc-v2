@@ -1,0 +1,21 @@
+{
+  "FeeFlow": {
+    "governorAddress": "0x3b8853DF65AfBd94853E6D77ee0Ab5590F41bB08",
+    "docTokenAddress": "0xe700691dA7b9851F2F35f8b8182c69c53CcaD9Db",
+    "mocTokenAddress": "0x9AC7fE28967B30E3A4e6e03286d715b42B453D10",
+
+    "swapperDOCMOCAddress": "0x0000000000000000000000000000000000000000",
+
+    "mocRewards": "0x240fF84152C2673AdEf4E9642448ae1Df96CA19A",
+    "feeTokenAddressRecipient1": "0x240fF84152C2673AdEf4E9642448ae1Df96CA19A",
+    "feeTokenAddressRecipient2": "0x240fF84152C2673AdEf4E9642448ae1Df96CA19A",
+
+    "feesSplitterFeeTokenPct1": "500000000000000000",
+
+    "docToMocOrderThreshold": "1000000000000000000",
+    "docToMocPriceProvider": "0x0000000000000000000000000000000000000000",
+    "docToMocSlippage": "30000000000000000",
+
+    "mocToDocPriceProvider": "0x11683439c9509C135ee4F7bB6e23835e1d86ECBA"
+  }
+}

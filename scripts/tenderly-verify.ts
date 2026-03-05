@@ -3,7 +3,7 @@ import hre, { tenderly } from "hardhat";
 async function main() {
   const { deployments } = hre;
 
-  let contracts: any = [];
+  const contracts: { name: string; address: string }[] = [];
   for (const [name, deployment] of Object.entries(await deployments.all())) {
     const metadataObj = JSON.parse(deployment.metadata!);
     const [[path, contract]] = Object.entries(metadataObj.settings.compilationTarget);

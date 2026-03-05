@@ -2,7 +2,7 @@
 pragma solidity 0.8.24;
 
 import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
-import { IDataProvider } from "moc-main/contracts/interfaces/IDataProvider.sol";
+import { IDataProvider } from "moc-main-latest/contracts/interfaces/IDataProvider.sol";
 
 /**
  * @title Flux Capacitor Operation Difference Maximum DataProvider

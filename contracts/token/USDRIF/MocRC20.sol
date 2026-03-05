@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity 0.8.24;
 
-import { IMocRC20 } from "moc-main/contracts/interfaces/IMocRC20.sol";
+import { IMocRC20 } from "moc-main-latest/contracts/interfaces/IMocRC20.sol";
 import { IGovernor, Governed } from "./Governed.sol";
 /* solhint-disable-next-line max-line-length */
 import { AccessControlEnumerableUpgradeable, AccessControlUpgradeable, IAccessControlUpgradeable } from "@openzeppelin/contracts-upgradeable/access/AccessControlEnumerableUpgradeable.sol";

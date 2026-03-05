@@ -1,16 +1,17 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity 0.8.24;
 
-import { IChangeContract } from "moc-main/contracts/interfaces/IChangeContract.sol";
-import { IDataProvider } from "moc-main/contracts/interfaces/IDataProvider.sol";
-import { IPriceProvider } from "moc-main/contracts/interfaces/IPriceProvider.sol";
-import { IMocSwapper } from "moc-main/contracts/interfaces/IMocSwapper.sol";
+import { IChangeContract } from "moc-main-latest/contracts/interfaces/IChangeContract.sol";
+import { IDataProvider } from "moc-main-latest/contracts/interfaces/IDataProvider.sol";
+import { IPriceProvider } from "moc-main-latest/contracts/interfaces/IPriceProvider.sol";
+import { IMocSwapper } from "moc-main-latest/contracts/interfaces/IMocSwapper.sol";
 import { MocRif } from "../../MocRif.sol";
-import { PeggedTokenParams } from "moc-main/contracts/core/MocCommons.sol";
-import { MocQueue } from "moc-main/contracts/queue/MocQueue.sol";
-import { MocMultiCollateralGuard } from "moc-main/contracts/multiCollateral/MocMultiCollateralGuard.sol";
-import { BucketParams } from "moc-main/contracts/multiCollateral/MocMultiCollateralBase.sol";
-import { MocRC20 } from "moc-main/contracts/tokens/MocRC20.sol";
+import { PeggedTokenParams } from "moc-main-latest/contracts/core/MocCommons.sol";
+import { MocQueue } from "moc-main-latest/contracts/queue/MocQueue.sol";
+import { MocMultiCollateralGuard } from "moc-main-latest/contracts/multiCollateral/MocMultiCollateralGuard.sol";
+import { BucketParams } from "moc-main-latest/contracts/multiCollateral/MocMultiCollateralBase.sol";
+import { MocRC20 } from "moc-main-latest/contracts/tokens/MocRC20.sol";
+import { MocCARC20 } from "moc-main-latest/contracts/collateral/rc20/MocCARC20.sol";
 
 /**
   @title MultiCollateralUpgradeChanger
@@ -24,10 +25,15 @@ import { MocRC20 } from "moc-main/contracts/tokens/MocRC20.sol";
             will be handled independently on a new changer.
        4. Migrate time trackers that uses block.number to timestamps
        5. Set the new price provider for USDRif that has the getLastPublicationBlock() function implemented
+       6. Add DOC bucket with USDRif pegged token to MocMultiCollateralGuard
  */
 contract MultiCollateralUpgradeChanger is IChangeContract {
     // ------- Custom Errors -------
     error InvalidSetting();
+
+    // ------- Constants -------
+    bytes32 private constant MINTER_ROLE = keccak256("MINTER_ROLE");
+    bytes32 private constant BURNER_ROLE = keccak256("BURNER_ROLE");
 
     // ------- Storage -------
     // USDRIF proxy contract to be upgraded
@@ -35,7 +41,7 @@ contract MultiCollateralUpgradeChanger is IChangeContract {
     // address of the USDRIF implementation contract the proxy will delegate to
     address public immutable usdRifNewImplementation;
     // MocRif proxy contract to be upgraded
-    MocRif public immutable mocRifProxy;
+    MocRif public immutable rifBucket;
     // address of the MocRif implementation contract the proxy will delegate to
     address public immutable mocRifImplementation;
     // address of the new MocCoreExpansion contract implementation
@@ -48,35 +54,65 @@ contract MultiCollateralUpgradeChanger is IChangeContract {
     address public immutable newPriceProvider;
     // block span in seconds
     uint256 public blockSpan;
+    // DOC bucket (MocCARC20) to be added to MocMultiCollateralGuard
+    MocCARC20 public immutable docBucket;
+    // Rebalance params for RIF bucket
+    BucketParams public rifBucketParams;
+    // Rebalance params for DOC bucket
+    BucketParams public docBucketParams;
+    // MocSwapper for RIF/DOC pair (only one swapper needed for 2 buckets)
+    IMocSwapper public immutable rifDocMocSwapper;
+    // New protected threshold for RIF bucket
+    uint256 public immutable rifNewProtectedThrld;
+    // usdRif params for DOC bucket
+    PeggedTokenParams public usdRifParamsForDocBucket;
 
     /** 
       @notice Constructor
-      @param mocRifProxy_ address of the proxy to be upgraded
+      @param rifBucket_ address of the proxy to be upgraded
       @param mocRifImplementation_ address of the contract the proxy will delegate to
       @param usdRifNewImplementation_ address of the TP contract the proxy will delegate to
       @param mocMocCoreExpansionImplementation_ Address of the new MocCoreExpansion implementation
       @param newMocQueueRifProxy_ address of the new MocQueue proxy
       @param newPriceProvider_ address of the new price provider
       @param blockSpan_ block span in seconds
+      @param docBucket_ address of the DOC bucket (MocCARC20) to be added to MocMultiCollateralGuard
+      @param rifBucketParams_ rebalance params for RIF bucket
+      @param docBucketParams_ rebalance params for DOC bucket
+      @param rifDocMocSwapper_ MocSwapper for RIF/DOC pair
+      @param rifNewProtectedThrld_ new protected threshold for RIF bucket [PREC]
+      @param usdRifParamsForDocBucket_ usdRif params for DOC bucket
     */
     constructor(
-        MocRif mocRifProxy_,
+        MocRif rifBucket_,
         address mocRifImplementation_,
         address usdRifNewImplementation_,
         address mocMocCoreExpansionImplementation_,
         MocQueue newMocQueueRifProxy_,
         address newPriceProvider_,
-        uint256 blockSpan_
+        uint256 blockSpan_,
+        MocCARC20 docBucket_,
+        BucketParams memory rifBucketParams_,
+        BucketParams memory docBucketParams_,
+        IMocSwapper rifDocMocSwapper_,
+        uint256 rifNewProtectedThrld_,
+        PeggedTokenParams memory usdRifParamsForDocBucket_
     ) {
-        mocRifProxy = mocRifProxy_;
+        rifBucket = rifBucket_;
         mocRifImplementation = mocRifImplementation_;
         usdRifNewImplementation = usdRifNewImplementation_;
         mocMocCoreExpansionImplementation = mocMocCoreExpansionImplementation_;
         newMocQueueRifProxy = newMocQueueRifProxy_;
         mocMultiCollateralGuardProxy = newMocQueueRifProxy.mocMultiCollateralGuard();
-        usdRifProxy = MocRC20(address(mocRifProxy.tpTokens(0)));
+        usdRifProxy = MocRC20(address(rifBucket.tpTokens(0)));
         newPriceProvider = newPriceProvider_;
         blockSpan = blockSpan_;
+        docBucket = docBucket_;
+        rifBucketParams = rifBucketParams_;
+        docBucketParams = docBucketParams_;
+        rifDocMocSwapper = rifDocMocSwapper_;
+        rifNewProtectedThrld = rifNewProtectedThrld_;
+        usdRifParamsForDocBucket = usdRifParamsForDocBucket_;
 
         // reverts if some parameter is wrong
         verifySettings();
@@ -100,7 +136,7 @@ contract MultiCollateralUpgradeChanger is IChangeContract {
       @dev IMPORTANT: This function should not be overridden
     */
     function _upgrade() internal {
-        mocRifProxy.upgradeTo(mocRifImplementation);
+        rifBucket.upgradeTo(mocRifImplementation);
         usdRifProxy.upgradeTo(usdRifNewImplementation);
     }
 
@@ -109,7 +145,7 @@ contract MultiCollateralUpgradeChanger is IChangeContract {
     */
     function _beforeUpgrade() internal {
         // Initialize new Rif MocQueue OperationId with current values, to maintain continuity
-        MocQueue legacyMocQueueRifProxy = MocQueue(mocRifProxy.mocQueue());
+        MocQueue legacyMocQueueRifProxy = MocQueue(rifBucket.mocQueue());
         uint256 currentOperIdCount = legacyMocQueueRifProxy.operIdCount();
         newMocQueueRifProxy.initOperId(currentOperIdCount, currentOperIdCount);
     }
@@ -119,51 +155,73 @@ contract MultiCollateralUpgradeChanger is IChangeContract {
     */
     function _afterUpgrade() internal {
         //set new MocQueue to MocCore
-        mocRifProxy.setMocQueue(payable(address(newMocQueueRifProxy)));
+        rifBucket.setMocQueue(payable(address(newMocQueueRifProxy)));
         // set new MocCoreExpansion to MocCore
-        mocRifProxy.setMocCoreExpansion(mocMocCoreExpansionImplementation);
+        rifBucket.setMocCoreExpansion(mocMocCoreExpansionImplementation);
         // register MocCore on MocQueue
-        newMocQueueRifProxy.registerBucket(mocRifProxy);
+        newMocQueueRifProxy.registerBucket(rifBucket);
 
-        // all rebalance params are in 0 because there is not another bucket available
-        BucketParams memory bucketParams = BucketParams({
-            acCoinbasePriceProvider: IPriceProvider(address(0)),
-            rtcThrld: 0,
-            microLiquidationThrld: 0,
-            penaltyRate: 0
-        });
-        IMocSwapper[] memory mocSwappers;
-        // register MocCore on MocMultiCollateralGuard
-        mocMultiCollateralGuardProxy.addBucket(mocRifProxy, bucketParams, mocSwappers);
+        // register RIF bucket (base bucket) on MocMultiCollateralGuard with empty swappers
+        IMocSwapper[] memory emptySwappers;
+        mocMultiCollateralGuardProxy.addBucket(rifBucket, rifBucketParams, emptySwappers);
 
         // migrate block numbers to timestamps
-        uint256 nextEmaCalculation = convertNextBlockToTimestamp(mocRifProxy.nextEmaCalculation());
-        uint256 nextTCInterestPayment = convertNextBlockToTimestamp(mocRifProxy.nextTCInterestPayment());
-        uint256 nextSettlementTime = convertNextBlockToTimestamp(mocRifProxy.nextSettlementTime());
+        uint256 nextEmaCalculation = convertNextBlockToTimestamp(rifBucket.nextEmaCalculation());
+        uint256 nextTCInterestPayment = convertNextBlockToTimestamp(rifBucket.nextTCInterestPayment());
+        uint256 nextSettlementTime = convertNextBlockToTimestamp(rifBucket.nextSettlementTime());
         uint256 lastOperationTimeStamp = block.timestamp; // simplify the logic setting current timestamp
 
-        mocRifProxy.migrateTimestamps(
+        rifBucket.migrateTimestamps(
             nextEmaCalculation,
             nextTCInterestPayment,
             nextSettlementTime,
             lastOperationTimeStamp
         );
-        mocRifProxy.setDecayTimeSpan(mocRifProxy.decayTimeSpan() * blockSpan);
-        mocRifProxy.setEmaCalculationTimeSpan(mocRifProxy.emaCalculationTimeSpan() * blockSpan);
-        mocRifProxy.setTCInterestPaymentTimeSpan(mocRifProxy.tcInterestPaymentTimeSpan() * blockSpan);
-        mocRifProxy.setSettlementTimeSpan(mocRifProxy.settlementTimeSpan() * blockSpan);
+        rifBucket.setFluxCapacitorParams(
+            address(rifBucket.maxAbsoluteOpProvider()),
+            address(rifBucket.maxOpDiffProvider()),
+            rifBucket.decayTimeSpan() * blockSpan
+        );
+        rifBucket.setEmaCalculationTimeSpan(rifBucket.emaCalculationTimeSpan() * blockSpan);
+        rifBucket.setTCInterestParams(
+            rifBucket.tcInterestCollectorAddress(),
+            rifBucket.tcInterestRate(),
+            rifBucket.tcInterestPaymentTimeSpan() * blockSpan
+        );
+        rifBucket.setSettlementTimeSpan(rifBucket.settlementTimeSpan() * blockSpan);
+        rifBucket.setCoverageThresholds(rifNewProtectedThrld, rifBucket.liqThrld());
 
         // edit USDRif pegged token to set the new price provider
-        (, uint256 emaSf) = mocRifProxy.tpEma(0);
+        (, uint256 emaSf) = rifBucket.tpEma(0);
         PeggedTokenParams memory peggedTokenParams = PeggedTokenParams({
             priceProviderAddress: newPriceProvider,
-            tpCtarg: mocRifProxy.tpCtarg(0),
-            tpMintFee: mocRifProxy.tpMintFees(address(usdRifProxy)),
-            tpRedeemFee: mocRifProxy.tpRedeemFees(address(usdRifProxy)),
+            tpCtarg: rifBucket.tpCtarg(0),
+            tpMintFee: rifBucket.tpMintFees(address(usdRifProxy)),
+            tpRedeemFee: rifBucket.tpRedeemFees(address(usdRifProxy)),
             tpEma: 0, // Emma is not editable, only initialized
             tpEmaSf: emaSf
         });
-        mocRifProxy.editPeggedToken(usdRifProxy, peggedTokenParams);
+        rifBucket.editPeggedToken(usdRifProxy, peggedTokenParams);
+
+        ///////////////////////////////////////////////////////////////
+        /////// BEGIN Add DOC bucket to MocMultiCollateralGuard ///////
+        ///////////////////////////////////////////////////////////////
+
+        // Doc bucket is deployed with no MocMultiCollateralGuard, set it
+        MocQueue(docBucket.mocQueue()).setMocMultiCollateralGuard(mocMultiCollateralGuardProxy);
+        // Doc bucket is deployed with no registered bucket, register it
+        MocQueue(docBucket.mocQueue()).registerBucket(docBucket);
+
+        // Add DOC bucket with USDRif pegged token to MocMultiCollateralGuard
+        docBucket.addPeggedToken(usdRifProxy, usdRifParamsForDocBucket);
+        // Grant MINTER and BURNER roles to the DOC bucket so it can mint/burn USDRif
+        usdRifProxy.grantRole(MINTER_ROLE, address(docBucket));
+        usdRifProxy.grantRole(BURNER_ROLE, address(docBucket));
+
+        // Register DOC bucket on MocMultiCollateralGuard with the RIF/DOC swapper
+        IMocSwapper[] memory docSwappers = new IMocSwapper[](1);
+        docSwappers[0] = rifDocMocSwapper;
+        mocMultiCollateralGuardProxy.addBucket(docBucket, docBucketParams, docSwappers);
 
         // reverts if some parameter is wrong
         verifySettings();
@@ -184,15 +242,19 @@ contract MultiCollateralUpgradeChanger is IChangeContract {
       @notice verifies the most importat the configuration params. Reverts if somethings is wrong
     */
     function verifySettings() public view {
-        address governor = address(mocRifProxy.governor());
-        address pauser = mocRifProxy.pauser();
+        address governor = address(rifBucket.governor());
+        address pauser = rifBucket.pauser();
         // verify governor
         if (governor != address(newMocQueueRifProxy.governor())) revert InvalidSetting();
         if (governor != address(mocMultiCollateralGuardProxy.governor())) revert InvalidSetting();
+        if (governor != address(docBucket.governor())) revert InvalidSetting();
+        if (governor != address(MocQueue(docBucket.mocQueue()).governor())) revert InvalidSetting();
 
         // verify pauser
         if (pauser != newMocQueueRifProxy.pauser()) revert InvalidSetting();
         if (pauser != mocMultiCollateralGuardProxy.pauser()) revert InvalidSetting();
+        if (pauser != docBucket.pauser()) revert InvalidSetting();
+        if (pauser != MocQueue(docBucket.mocQueue()).pauser()) revert InvalidSetting();
 
         // verify new price provider implements getLastPublicationBlock()
         IPriceProvider(newPriceProvider).getLastPublicationBlock();
