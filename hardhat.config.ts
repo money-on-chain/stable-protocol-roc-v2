@@ -136,8 +136,6 @@ export default defineConfig({
       "moc-main-latest/contracts/multiCollateral/swapper/MocSwapperV3.sol",
       "moc-main-latest/contracts/multiCollateral/swapper/MocSwapperV3MultiHop.sol",
 
-      "moc-main-stable/contracts/collateral/rc20/MocCARC20.sol",
-
       "@moc/price-oracle-interfaces/contracts/PriceProviderInverse.sol",
       "@moc/price-oracle-interfaces/contracts/PriceProviderDummy.sol",
 
