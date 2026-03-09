@@ -8,10 +8,10 @@
   "author": "MOC Investments Corp. 2020",
   "license": "AGPL-3.0",
   "dependencies": {
-    "hardhat": "3.1.6",
+    "hardhat": "3.1.11",
     "moc-main-latest": "github:money-on-chain/main-sc-protocol-v2#feature/multicollateral",
     "moc-main-stable": "github:money-on-chain/main-sc-protocol-v2#v1.0.7-rc",
-    "@moc/price-oracle-interfaces": "git+ssh://git@github.com/money-on-chain/price_oracle_interfaces.git#9a3afd4c76cb56cf00fc10a7a754d2f7953f3e89",
+    "@moc/price-oracle-interfaces": "git+ssh://git@github.com/money-on-chain/price_oracle_interfaces.git#f19eb774c93ad7a769305693583131a0379de77b",
     "solc": "0.8.24"
   },
   "devDependencies": {

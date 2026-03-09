@@ -59,6 +59,7 @@ contract BaseFork is IgnitionDeployments {
     MocReverseAuction public reverseAuctionDocToMoc;
 
     IPriceProvider rifPriceProvider;
+    IPriceProvider rbtcUsdPriceProvider;
     DataProvider rifToDocMaxAmountProvider;
 
     // Test account
@@ -97,6 +98,12 @@ contract BaseFork is IgnitionDeployments {
         require(rifPriceProviderAddr != address(0), "RifPriceProvider not deployed");
         rifPriceProvider = IPriceProvider(rifPriceProviderAddr);
 
+        address rifToRbtcPriceProviderAddr = getDeployedAddress("MultiCollateral_RifToRbtcPriceProvider");
+        require(rifToRbtcPriceProviderAddr != address(0), "RifToRbtcPriceProvider not deployed");
+        rbtcUsdPriceProvider = IPriceProvider(
+            address(IPriceProviderDiv(rifToRbtcPriceProviderAddr)._priceProviderDivisor())
+        );
+
         address rifToDocMaxAmountProviderAddr = getDeployedAddress("Swappers_RifToDocMaxAmountProvider");
         require(rifToDocMaxAmountProviderAddr != address(0), "RifToDocMaxAmountProvider not deployed");
         rifToDocMaxAmountProvider = DataProvider(rifToDocMaxAmountProviderAddr);
@@ -127,6 +134,7 @@ contract BaseFork is IgnitionDeployments {
 
         // Get deployed contracts from Ignition
         _loadIgnitionContracts();
+        _mockRbtcUsdPriceProvider();
 
         docToken = MocRC20(address(docBucket.acToken()));
         docProToken = MocRC20(address(docBucket.tcToken()));
@@ -181,6 +189,13 @@ contract BaseFork is IgnitionDeployments {
         deal(address(docToken), holderAddr, amount);
     }
 
+    /// @notice Keep RBTC/USD provider stable across all tests
+    function _mockRbtcUsdPriceProvider() internal {
+        bytes memory data = abi.encodeWithSelector(IPriceProvider.peek.selector);
+        (bytes32 price, ) = rbtcUsdPriceProvider.peek();
+        vm.mockCall(address(rbtcUsdPriceProvider), data, abi.encode(price, true));
+    }
+
     /// @notice Helper to get execution cost for an operation type
     function _getExecCost(MocQueue mocQueue, MocQueueExecFees.OperType operType_) internal view returns (uint256) {
         return mocQueue.execCost(operType_) * block.basefee;
@@ -209,6 +224,10 @@ interface IMocQueueLegacy {
     function minOperWaitingBlk() external view returns (uint256);
     function operIdCount() external view returns (uint256);
     function execute(address executionFeeRecipient) external;
+}
+
+interface IPriceProviderDiv {
+    function _priceProviderDivisor() external view returns (IPriceProvider);
 }
 
 struct PegContainerItem {

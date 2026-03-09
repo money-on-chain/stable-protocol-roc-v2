@@ -140,6 +140,9 @@ export default defineConfig({
 
       "@moc/price-oracle-interfaces/contracts/PriceProviderInverse.sol",
       "@moc/price-oracle-interfaces/contracts/PriceProviderDummy.sol",
+      "@moc/price-oracle-interfaces/contracts/PriceProviderDocRbtc.sol",
+      "@moc/price-oracle-interfaces/contracts/PriceProviderDocUsd.sol",
+      "@moc/price-oracle-interfaces/contracts/PriceProviderDiv.sol",
 
       "@openzeppelin/contracts/proxy/ERC1967/ERC1967Proxy.sol",
     ],
