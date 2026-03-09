@@ -97,6 +97,7 @@ abstract contract IgnitionDeployments is Test {
         _tryParseAddress(json, "MultiCollateral_MocCoreExpansion");
         _tryParseAddress(json, "MultiCollateral_MultiCollateralUpgradeChanger");
         _tryParseAddress(json, "MultiCollateral_RifPriceProvider");
+        _tryParseAddress(json, "MultiCollateral_RifToRbtcPriceProvider");
     }
 
     /// @notice Try to parse an address from JSON for a given key

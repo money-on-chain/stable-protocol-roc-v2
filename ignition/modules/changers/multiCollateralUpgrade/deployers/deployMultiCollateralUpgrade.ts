@@ -15,7 +15,6 @@ type AddressParam = string | ContractFuture<string>;
  * BucketParams structure for rebalancing
  */
 export interface BucketParams {
-  acCoinbasePriceProvider: StringParam;
   rebalanceExecFeeRecipient: StringParam;
   rtcThrld: BigintParam;
   microLiquidationThrld: BigintParam;
@@ -28,7 +27,9 @@ export interface MultiCollateralUpgradeParams {
   governorAddress: StringParam;
   pauserAddress: StringParam;
   mocCoreAddress: StringParam;
+  mocState: StringParam;
   rifPriceProvider: StringParam;
+  rbtcUsdPriceProvider: StringParam;
   blockSpan: BigintParam;
   // Guard parameters
   microLiquidationExecCost: BigintParam;
@@ -81,7 +82,9 @@ export function getMultiCollateralUpgradeParams(
     governorAddress: getParameter<string>("governorAddress"),
     pauserAddress: getParameter<string>("pauserAddress"),
     mocCoreAddress: getParameter<string>("mocCoreAddress"),
+    mocState: getParameter<string>("mocState"),
     rifPriceProvider: getParameter<string>("rifPriceProvider"),
+    rbtcUsdPriceProvider: getParameter<string>("rbtcUsdPriceProvider"),
     blockSpan: getParameter<bigint>("blockSpan"),
     microLiquidationExecCost: getParameter<bigint>("microLiquidationExecCost"),
     liquidationExecCost: getParameter<bigint>("liquidationExecCost"),
@@ -102,14 +105,12 @@ export function getMultiCollateralUpgradeParams(
     rifNewProtectedThrld: getParameter<bigint>("rifNewProtectedThrld"),
     // BucketParams for rebalancing
     rifBucketParams: {
-      acCoinbasePriceProvider: getParameter<string>("rifAcCoinbasePriceProvider"),
       rebalanceExecFeeRecipient: getParameter<string>("rifRebalanceExecFeeRecipient"),
       rtcThrld: getParameter<bigint>("rifRtcThrld"),
       microLiquidationThrld: getParameter<bigint>("rifMicroLiquidationThrld"),
       penaltyRate: getParameter<bigint>("rifPenaltyRate"),
     },
     docBucketParams: {
-      acCoinbasePriceProvider: getParameter<string>("docAcCoinbasePriceProvider"),
       rebalanceExecFeeRecipient: getParameter<string>("docRebalanceExecFeeRecipient"),
       rtcThrld: getParameter<bigint>("docRtcThrld"),
       microLiquidationThrld: getParameter<bigint>("docMicroLiquidationThrld"),
@@ -205,9 +206,29 @@ export function deployMultiCollateralUpgrade(
     id: `${prefix}MocCoreExpansion`,
   });
 
+  // Deploy WrapperPriceProvider using rifPriceProvider as the underlying provider
+  const rifPriceProvider = m.contract("WrapperPriceProvider", [params.rifPriceProvider], {
+    id: `${prefix}RifPriceProvider`,
+  });
+
+  // Deploy PriceProviderDocUsd for DOC pegged token
+  const docToUsdRifPriceProvider = m.contract("PriceProviderDocUsd", [params.mocState], {
+    id: `${prefix}DocToUsdRifPriceProvider`,
+  });
+
+  // Deploy PriceProviderDocRbtc for DOC/RBTC price
+  const docToRbtcPriceProvider = m.contract("PriceProviderDocRbtc", [params.mocState], {
+    id: `${prefix}DocToRbtcPriceProvider`,
+  });
+
+  // Deploy PriceProviderRifRbtc for RIF/RBTC price
+  const rifToRbtcPriceProvider = m.contract("PriceProviderDiv", [rifPriceProvider, params.rbtcUsdPriceProvider], {
+    id: `${prefix}RifToRbtcPriceProvider`,
+  });
+
   // Build BucketParams structs for the changer
   const rifBucketParamsStruct = {
-    acCoinbasePriceProvider: params.rifBucketParams!.acCoinbasePriceProvider,
+    acCoinbasePriceProvider: rifToRbtcPriceProvider,
     rebalanceExecFeeRecipient: params.rifBucketParams!.rebalanceExecFeeRecipient,
     rtcThrld: params.rifBucketParams!.rtcThrld,
     microLiquidationThrld: params.rifBucketParams!.microLiquidationThrld,
@@ -215,22 +236,12 @@ export function deployMultiCollateralUpgrade(
   };
 
   const docBucketParamsStruct = {
-    acCoinbasePriceProvider: params.docBucketParams!.acCoinbasePriceProvider,
+    acCoinbasePriceProvider: docToRbtcPriceProvider,
     rebalanceExecFeeRecipient: params.docBucketParams!.rebalanceExecFeeRecipient,
     rtcThrld: params.docBucketParams!.rtcThrld,
     microLiquidationThrld: params.docBucketParams!.microLiquidationThrld,
     penaltyRate: params.docBucketParams!.penaltyRate,
   };
-
-  // Deploy WrapperPriceProvider using rifPriceProvider as the underlying provider
-  const rifPriceProvider = m.contract("WrapperPriceProvider", [params.rifPriceProvider], {
-    id: `${prefix}RifPriceProvider`,
-  });
-
-  // Deploy PriceProviderDummy for DOC pegged token, initialized at 1e18
-  const docToUsdRifPriceProvider = m.contract("PriceProviderDummy", ["1000000000000000000"], {
-    id: `${prefix}DocToUsdRifPriceProvider`,
-  });
 
   // Build PeggedTokenParams struct for DOC bucket
   const peggedTokenParamsStruct = {
