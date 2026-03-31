@@ -36,6 +36,6 @@
     "docRtcThrld": "1000000000000000000",
     "docMicroLiquidationThrld": "1000000000000000000",
     "docPenaltyRate": "0",
-    "rifNewProtectedThrld": "2"
+    "rifNewProtectedThrld": "2000000000000000000"
   }
 }
