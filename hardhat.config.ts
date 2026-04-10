@@ -1,9 +1,11 @@
-import { defineConfig, configVariable } from "hardhat/config";
+import { defineConfig } from "hardhat/config";
+import type { HttpNetworkAccountsUserConfig } from "hardhat/types/config";
 import { resolve, dirname } from "path";
 import { fileURLToPath } from "url";
 import { config as dotenvConfig } from "dotenv";
 import hardhatToolboxMochaEthers from "@nomicfoundation/hardhat-toolbox-mocha-ethers";
 import hardhatContractSizer from "@solidstate/hardhat-contract-sizer";
+import "@nomicfoundation/hardhat-verify";
 
 // Note: @nomicfoundation/hardhat-toolbox-mocha-ethers includes:
 // - @nomicfoundation/hardhat-ethers
@@ -31,13 +33,17 @@ const chainIds = {
   rskMainnet: 30,
 };
 
-// Ensure that we have all the environment variables we need.
-let mnemonic: string;
-if (!process.env.MNEMONIC) {
-  throw new Error("Please set your MNEMONIC in a .env file");
-} else {
-  mnemonic = process.env.MNEMONIC;
+const pk = process.env.PK?.trim();
+const mnemonic = process.env.MNEMONIC?.trim();
+
+if (!pk && !mnemonic) {
+  throw new Error("Please set PK or MNEMONIC in a .env file");
 }
+
+const accounts: HttpNetworkAccountsUserConfig = pk ? [pk] : { mnemonic: mnemonic! };
+
+const testnet_rpc_url = process.env["RSK_TESTNET_RPC_URL"] || "https://public-node.testnet.rsk.co";
+const mainnet_rpc_url = process.env["RSK_MAINNET_RPC_URL"] || "https://public-node.rsk.co";
 
 const compilers = [
   {
@@ -150,38 +156,76 @@ export default defineConfig({
     except: [/.*[Tt]ests?$/, /.*[Mm]ock.*/, /.*Handler$/, /.*\.t\.sol/],
     flat: false,
   },
+  verify: {
+    blockscout: {
+      enabled: true,
+    },
+    etherscan: {
+      enabled: false,
+      apiKey: process.env.ETHERSCAN_API_KEY ?? "unused",
+    },
+    sourcify: {
+      enabled: false,
+    },
+  },
+  chainDescriptors: {
+    [chainIds.rskMainnet]: {
+      name: "Rootstock",
+      chainType: "generic",
+      blockExplorers: {
+        etherscan: {
+          name: "Rootstock Blockscout",
+          url: "https://rootstock.blockscout.com",
+          apiUrl: "https://rootstock.blockscout.com/api",
+        },
+        blockscout: {
+          url: "https://rootstock.blockscout.com",
+          apiUrl: "https://rootstock.blockscout.com/api",
+        },
+      },
+    },
+    [chainIds.rskTestnet]: {
+      name: "Rootstock Testnet",
+      chainType: "generic",
+      blockExplorers: {
+        etherscan: {
+          name: "Rootstock Testnet Blockscout",
+          url: "https://rootstock-testnet.blockscout.com",
+          apiUrl: "https://rootstock-testnet.blockscout.com/api",
+        },
+        blockscout: {
+          url: "https://rootstock-testnet.blockscout.com",
+          apiUrl: "https://rootstock-testnet.blockscout.com/api",
+        },
+      },
+    },
+  },
   networks: {
     hardhat: {
       type: "edr-simulated",
-      accounts: {
-        mnemonic,
-        accountsBalance: "100000000000000000000000000000000000",
-      },
       chainId: chainIds.hardhat,
+      accounts: {
+        mnemonic: mnemonic!,
+        accountsBalance: 1000000000n,
+      },
     },
     rskAlphaTestnet: {
       type: "http",
-      url: configVariable("RSK_TESTNET_RPC_URL"),
+      url: testnet_rpc_url,
       chainId: chainIds.rskTestnet,
-      accounts: {
-        mnemonic,
-      },
+      accounts,
     },
     rskTestnet: {
       type: "http",
-      url: configVariable("RSK_TESTNET_RPC_URL"),
+      url: testnet_rpc_url,
       chainId: chainIds.rskTestnet,
-      accounts: {
-        mnemonic,
-      },
+      accounts,
     },
     rskMainnet: {
       type: "http",
-      url: configVariable("RSK_MAINNET_RPC_URL"),
+      url: mainnet_rpc_url,
       chainId: chainIds.rskMainnet,
-      accounts: {
-        mnemonic,
-      },
+      accounts,
     },
     rskMainnetFork: {
       type: "edr-simulated",
@@ -191,8 +235,8 @@ export default defineConfig({
       },
       chainId: 30,
       accounts: {
-        mnemonic,
-        accountsBalance: "100000000000000000000000000000000000",
+        mnemonic: mnemonic!,
+        accountsBalance: 10000000000000000000n,
       },
       //loggingEnabled: true,
     },
@@ -200,13 +244,16 @@ export default defineConfig({
       type: "http",
       url: "http://localhost:8545",
       chainId: chainIds.rskMainnet,
-      accounts: {
-        mnemonic,
-      },
+      accounts,
       gas: 30000000,
     },
   },
-
+  ignition: {
+    blockPollingInterval: 10000,
+    timeBeforeBumpingFees: 600000,
+    maxFeeBumps: 5,
+    requiredConfirmations: 1,
+  },
   paths: {
     artifacts: "./artifacts",
     cache: "./cache",
