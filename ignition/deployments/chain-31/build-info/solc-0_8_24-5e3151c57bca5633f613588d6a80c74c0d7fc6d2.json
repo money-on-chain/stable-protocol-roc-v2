@@ -1,0 +1,66 @@
+{
+  "_format": "hh3-sol-build-info-1",
+  "id": "solc-0_8_24-5e3151c57bca5633f613588d6a80c74c0d7fc6d2",
+  "solcVersion": "0.8.24",
+  "solcLongVersion": "0.8.24+commit.e11b9ed9",
+  "userSourceNameMap": {
+    "@moc/price-oracle-interfaces/contracts/PriceProviderDocRbtc.sol": "npm/price-oracle-interfaces@0.0.2/contracts/PriceProviderDocRbtc.sol",
+    "@moc/price-oracle-interfaces/contracts/PriceProviderDocUsd.sol": "npm/price-oracle-interfaces@0.0.2/contracts/PriceProviderDocUsd.sol",
+    "@moc/price-oracle-interfaces/contracts/PriceProviderDummy.sol": "npm/price-oracle-interfaces@0.0.2/contracts/PriceProviderDummy.sol"
+  },
+  "input": {
+    "language": "Solidity",
+    "settings": {
+      "evmVersion": "london",
+      "optimizer": {
+        "enabled": true,
+        "runs": 200,
+        "details": {
+          "yulDetails": {
+            "optimizerSteps": "dhfoDgvulfnTUtnIf[xa[r]EscLMcCTUtTOntnfDIulLculVcul[j]Tpeulxa[rul]xa[r]cLgvifCTUca[r]LSsTOtfDnca[r]Iulc]jmul[jul]VcTOculjmul"
+          }
+        }
+      },
+      "outputSelection": {
+        "*": {
+          "": [
+            "ast"
+          ],
+          "*": [
+            "abi",
+            "evm.bytecode",
+            "evm.deployedBytecode",
+            "evm.methodIdentifiers",
+            "metadata",
+            "storageLayout"
+          ]
+        }
+      },
+      "remappings": [],
+      "viaIR": true
+    },
+    "sources": {
+      "npm/price-oracle-interfaces@0.0.2/contracts/DocPriceLib.sol": {
+        "content": "// SPDX-License-Identifier: MIT\npragma solidity 0.8.24;\n\nimport \"./interfaces/IMocState.sol\";\n\n/// @title DocPriceLib\n/// @notice Helper functions to derive DOC/USD and DOC/RBTC from MoC bucket balances and BTC/USD.\nlibrary DocPriceLib {\n  uint256 internal constant MOC_PRECISION = 1e18;\n  uint256 internal constant MOC_PRECISION_SQUARED = 1e36;\n  bytes32 internal constant BUCKET_C0 = \"C0\";\n\n  /// @notice DOC/USD with 18 decimals. Capped at 1.0 for senior-claim behavior.\n  /// @dev Formula: min(1, (nBTC * BTC/USD) / nDOC)\n  function docUsdPriceSafe(IMocState mocState, uint256 btcPriceInUsd) internal view returns (uint256) {\n    if (btcPriceInUsd == 0) {\n      return 0;\n    }\n\n    uint256 nDoc = mocState.getBucketNDoc(BUCKET_C0);\n    if (nDoc == 0) {\n      return MOC_PRECISION;\n    }\n\n    uint256 nRbtc = mocState.getBucketNBTC(BUCKET_C0);\n    uint256 uncappedDocPriceInUsd = (nRbtc * btcPriceInUsd) / nDoc;\n    return uncappedDocPriceInUsd > MOC_PRECISION ? MOC_PRECISION : uncappedDocPriceInUsd;\n  }\n\n  /// @notice DOC/RBTC with 18 decimals.\n  /// @dev Formula: min(nBTC/nDOC, USD/BTC) where USD/BTC = 1/(BTC/USD).\n  function docRbtcPriceSafe(IMocState mocState, uint256 btcPriceInUsd) internal view returns (uint256) {\n    if (btcPriceInUsd == 0) {\n      return 0;\n    }\n\n    uint256 nDoc = mocState.getBucketNDoc(BUCKET_C0);\n    uint256 usdPerBtc = MOC_PRECISION_SQUARED / btcPriceInUsd;\n    if (nDoc == 0) {\n      return usdPerBtc;\n    }\n\n    uint256 nRbtc = mocState.getBucketNBTC(BUCKET_C0);\n    uint256 bucketDocRbtc = (nRbtc * MOC_PRECISION) / nDoc;\n    return bucketDocRbtc > usdPerBtc ? usdPerBtc : bucketDocRbtc;\n  }\n}\n"
+      },
+      "npm/price-oracle-interfaces@0.0.2/contracts/interfaces/ICoinPairPrice.sol": {
+        "content": "// SPDX-License-Identifier: UNLICENSED\npragma solidity 0.8.24;\n\n/**\n * @notice Get price of a Token. See https://github.com/money-on-chain/OMoC-Decentralized-Oracle\n * @dev Interface of OMoC-Decentralized-Oracle, compatible with MOC.\n */\ninterface ICoinPairPrice {\n  /**\n   * @notice returns the given `price` for the asset if `valid`\n   * @return price assetPrice\n   * @return valid true if the price is valid\n   */\n  function peek() external view returns (bytes32 price, bool valid);\n\n  /**\n   * @notice returns the last publication block of an asset price\n   * @dev only valid for decentralized oracles\n   * @return lastPublicationBlock\n   */\n  function getLastPublicationBlock() external view returns (uint256 lastPublicationBlock);\n}\n"
+      },
+      "npm/price-oracle-interfaces@0.0.2/contracts/interfaces/IMocState.sol": {
+        "content": "// SPDX-License-Identifier: UNLICENSED\npragma solidity 0.8.24;\n\n/**\n * @notice Interface for MocState price providers relevant methods\n */\ninterface IMocState {\n  enum States {\n    // State 0\n    Liquidated,\n    // State 1\n    BProDiscount,\n    // State 2\n    BelowCobj,\n    // State 3\n    AboveCobj\n  }\n\n  function state() external view returns (States);\n\n  // Relation between DOC and dollar\n  function peg() external view returns (uint256);\n\n  /**\n   * @dev BPro USD PRICE\n   * @return the BPro USD Price [using mocPrecision]\n   */\n  function bproUsdPrice() external view returns (uint256);\n\n  /**\n   * @dev BTC price of BPro\n   * @return the BPro Tec Price [using reservePrecision]\n   */\n  function bproTecPrice() external view returns (uint256);\n\n  /**\n   * @dev Gets the BTCPriceProviderAddress\n   * @return btcPriceProvider blocks there are in a day\n   **/\n  function getBtcPriceProvider() external view returns (address);\n\n  /**\n    @dev All docs in circulation\n  */\n  function docTotalSupply() external view returns (uint256);\n\n  /**\n   @dev return the value of the protected threshold configuration param\n   @return protected threshold, currently 1.5\n  */\n  function getProtected() external view returns (uint256);\n\n  function getInrateBag(bytes32 bucket) external view returns (uint256);\n\n  function rbtcInSystem() external view returns (uint256);\n\n  function getBucketNBTC(bytes32 bucket) external view returns (uint256);\n\n  function getBucketNBPro(bytes32 bucket) external view returns (uint256);\n\n  function getBucketNDoc(bytes32 bucket) external view returns (uint256);\n}\n"
+      },
+      "npm/price-oracle-interfaces@0.0.2/contracts/interfaces/IPriceProvider.sol": {
+        "content": "// SPDX-License-Identifier: UNLICENSED\npragma solidity >=0.7.6;\n\n/**\n * @title IPriceProvider\n * @notice Interface for peeking the price and last publication block of a given asset\n * @dev https://github.com/money-on-chain/OMoC-Decentralized-Oracle\n */\ninterface IPriceProvider {\n  /**\n   * @notice returns the given `price` for the asset if `valid`\n   * @return price assetPrice\n   * @return valid true if the price is valid\n   */\n  function peek() external view returns (bytes32 price, bool valid);\n\n  /**\n   * @notice returns the last publication block of an asset price\n   * @dev only valid for decentralized oracles\n   * @return lastPublicationBlock\n   */\n  function getLastPublicationBlock() external view returns (uint256 lastPublicationBlock);\n}\n"
+      },
+      "npm/price-oracle-interfaces@0.0.2/contracts/PriceProviderDocRbtc.sol": {
+        "content": "// SPDX-License-Identifier: MIT\npragma solidity 0.8.24;\n\nimport \"./interfaces/IPriceProvider.sol\";\nimport \"./interfaces/IMocState.sol\";\nimport \"./interfaces/ICoinPairPrice.sol\";\nimport \"./DocPriceLib.sol\";\n\n/// @title PriceProviderDocRbtc\n/// @notice Exposes MoC's DOC/RBTC price through IPriceProvider with 18 decimals.\n/// @dev DOC/RBTC is capped at USD/BTC (inverse of BTC/USD) to preserve the 1 USD DOC peg upper bound.\ncontract PriceProviderDocRbtc is IPriceProvider {\n  IMocState public immutable mocState;\n  ICoinPairPrice public immutable btcPriceProvider;\n\n  constructor(IMocState _mocState) {\n    require(address(_mocState) != address(0), \"mocState address is zero\");\n    mocState = _mocState;\n    btcPriceProvider = ICoinPairPrice(_mocState.getBtcPriceProvider());\n  }\n\n  function peek() external view override returns (bytes32, bool) {\n    (bytes32 btcPriceInUsdBytes, bool btcPriceIsValid) = btcPriceProvider.peek();\n    uint256 btcPriceInUsd = uint256(btcPriceInUsdBytes);\n    uint256 docPriceInRbtc = DocPriceLib.docRbtcPriceSafe(mocState, btcPriceInUsd);\n\n    bool overallValid = btcPriceIsValid && btcPriceInUsd != 0 && docPriceInRbtc != 0;\n    return (bytes32(docPriceInRbtc), overallValid);\n  }\n\n  function getLastPublicationBlock() external view override returns (uint256) {\n    return btcPriceProvider.getLastPublicationBlock();\n  }\n}\n"
+      },
+      "npm/price-oracle-interfaces@0.0.2/contracts/PriceProviderDocUsd.sol": {
+        "content": "// SPDX-License-Identifier: MIT\npragma solidity 0.8.24;\n\nimport \"./interfaces/IPriceProvider.sol\";\nimport \"./interfaces/IMocState.sol\";\nimport \"./interfaces/ICoinPairPrice.sol\";\nimport \"./DocPriceLib.sol\";\n\n/// @title PriceProviderDocUsd\n/// @notice Exposes MoC's DOC/USD price through IPriceProvider with 18 decimals.\n/// @dev DOC/USD is capped at 1e18 (senior claim).\ncontract PriceProviderDocUsd is IPriceProvider {\n  IMocState public immutable mocState;\n  ICoinPairPrice public immutable btcPriceProvider;\n\n  constructor(IMocState _mocState) {\n    require(address(_mocState) != address(0), \"mocState address is zero\");\n    mocState = _mocState;\n    btcPriceProvider = ICoinPairPrice(_mocState.getBtcPriceProvider());\n  }\n\n  function peek() external view override returns (bytes32, bool) {\n    (bytes32 btcPriceInUsdBytes, bool btcPriceIsValid) = btcPriceProvider.peek();\n    uint256 btcPriceInUsd = uint256(btcPriceInUsdBytes);\n    uint256 docPriceInUsd = DocPriceLib.docUsdPriceSafe(mocState, btcPriceInUsd);\n\n    bool overallValid = btcPriceIsValid && btcPriceInUsd != 0 && docPriceInUsd != 0;\n    return (bytes32(docPriceInUsd), overallValid);\n  }\n\n  function getLastPublicationBlock() external view override returns (uint256) {\n    return btcPriceProvider.getLastPublicationBlock();\n  }\n}\n"
+      },
+      "npm/price-oracle-interfaces@0.0.2/contracts/PriceProviderDummy.sol": {
+        "content": "// SPDX-License-Identifier: MIT\npragma solidity 0.8.24;\n\nimport \"./interfaces/IPriceProvider.sol\";\n\n/// @title Dummy Price Provider (always fresh)\n/// @notice Returns a fixed price and reports the current block as last publication.\ncontract PriceProviderDummy is IPriceProvider {\n  uint256 public price;\n\n  constructor(uint256 _price) {\n    price = _price;\n  }\n\n  /// @dev Always returns the same price and `true`.\n  function peek() external view override returns (bytes32, bool) {\n    return (bytes32(price), true);\n  }\n\n  /// @dev Reports the *current* block to look fresh to age checkers.\n  function getLastPublicationBlock() external view override returns (uint256) {\n    return block.number;\n  }\n}\n"
+      }
+    }
+  }
+}
