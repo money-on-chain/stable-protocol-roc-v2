@@ -40,7 +40,7 @@
     "swapTPforTPExecCost": "154000",
     "swapTPforTCExecCost": "140000",
     "swapTCforTPExecCost": "147500",
-    "tcTokenName": "tRIFR",
-    "tcTokenSymbol": "RIF Reserve testnet"
+    "tcTokenName": "tROCR",
+    "tcTokenSymbol": "ROC Reserve testnet"
   }
 }

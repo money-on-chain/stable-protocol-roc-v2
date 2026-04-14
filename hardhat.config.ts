@@ -1,4 +1,4 @@
-import { defineConfig } from "hardhat/config";
+import { HardhatUserConfig } from "hardhat/config";
 import type { HttpNetworkAccountsUserConfig } from "hardhat/types/config";
 import { resolve, dirname } from "path";
 import { fileURLToPath } from "url";
@@ -115,7 +115,7 @@ const compilers = [
   },
 ];
 
-export default defineConfig({
+const config: HardhatUserConfig = {
   plugins: [hardhatToolboxMochaEthers, hardhatContractSizer],
 
   solidity: {
@@ -157,15 +157,18 @@ export default defineConfig({
     flat: false,
   },
   verify: {
+    // Rootstock explorer is still experimental
+    // as it needs extra parameters obtained from the website
+    // to interact with the nextjs app.
+    rootstockExplorer: {
+      enabled: false,
+    },
     blockscout: {
       enabled: true,
     },
     etherscan: {
       enabled: false,
       apiKey: process.env.ETHERSCAN_API_KEY ?? "unused",
-    },
-    sourcify: {
-      enabled: false,
     },
   },
   chainDescriptors: {
@@ -174,13 +177,17 @@ export default defineConfig({
       chainType: "generic",
       blockExplorers: {
         etherscan: {
-          name: "Rootstock Blockscout",
-          url: "https://rootstock.blockscout.com",
-          apiUrl: "https://rootstock.blockscout.com/api",
+          url: "",
+          apiUrl: "",
         },
         blockscout: {
           url: "https://rootstock.blockscout.com",
           apiUrl: "https://rootstock.blockscout.com/api",
+        },
+        rootstockExplorer: {
+          name: "Rootstock.io",
+          url: "https://explorer.rootstock.io",
+          apiUrl: "https://explorer.rootstock.io",
         },
       },
     },
@@ -189,13 +196,17 @@ export default defineConfig({
       chainType: "generic",
       blockExplorers: {
         etherscan: {
-          name: "Rootstock Testnet Blockscout",
-          url: "https://rootstock-testnet.blockscout.com",
-          apiUrl: "https://rootstock-testnet.blockscout.com/api",
+          url: "",
+          apiUrl: "",
         },
         blockscout: {
           url: "https://rootstock-testnet.blockscout.com",
           apiUrl: "https://rootstock-testnet.blockscout.com/api",
+        },
+        rootstockExplorer: {
+          name: "Rootstock.io Testnet",
+          url: "https://explorer.testnet.rootstock.io",
+          apiUrl: "https://explorer.testnet.rootstock.io",
         },
       },
     },
@@ -253,6 +264,7 @@ export default defineConfig({
     timeBeforeBumpingFees: 600000,
     maxFeeBumps: 5,
     requiredConfirmations: 1,
+    maxUnconfirmedTxs: 2,
   },
   paths: {
     artifacts: "./artifacts",
@@ -273,4 +285,6 @@ export default defineConfig({
   typechain: {
     outDir: "./typechain",
   },
-});
+};
+
+export default config;
