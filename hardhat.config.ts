@@ -151,6 +151,18 @@ const config: HardhatUserConfig = {
       "@moc/price-oracle-interfaces/contracts/PriceProviderDocRbtc.sol",
       "@moc/price-oracle-interfaces/contracts/PriceProviderDocUsd.sol",
       "@moc/price-oracle-interfaces/contracts/PriceProviderDiv.sol",
+      "@moc/shared/contracts/tasks/v3/TaskExecuteQueueV3.sol",
+      "@moc/shared/contracts/tasks/v3/TaskUpdateEmaV3.sol",
+      "@moc/shared/contracts/tasks/v3/TaskExecuteLiquidationV3.sol",
+      "@moc/shared/contracts/tasks/v3/TaskExecuteMicroLiquidationV3.sol",
+      "@moc/shared/contracts/tasks/v3/TaskInterestPaymentV3.sol",
+      "@moc/shared/contracts/tasks/v3/TaskSettlementV3.sol",
+      "@moc/shared/contracts/tasks/v2v3/TaskRefreshACBalanceV2V3.sol",
+      "@moc/shared/contracts/tasks/mocFlow/commissionSplitter/TaskSplit.sol",
+      "@moc/shared/contracts/tasks/mocFlow/reverseAuction/TaskTriggerOrder.sol",
+      "@moc/shared/contracts/tasks/mocFlow/buffer/TaskFlush.sol",
+      "@moc/shared/contracts/tasks/mocFlow/buffer/TaskLiquidate.sol",
+      "@moc/flow/contracts/BufferToken.sol",
 
       "@moc/flow/contracts/BufferToken.sol",
 

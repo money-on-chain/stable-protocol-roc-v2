@@ -1,0 +1,229 @@
+// SPDX-License-Identifier: UNLICENSED
+pragma solidity 0.8.24;
+
+import { IChangeContract } from "moc-main-latest/contracts/interfaces/IChangeContract.sol";
+import { MocMultiCollateralGuard, MocOperations } from "moc-main-latest/contracts/multiCollateral/MocMultiCollateralGuard.sol";
+import { BucketParams } from "moc-main-latest/contracts/multiCollateral/MocMultiCollateralBase.sol";
+import { MocQueue } from "moc-main-latest/contracts/queue/MocQueue.sol";
+import { CommissionSplitterRC20 } from "moc-main-latest/contracts/auxiliary/CommissionSplitterRC20.sol";
+
+interface IOracleManager {
+    function registerCoinPair(bytes32 coinPair, address addr) external;
+}
+
+interface ITasksRunnerCoinPair {
+    function getCoinPair() external view returns (bytes32);
+}
+
+interface IReverseAuction {
+    function setOutputAccount(address outputAccount_) external;
+}
+
+interface IBufferToken {
+    function getOutput(uint256 idx) external view returns (address, uint256, uint256, uint256);
+    function removeOutput(uint256 idx) external;
+    function addOutput(address payable output, uint256 split, uint256 threshold) external;
+}
+
+interface IMocSwapperV3 {
+    function setPool(address tokenA_, address tokenB_, uint24 fee_, address providerSwappingAtoB_) external;
+}
+
+/**
+  @title AddTasksRunnerChanger
+  @notice This contract is a ChangeContract intended to be used with Moc Aeropulus
+  governance system.
+  @dev 1. Upgrade MocCore & MocQueue for buckets 0 and 1
+       2. Set new MocCoreExpansion for buckets 0 and 1
+       3. Upgrade MocMultiCollateralGuard
+       4. Set coinbase execution fee recipient (RevAuction RBTCtoMOC -> TasksRunner)
+       5. Set rebalance execution fee recipient for buckets 0 and 1 (RevAuction RIFtoMOC and DOCtoMOC -> TasksRunner)
+       6. Set price updates fee recipient (RevAuction RBTCtoMOC -> RocNodes)
+       7. Register TasksRunner in the OracleManager as a CoinPair
+       8. Set current RevAuction RIFtoMOC (from CommissionSplitterV3) output to RocRewardsBuffer
+       9. Set CommissionSplitterV2 fee token output 1 to RocRewardsBuffer
+       10. Set RifProRewardsBuffer output to RocRewardsBuffer
+       11. Set current RevAuction DOCtoMOC (from CommissionSplitterV3) output to RocRewardsBuffer
+       12. Set MocSwapperV3 pools for RBTC/MOC and MOC/RBTC
+ */
+contract AddTasksRunnerChanger is IChangeContract {
+    MocMultiCollateralGuard public immutable mocMultiCollateralGuard;
+    address public immutable mocMultiCollateralGuardImplementation;
+    address public immutable mocCoreBucket0Implementation;
+    address public immutable mocCoreBucket1Implementation;
+    address public immutable mocQueueBucket0Implementation;
+    address public immutable mocQueueBucket1Implementation;
+    address public immutable mocCoreExpansionBucket0;
+    address public immutable mocCoreExpansionBucket1;
+    address payable public immutable revAuctionRBTCtoMOC_tasksRunner;
+    address public immutable revAuctionRIFtoMOC_tasksRunner;
+    address public immutable revAuctionDOCtoMOC_tasksRunner;
+    address public immutable revAuctionRBTCtoMOC_rocNodes;
+    address public immutable revAuctionRIFtoMOC_rocRewardsBuffer;
+    address public immutable revAuctionDOCtoMOC_rocRewardsBuffer;
+    address public immutable commissionSplitterV2_rocRewardsBuffer;
+    address public immutable rifProRewardsBuffer_rocRewardsBuffer;
+    address public immutable mocSwapperV3;
+    address public immutable mocTokenAddress;
+    address public immutable maxRbtcToMocProvider;
+    address public immutable maxMocToRbtcProvider;
+    uint24 public immutable rbtcToMocPoolFee;
+    uint24 public immutable mocToRbtcPoolFee;
+    IOracleManager public immutable oracleManager;
+    address public immutable tasksRunner;
+    address public immutable rocRewardsBuffer;
+
+    /**
+    @notice Constructor
+    @param mocMultiCollateralGuard_ Address of the proxy mocMultiCollateralGuard
+    @param mocMultiCollateralGuardImplementation_ New implementation for MocMultiCollateralGuard proxy
+    @param mocCoreBucket0Implementation_ New implementation for bucket 0 MocCore proxy
+    @param mocCoreBucket1Implementation_ New implementation for bucket 1 MocCore proxy
+    @param mocQueueBucket0Implementation_ New implementation for bucket 0 MocQueue proxy
+    @param mocQueueBucket1Implementation_ New implementation for bucket 1 MocQueue proxy
+    @param mocCoreExpansionBucket0_ New MocCoreExpansion for bucket 0
+    @param mocCoreExpansionBucket1_ New MocCoreExpansion for bucket 1
+    @param revAuctionRBTCtoMOC_tasksRunner_ Address for coinbase execution fee recipient (TasksRunner)
+    @param revAuctionRIFtoMOC_tasksRunner_ Address for bucket 0 rebalance execution fee recipient (TasksRunner)
+    @param revAuctionDOCtoMOC_tasksRunner_ Address for bucket 1 rebalance execution fee recipient (TasksRunner)
+    @param revAuctionRBTCtoMOC_rocNodes_ Address for price updates fee recipient (RocNodes)
+    @param revAuctionRIFtoMOC_rocRewardsBuffer_ Address for RevAuction RIFtoMOC output recipient (RocRewardsBuffer)
+    @param revAuctionDOCtoMOC_rocRewardsBuffer_ Address for RevAuction DOCtoMOC output recipient (RocRewardsBuffer)
+    @param commissionSplitterV2_rocRewardsBuffer_ Address for CommissionSplitterV2 output recipient (RocRewardsBuffer)
+    @param rifProRewardsBuffer_rocRewardsBuffer_ Address for RifProRewardsBuffer output recipient (RocRewardsBuffer)
+    @param mocSwapperV3_ Address of MocSwapperV3 to configure RBTC/MOC and MOC/RBTC pools
+    @param mocTokenAddress_ Address of MOC token
+    @param maxRbtcToMocProvider_ DataProvider used as max amount provider for RBTC->MOC pool
+    @param maxMocToRbtcProvider_ DataProvider used as max amount provider for MOC->RBTC pool
+    @param rbtcToMocPoolFee_ Uniswap V3 pool fee for RBTC->MOC swaps
+    @param mocToRbtcPoolFee_ Uniswap V3 pool fee for MOC->RBTC swaps
+    @param rocRewardsBuffer_ Address of RocRewardsBuffer
+    @param oracleManager_ OracleManager where TasksRunner coin pair will be registered
+    @param tasksRunner_ TasksRunner contract to register as coin pair address
+  */
+    constructor(
+        MocMultiCollateralGuard mocMultiCollateralGuard_,
+        address mocMultiCollateralGuardImplementation_,
+        address mocCoreBucket0Implementation_,
+        address mocCoreBucket1Implementation_,
+        address mocQueueBucket0Implementation_,
+        address mocQueueBucket1Implementation_,
+        address mocCoreExpansionBucket0_,
+        address mocCoreExpansionBucket1_,
+        address payable revAuctionRBTCtoMOC_tasksRunner_,
+        address revAuctionRIFtoMOC_tasksRunner_,
+        address revAuctionDOCtoMOC_tasksRunner_,
+        address revAuctionRBTCtoMOC_rocNodes_,
+        address revAuctionRIFtoMOC_rocRewardsBuffer_,
+        address revAuctionDOCtoMOC_rocRewardsBuffer_,
+        address commissionSplitterV2_rocRewardsBuffer_,
+        address rifProRewardsBuffer_rocRewardsBuffer_,
+        address mocSwapperV3_,
+        address mocTokenAddress_,
+        address maxRbtcToMocProvider_,
+        address maxMocToRbtcProvider_,
+        uint24 rbtcToMocPoolFee_,
+        uint24 mocToRbtcPoolFee_,
+        address rocRewardsBuffer_,
+        IOracleManager oracleManager_,
+        address tasksRunner_
+    ) {
+        mocMultiCollateralGuard = mocMultiCollateralGuard_;
+        mocMultiCollateralGuardImplementation = mocMultiCollateralGuardImplementation_;
+        mocCoreBucket0Implementation = mocCoreBucket0Implementation_;
+        mocCoreBucket1Implementation = mocCoreBucket1Implementation_;
+        mocQueueBucket0Implementation = mocQueueBucket0Implementation_;
+        mocQueueBucket1Implementation = mocQueueBucket1Implementation_;
+        mocCoreExpansionBucket0 = mocCoreExpansionBucket0_;
+        mocCoreExpansionBucket1 = mocCoreExpansionBucket1_;
+        revAuctionRBTCtoMOC_tasksRunner = revAuctionRBTCtoMOC_tasksRunner_;
+        revAuctionRIFtoMOC_tasksRunner = revAuctionRIFtoMOC_tasksRunner_;
+        revAuctionDOCtoMOC_tasksRunner = revAuctionDOCtoMOC_tasksRunner_;
+        revAuctionRBTCtoMOC_rocNodes = revAuctionRBTCtoMOC_rocNodes_;
+        revAuctionRIFtoMOC_rocRewardsBuffer = revAuctionRIFtoMOC_rocRewardsBuffer_;
+        revAuctionDOCtoMOC_rocRewardsBuffer = revAuctionDOCtoMOC_rocRewardsBuffer_;
+        commissionSplitterV2_rocRewardsBuffer = commissionSplitterV2_rocRewardsBuffer_;
+        rifProRewardsBuffer_rocRewardsBuffer = rifProRewardsBuffer_rocRewardsBuffer_;
+        mocSwapperV3 = mocSwapperV3_;
+        mocTokenAddress = mocTokenAddress_;
+        maxRbtcToMocProvider = maxRbtcToMocProvider_;
+        maxMocToRbtcProvider = maxMocToRbtcProvider_;
+        rbtcToMocPoolFee = rbtcToMocPoolFee_;
+        mocToRbtcPoolFee = mocToRbtcPoolFee_;
+        rocRewardsBuffer = rocRewardsBuffer_;
+        oracleManager = oracleManager_;
+        tasksRunner = tasksRunner_;
+    }
+
+    /**
+    @notice Execute the changes.
+    @dev Should be called by the governor, but this contract does not check that explicitly
+    because it is not its responsibility in the current architecture
+   */
+    function execute() external {
+        MocOperations bucket0 = mocMultiCollateralGuard.buckets(0);
+        MocOperations bucket1 = mocMultiCollateralGuard.buckets(1);
+
+        // 1) Upgrade buckets and queues
+        bucket0.upgradeTo(mocCoreBucket0Implementation);
+        bucket1.upgradeTo(mocCoreBucket1Implementation);
+
+        MocQueue(bucket0.mocQueue()).upgradeTo(mocQueueBucket0Implementation);
+        MocQueue(bucket1.mocQueue()).upgradeTo(mocQueueBucket1Implementation);
+
+        // 2) Set MocCoreExpansion on buckets
+        bucket0.setMocCoreExpansion(mocCoreExpansionBucket0);
+        bucket1.setMocCoreExpansion(mocCoreExpansionBucket1);
+
+        // 3) Upgrade MocMultiCollateralGuard
+        mocMultiCollateralGuard.upgradeTo(mocMultiCollateralGuardImplementation);
+
+        // 4) Set coinbase execution fee recipient
+        mocMultiCollateralGuard.setCoinbaseExecFeeRecipient(revAuctionRBTCtoMOC_tasksRunner);
+
+        // 5) Set rebalance execution fee recipients for buckets 0 and 1
+        mocMultiCollateralGuard.editBucket(bucket0, _buildBucketParams(bucket0, revAuctionRIFtoMOC_tasksRunner));
+        mocMultiCollateralGuard.editBucket(bucket1, _buildBucketParams(bucket1, revAuctionDOCtoMOC_tasksRunner));
+
+        // 6) Set price updates fee recipient
+        mocMultiCollateralGuard.setPriceUpdatesFeeRecipient(revAuctionRBTCtoMOC_rocNodes);
+
+        // 7) Register TasksRunner as CoinPair in OracleManager
+        bytes32 coinPair = ITasksRunnerCoinPair(tasksRunner).getCoinPair();
+        oracleManager.registerCoinPair(coinPair, tasksRunner);
+
+        // 8) Set current RevAuction RIFtoMOC output to RocRewardsBuffer
+        IReverseAuction(revAuctionRIFtoMOC_rocRewardsBuffer).setOutputAccount(rocRewardsBuffer);
+
+        // 9) Set CommissionSplitterV2 fee token output 1 to RocRewardsBuffer
+        CommissionSplitterRC20(payable(commissionSplitterV2_rocRewardsBuffer)).setFeeTokenAddressRecipient1(
+            rocRewardsBuffer
+        );
+
+        // 10) Set RifProRewardsBuffer output 0 to RocRewardsBuffer
+        (, uint256 split, , uint256 threshold) = IBufferToken(rifProRewardsBuffer_rocRewardsBuffer).getOutput(0);
+        IBufferToken(rifProRewardsBuffer_rocRewardsBuffer).removeOutput(0);
+        IBufferToken(rifProRewardsBuffer_rocRewardsBuffer).addOutput(payable(rocRewardsBuffer), split, threshold);
+
+        // 11) Set current RevAuction DOCtoMOC output to RocRewardsBuffer
+        IReverseAuction(revAuctionDOCtoMOC_rocRewardsBuffer).setOutputAccount(rocRewardsBuffer);
+
+        // 12) Set RBTC/MOC and MOC/RBTC pools on MocSwapperV3
+        IMocSwapperV3(mocSwapperV3).setPool(address(0), mocTokenAddress, rbtcToMocPoolFee, maxRbtcToMocProvider);
+        IMocSwapperV3(mocSwapperV3).setPool(mocTokenAddress, address(0), mocToRbtcPoolFee, maxMocToRbtcProvider);
+    }
+
+    function _buildBucketParams(
+        MocOperations bucket_,
+        address rebalanceExecFeeRecipient_
+    ) internal view returns (BucketParams memory) {
+        return
+            BucketParams({
+                acCoinbasePriceProvider: mocMultiCollateralGuard.acCoinbasePriceProvider(bucket_),
+                rebalanceExecFeeRecipient: rebalanceExecFeeRecipient_,
+                rtcThrld: mocMultiCollateralGuard.rtcThrld(bucket_),
+                microLiquidationThrld: mocMultiCollateralGuard.microLiquidationThrld(bucket_),
+                penaltyRate: mocMultiCollateralGuard.penaltyRate(bucket_)
+            });
+    }
+}
