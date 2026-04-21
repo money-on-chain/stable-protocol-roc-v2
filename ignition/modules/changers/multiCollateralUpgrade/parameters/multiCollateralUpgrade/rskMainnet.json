@@ -36,6 +36,7 @@
     "docRtcThrld": "1000000000000000000",
     "docMicroLiquidationThrld": "1000000000000000000",
     "docPenaltyRate": "0",
-    "rifNewProtectedThrld": "2000000000000000000"
+    "rifNewProtectedThrld": "2000000000000000000",
+    "governedRegistryAddress": "0xCD101a2414256DA8F8E25d7b483b3cf639a71683"
   }
 }

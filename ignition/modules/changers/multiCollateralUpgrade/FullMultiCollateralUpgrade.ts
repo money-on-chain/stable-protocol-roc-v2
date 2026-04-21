@@ -79,6 +79,7 @@ const FullMultiCollateralUpgradeModule = buildModule("FullMultiCollateralUpgrade
       // Inject addresses from other deployments
       docBucketAddress: docBucket.docBucketProxy,
       rifToDocSwapperAddress: swappers.swapperRIFDOCProxy,
+      reverseAuctionDOCtoMOCAddress: feeFlow.reverseAuctionDOCtoMOC,
     },
     "MultiCollateral",
   );

@@ -55,6 +55,8 @@ export interface MultiCollateralUpgradeParams {
   rifBucketParams?: BucketParams;
   docBucketParams?: BucketParams;
   rifToDocSwapperAddress?: AddressParam;
+  governedRegistryAddress: StringParam;
+  reverseAuctionDOCtoMOCAddress?: AddressParam;
 
   // PeggedTokenParams for DOC bucket
   peggedTokenParams?: {
@@ -103,6 +105,7 @@ export function getMultiCollateralUpgradeParams(
     rifSwapTPforTCExecCost: getParameter<bigint>("rifSwapTPforTCExecCost"),
     rifSwapTCforTPExecCost: getParameter<bigint>("rifSwapTCforTPExecCost"),
     rifNewProtectedThrld: getParameter<bigint>("rifNewProtectedThrld"),
+    governedRegistryAddress: getParameter<string>("governedRegistryAddress"),
     // BucketParams for rebalancing
     rifBucketParams: {
       rebalanceExecFeeRecipient: getParameter<string>("rifRebalanceExecFeeRecipient"),
@@ -270,6 +273,8 @@ export function deployMultiCollateralUpgrade(
       params.rifToDocSwapperAddress!, // rifDocMocSwapper_
       params.rifNewProtectedThrld, // rifNewProtectedThrld_
       peggedTokenParamsStruct, // peggedTokenParams_
+      params.governedRegistryAddress, // governedRegistry_
+      params.reverseAuctionDOCtoMOCAddress!, // reverseAuctionDOCtoMOC_
     ],
     { id: `${prefix}MultiCollateralUpgradeChanger` },
   );

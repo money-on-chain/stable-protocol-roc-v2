@@ -6,6 +6,12 @@ import { MocQueueExecFees } from "moc-main-latest/contracts/queue/MocQueueExecFe
 import { IPriceProvider } from "moc-main-latest/contracts/interfaces/IPriceProvider.sol";
 import "forge-std/console.sol";
 
+interface IGovernedRegistryView {
+    function getAddress(bytes32 _key) external view returns (address);
+    function addressArrayContains(bytes32 _key, address value) external view returns (bool);
+    function getAddressArrayLength(bytes32 _key) external view returns (uint256);
+}
+
 /// @title Fork Tests with Ignition Deployed Contracts
 /// @notice Fork tests that use contracts deployed by Hardhat Ignition
 /// @dev Run ./scripts/changers/multiCollateralUpgrade/run-fork-tests.sh to deploy contracts and run these tests
@@ -13,8 +19,31 @@ contract DocBucketForkTests is BaseFork {
     bytes32 private constant DEFAULT_ADMIN_ROLE = 0x00;
     bytes32 private constant MINTER_ROLE = keccak256("MINTER_ROLE");
     bytes32 private constant BURNER_ROLE = keccak256("BURNER_ROLE");
+    bytes32 private constant MOC_FLOW_REVERSE_AUCTIONS =
+        0x0428ec087e0cce276a71d1caf1afe4da32a2d48b3ebe579040612b5bd262ff73;
+    bytes32 private constant MOC_MULTI_COLLATERAL_GUARD = keccak256("moc.multi-collateral-guard");
+
     function setUp() public override {
         super.setUp();
+    }
+
+    function test_RegistryIsUpdatedAfterChanger() public {
+        IGovernedRegistryView registry = IGovernedRegistryView(address(changer.governedRegistry()));
+        uint256 reverseAuctionsBefore = registry.getAddressArrayLength(MOC_FLOW_REVERSE_AUCTIONS);
+
+        _executeChanger();
+        uint256 reverseAuctionsAfter = registry.getAddressArrayLength(MOC_FLOW_REVERSE_AUCTIONS);
+
+        assertEq(
+            registry.getAddress(MOC_MULTI_COLLATERAL_GUARD),
+            address(mocMultiCollateralGuard),
+            "Registry guard should match deployed mocMultiCollateralGuard"
+        );
+        assertEq(reverseAuctionsAfter, reverseAuctionsBefore + 1, "Reverse auctions array length should increase by 1");
+        assertTrue(
+            registry.addressArrayContains(MOC_FLOW_REVERSE_AUCTIONS, address(reverseAuctionDocToMoc)),
+            "Registry should contain DOC->MOC reverse auction"
+        );
     }
 
     function test_SameTpsBothBuckets() public {

@@ -9,6 +9,7 @@
   "dependencies": {
     "moc-main-latest": "github:money-on-chain/main-sc-protocol-v2#v1.1.2",
     "@moc/price-oracle-interfaces": "git+ssh://git@github.com/money-on-chain/price_oracle_interfaces.git#v0.0.2",
+    "@moc/shared": "git+ssh://git@github.com/money-on-chain/OMoC-SC-Shared.git#refactor/migrate-to-hardhat",
     "solc": "0.8.24"
   },
   "devDependencies": {
