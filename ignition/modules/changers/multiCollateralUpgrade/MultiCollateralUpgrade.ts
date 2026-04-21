@@ -16,8 +16,13 @@ const MultiCollateralUpgradeModule = buildModule("MultiCollateralUpgrade", m => 
   // Get all parameters from module parameters (no prefix for standalone)
   const params = getMultiCollateralUpgradeParams(m);
 
+  const reverseAuctionDOCtoMOCAddress = m.getParameter<string>("reverseAuctionDOCtoMOCAddress");
+
   // Deploy using the shared deployer function
-  return deployMultiCollateralUpgrade(m, params);
+  return deployMultiCollateralUpgrade(m, {
+    ...params,
+    reverseAuctionDOCtoMOCAddress,
+  });
 });
 
 export default MultiCollateralUpgradeModule;

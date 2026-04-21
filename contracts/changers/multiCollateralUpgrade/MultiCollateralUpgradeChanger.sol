@@ -13,6 +13,13 @@ import { BucketParams } from "moc-main-latest/contracts/multiCollateral/MocMulti
 import { MocRC20 } from "moc-main-latest/contracts/tokens/MocRC20.sol";
 import { MocCARC20 } from "moc-main-latest/contracts/collateral/rc20/MocCARC20.sol";
 
+interface IGovernedRegistry {
+    function pushAddressArrayElement(bytes32 _key, address _addr) external;
+    function addressArrayContains(bytes32 _key, address value) external view returns (bool);
+    function setAddress(bytes32 _key, address _value) external;
+    function getAddress(bytes32 _key) external view returns (address);
+}
+
 /**
   @title MultiCollateralUpgradeChanger
   @notice This contract is a ChangeContract intended to be used with Moc Aeropulus 
@@ -34,6 +41,12 @@ contract MultiCollateralUpgradeChanger is IChangeContract {
     // ------- Constants -------
     bytes32 private constant MINTER_ROLE = keccak256("MINTER_ROLE");
     bytes32 private constant BURNER_ROLE = keccak256("BURNER_ROLE");
+    // keccak256("MOC_FLOW\1\REVERSE_AUCTIONS")
+    bytes32 private constant MOC_FLOW_REVERSE_AUCTIONS =
+        0x0428ec087e0cce276a71d1caf1afe4da32a2d48b3ebe579040612b5bd262ff73;
+    // keccak256("moc.multi-collateral-guard")
+    bytes32 private constant MOC_MULTI_COLLATERAL_GUARD =
+        0xe703515d757b84b6a6bd1314e6613eb3ea7ece4815e828061398853f8b3d6b1a;
 
     // ------- Storage -------
     // USDRIF proxy contract to be upgraded
@@ -66,6 +79,10 @@ contract MultiCollateralUpgradeChanger is IChangeContract {
     uint256 public immutable rifNewProtectedThrld;
     // usdRif params for DOC bucket
     PeggedTokenParams public usdRifParamsForDocBucket;
+    // Moc shared governed registry
+    IGovernedRegistry public immutable governedRegistry;
+    // reverse auction DOC -> MOC
+    address public immutable reverseAuctionDOCtoMOC;
 
     /** 
       @notice Constructor
@@ -82,6 +99,8 @@ contract MultiCollateralUpgradeChanger is IChangeContract {
       @param rifDocMocSwapper_ MocSwapper for RIF/DOC pair
       @param rifNewProtectedThrld_ new protected threshold for RIF bucket [PREC]
       @param usdRifParamsForDocBucket_ usdRif params for DOC bucket
+      @param governedRegistry_ moc/shared governed registry
+      @param reverseAuctionDOCtoMOC_ reverse auction to register under MOC_FLOW_REVERSE_AUCTIONS
     */
     constructor(
         MocRif rifBucket_,
@@ -96,7 +115,9 @@ contract MultiCollateralUpgradeChanger is IChangeContract {
         BucketParams memory docBucketParams_,
         IMocSwapper rifDocMocSwapper_,
         uint256 rifNewProtectedThrld_,
-        PeggedTokenParams memory usdRifParamsForDocBucket_
+        PeggedTokenParams memory usdRifParamsForDocBucket_,
+        IGovernedRegistry governedRegistry_,
+        address reverseAuctionDOCtoMOC_
     ) {
         rifBucket = rifBucket_;
         mocRifImplementation = mocRifImplementation_;
@@ -113,6 +134,8 @@ contract MultiCollateralUpgradeChanger is IChangeContract {
         rifDocMocSwapper = rifDocMocSwapper_;
         rifNewProtectedThrld = rifNewProtectedThrld_;
         usdRifParamsForDocBucket = usdRifParamsForDocBucket_;
+        governedRegistry = governedRegistry_;
+        reverseAuctionDOCtoMOC = reverseAuctionDOCtoMOC_;
 
         // reverts if some parameter is wrong
         verifySettings();
@@ -222,6 +245,10 @@ contract MultiCollateralUpgradeChanger is IChangeContract {
         IMocSwapper[] memory docSwappers = new IMocSwapper[](1);
         docSwappers[0] = rifDocMocSwapper;
         mocMultiCollateralGuardProxy.addBucket(docBucket, docBucketParams, docSwappers);
+
+        // Set MocMultiCollateralGuard and new reverse auction to the governed registry
+        governedRegistry.setAddress(MOC_MULTI_COLLATERAL_GUARD, address(mocMultiCollateralGuardProxy));
+        governedRegistry.pushAddressArrayElement(MOC_FLOW_REVERSE_AUCTIONS, reverseAuctionDOCtoMOC);
 
         // reverts if some parameter is wrong
         verifySettings();

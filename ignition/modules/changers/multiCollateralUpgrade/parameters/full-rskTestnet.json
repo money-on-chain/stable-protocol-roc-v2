@@ -123,6 +123,7 @@
     "MultiCollateralUpgrade.docRtcThrld": "1000000000000000000",
     "MultiCollateralUpgrade.docMicroLiquidationThrld": "1000000000000000000",
     "MultiCollateralUpgrade.docPenaltyRate": "0",
-    "MultiCollateralUpgrade.rifNewProtectedThrld": "2000000000000000000"
+    "MultiCollateralUpgrade.rifNewProtectedThrld": "2000000000000000000",
+    "MultiCollateralUpgrade.governedRegistryAddress": "0x0000000000000000000000000000000000000000"
   }
 }
