@@ -55,8 +55,7 @@
       "mocQueueBucket0Implementation": "0x0000000000000000000000000000000000000000",
       "mocQueueBucket1Implementation": "0x0000000000000000000000000000000000000000",
       "mocCoreExpansionBucket0": "0x0000000000000000000000000000000000000000",
-      "mocCoreExpansionBucket1": "0x0000000000000000000000000000000000000000",
-      "rifProRewardsBuffer_rocRewardsBuffer": "0x0000000000000000000000000000000000000000"
+      "mocCoreExpansionBucket1": "0x0000000000000000000000000000000000000000"
     },
     "reverseAuctions": {
       "revAuctionRBTCtoMOC_tasksRunner": {
@@ -101,10 +100,6 @@
       "mocRewardsBufferOutputThreshold": "0"
     },
     "triggerOrderRevAuctions": {
-      "revAuctionRBTCtoMOC_tasksRunner": "0x0000000000000000000000000000000000000000",
-      "revAuctionRIFtoMOC_tasksRunner": "0x0000000000000000000000000000000000000000",
-      "revAuctionDOCtoMOC_tasksRunner": "0x0000000000000000000000000000000000000000",
-      "revAuctionRBTCtoMOC_rocNodes": "0x0000000000000000000000000000000000000000",
       "revAuctionRIFtoMOC_rocRewardsBuffer": "0x0000000000000000000000000000000000000000",
       "revAuctionMOCtoRIF_rifBucket": "0x0000000000000000000000000000000000000000",
       "revAuctionDOCtoMOC_rocRewardsBuffer": "0x0000000000000000000000000000000000000000"

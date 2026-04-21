@@ -21,6 +21,7 @@ import { buildModule } from "@nomicfoundation/hardhat-ignition/modules";
  * 7) AddTasksRunnerChanger configured to apply protocol wiring/upgrade steps
  */
 const AddTasksRunnerModule = buildModule("AddTasksRunner", m => {
+  const ZERO_ADDRESS = "0x0000000000000000000000000000000000000000";
   // ---------------------------------------------------------------------------
   // Stage 0 - Module Parameters
   // ---------------------------------------------------------------------------
@@ -60,10 +61,6 @@ const AddTasksRunnerModule = buildModule("AddTasksRunner", m => {
   };
 
   const triggerOrderRevAuctions = m.getParameter("triggerOrderRevAuctions") as unknown as {
-    revAuctionRBTCtoMOC_tasksRunner: string;
-    revAuctionRIFtoMOC_tasksRunner: string;
-    revAuctionDOCtoMOC_tasksRunner: string;
-    revAuctionRBTCtoMOC_rocNodes: string;
     revAuctionRIFtoMOC_rocRewardsBuffer: string;
     revAuctionMOCtoRIF_rifBucket: string;
     revAuctionDOCtoMOC_rocRewardsBuffer: string;
@@ -101,7 +98,6 @@ const AddTasksRunnerModule = buildModule("AddTasksRunner", m => {
     mocQueueBucket1Implementation: string;
     mocCoreExpansionBucket0: string;
     mocCoreExpansionBucket1: string;
-    rifProRewardsBuffer_rocRewardsBuffer: string;
   };
 
   const mocSwapperV3Cfg = m.getParameter("mocSwapperV3") as unknown as {
@@ -180,9 +176,74 @@ const AddTasksRunnerModule = buildModule("AddTasksRunner", m => {
   };
 
   // ---------------------------------------------------------------------------
-  // Stage 2 - Task Contracts Deployment
+  // Stage 2 - Reverse Auctions for Fee Routing
   // ---------------------------------------------------------------------------
-  // 2.1 - V3 and V2V3 operational tasks
+  // These 3 auctions are initialized with placeholder outputAccount and then
+  // pointed to TasksRunner by AddTasksRunnerChanger to avoid circular deps.
+  const revAuctionRBTCtoMOC_tasksRunner = m.contract(
+    "MocReverseAuction",
+    [
+      core.governor,
+      reverseAuctions.revAuctionRBTCtoMOC_tasksRunner.mocSwapper,
+      reverseAuctions.revAuctionRBTCtoMOC_tasksRunner.tokenIn,
+      reverseAuctions.revAuctionRBTCtoMOC_tasksRunner.tokenOut,
+      ZERO_ADDRESS,
+      reverseAuctions.revAuctionRBTCtoMOC_tasksRunner.orderThreshold,
+      reverseAuctions.revAuctionRBTCtoMOC_tasksRunner.priceProvider,
+      reverseAuctions.revAuctionRBTCtoMOC_tasksRunner.slippage,
+    ],
+    { id: "RevAuctionRBTCtoMOC_tasksRunner" },
+  );
+
+  const revAuctionRIFtoMOC_tasksRunner = m.contract(
+    "MocReverseAuction",
+    [
+      core.governor,
+      reverseAuctions.revAuctionRIFtoMOC_tasksRunner.mocSwapper,
+      reverseAuctions.revAuctionRIFtoMOC_tasksRunner.tokenIn,
+      reverseAuctions.revAuctionRIFtoMOC_tasksRunner.tokenOut,
+      ZERO_ADDRESS,
+      reverseAuctions.revAuctionRIFtoMOC_tasksRunner.orderThreshold,
+      reverseAuctions.revAuctionRIFtoMOC_tasksRunner.priceProvider,
+      reverseAuctions.revAuctionRIFtoMOC_tasksRunner.slippage,
+    ],
+    { id: "RevAuctionRIFtoMOC_tasksRunner" },
+  );
+
+  const revAuctionDOCtoMOC_tasksRunner = m.contract(
+    "MocReverseAuction",
+    [
+      core.governor,
+      reverseAuctions.revAuctionDOCtoMOC_tasksRunner.mocSwapper,
+      reverseAuctions.revAuctionDOCtoMOC_tasksRunner.tokenIn,
+      reverseAuctions.revAuctionDOCtoMOC_tasksRunner.tokenOut,
+      ZERO_ADDRESS,
+      reverseAuctions.revAuctionDOCtoMOC_tasksRunner.orderThreshold,
+      reverseAuctions.revAuctionDOCtoMOC_tasksRunner.priceProvider,
+      reverseAuctions.revAuctionDOCtoMOC_tasksRunner.slippage,
+    ],
+    { id: "RevAuctionDOCtoMOC_tasksRunner" },
+  );
+
+  const revAuctionRBTCtoMOC_rocNodes = m.contract(
+    "MocReverseAuction",
+    [
+      core.governor,
+      reverseAuctions.revAuctionRBTCtoMOC_rocNodes.mocSwapper,
+      reverseAuctions.revAuctionRBTCtoMOC_rocNodes.tokenIn,
+      reverseAuctions.revAuctionRBTCtoMOC_rocNodes.tokenOut,
+      reverseAuctions.revAuctionRBTCtoMOC_rocNodes.outputAccount,
+      reverseAuctions.revAuctionRBTCtoMOC_rocNodes.orderThreshold,
+      reverseAuctions.revAuctionRBTCtoMOC_rocNodes.priceProvider,
+      reverseAuctions.revAuctionRBTCtoMOC_rocNodes.slippage,
+    ],
+    { id: "RevAuctionRBTCtoMOC_rocNodes" },
+  );
+
+  // ---------------------------------------------------------------------------
+  // Stage 3 - Task Contracts Deployment
+  // ---------------------------------------------------------------------------
+  // 3.1 - V3 and V2V3 operational tasks
   const executeQueueTask = m.contract(
     "@moc/shared/contracts/tasks/v3/TaskExecuteQueueV3.sol:TaskExecuteQueueV3",
     [core.mocMultiCollateralGuard],
@@ -263,7 +324,7 @@ const AddTasksRunnerModule = buildModule("AddTasksRunner", m => {
     { id: "TaskRefreshACBalanceV2V3Bucket1" },
   );
 
-  // 2.2 - Flow tasks (split, trigger-order, flush, liquidate)
+  // 3.2 - Flow tasks (split, trigger-order, flush, liquidate)
   const flowSplitTaskRifCommissionSplitterV2 = m.contract(
     "@moc/shared/contracts/tasks/mocFlow/commissionSplitter/TaskSplit.sol:TaskSplit",
     [
@@ -305,22 +366,22 @@ const AddTasksRunnerModule = buildModule("AddTasksRunner", m => {
   );
   const flowTriggerOrderTaskRevAuctionRBTCtoMOC_tasksRunner = m.contract(
     "@moc/shared/contracts/tasks/mocFlow/reverseAuction/TaskTriggerOrder.sol:TaskTriggerOrder",
-    [triggerOrderRevAuctions.revAuctionRBTCtoMOC_tasksRunner, flow.revertSleepTime, flow.taskOwner],
+    [revAuctionRBTCtoMOC_tasksRunner, flow.revertSleepTime, flow.taskOwner],
     { id: "TaskTriggerOrderRevAuctionRBTCtoMOC_tasksRunner" },
   );
   const flowTriggerOrderTaskRevAuctionRIFtoMOC_tasksRunner = m.contract(
     "@moc/shared/contracts/tasks/mocFlow/reverseAuction/TaskTriggerOrder.sol:TaskTriggerOrder",
-    [triggerOrderRevAuctions.revAuctionRIFtoMOC_tasksRunner, flow.revertSleepTime, flow.taskOwner],
+    [revAuctionRIFtoMOC_tasksRunner, flow.revertSleepTime, flow.taskOwner],
     { id: "TaskTriggerOrderRevAuctionRIFtoMOC_tasksRunner" },
   );
   const flowTriggerOrderTaskRevAuctionDOCtoMOC_tasksRunner = m.contract(
     "@moc/shared/contracts/tasks/mocFlow/reverseAuction/TaskTriggerOrder.sol:TaskTriggerOrder",
-    [triggerOrderRevAuctions.revAuctionDOCtoMOC_tasksRunner, flow.revertSleepTime, flow.taskOwner],
+    [revAuctionDOCtoMOC_tasksRunner, flow.revertSleepTime, flow.taskOwner],
     { id: "TaskTriggerOrderRevAuctionDOCtoMOC_tasksRunner" },
   );
   const flowTriggerOrderTaskRevAuctionRBTCtoMOC_rocNodes = m.contract(
     "@moc/shared/contracts/tasks/mocFlow/reverseAuction/TaskTriggerOrder.sol:TaskTriggerOrder",
-    [triggerOrderRevAuctions.revAuctionRBTCtoMOC_rocNodes, flow.revertSleepTime, flow.taskOwner],
+    [revAuctionRBTCtoMOC_rocNodes, flow.revertSleepTime, flow.taskOwner],
     { id: "TaskTriggerOrderRevAuctionRBTCtoMOC_rocNodes" },
   );
   const flowTriggerOrderTaskRevAuctionRIFtoMOC_rocRewardsBuffer = m.contract(
@@ -368,7 +429,7 @@ const AddTasksRunnerModule = buildModule("AddTasksRunner", m => {
   );
 
   // ---------------------------------------------------------------------------
-  // Stage 3 - TasksRunner Initialization and Proxy
+  // Stage 4 - TasksRunner Initialization and Proxy
   // ---------------------------------------------------------------------------
   const tasks = [
     executeQueueTask,
@@ -419,69 +480,6 @@ const AddTasksRunnerModule = buildModule("AddTasksRunner", m => {
   const tasksRunnerContract = m.contractAt("@moc/oracles/contracts/TasksRunner.sol:TasksRunner", tasksRunnerProxy, {
     id: "TasksRunner",
   });
-
-  // ---------------------------------------------------------------------------
-  // Stage 4 - Reverse Auctions for Fee Routing
-  // ---------------------------------------------------------------------------
-  const revAuctionRBTCtoMOC_tasksRunner = m.contract(
-    "MocReverseAuction",
-    [
-      core.governor,
-      reverseAuctions.revAuctionRBTCtoMOC_tasksRunner.mocSwapper,
-      reverseAuctions.revAuctionRBTCtoMOC_tasksRunner.tokenIn,
-      reverseAuctions.revAuctionRBTCtoMOC_tasksRunner.tokenOut,
-      tasksRunnerContract,
-      reverseAuctions.revAuctionRBTCtoMOC_tasksRunner.orderThreshold,
-      reverseAuctions.revAuctionRBTCtoMOC_tasksRunner.priceProvider,
-      reverseAuctions.revAuctionRBTCtoMOC_tasksRunner.slippage,
-    ],
-    { id: "RevAuctionRBTCtoMOC_tasksRunner" },
-  );
-
-  const revAuctionRIFtoMOC_tasksRunner = m.contract(
-    "MocReverseAuction",
-    [
-      core.governor,
-      reverseAuctions.revAuctionRIFtoMOC_tasksRunner.mocSwapper,
-      reverseAuctions.revAuctionRIFtoMOC_tasksRunner.tokenIn,
-      reverseAuctions.revAuctionRIFtoMOC_tasksRunner.tokenOut,
-      tasksRunnerContract,
-      reverseAuctions.revAuctionRIFtoMOC_tasksRunner.orderThreshold,
-      reverseAuctions.revAuctionRIFtoMOC_tasksRunner.priceProvider,
-      reverseAuctions.revAuctionRIFtoMOC_tasksRunner.slippage,
-    ],
-    { id: "RevAuctionRIFtoMOC_tasksRunner" },
-  );
-
-  const revAuctionDOCtoMOC_tasksRunner = m.contract(
-    "MocReverseAuction",
-    [
-      core.governor,
-      reverseAuctions.revAuctionDOCtoMOC_tasksRunner.mocSwapper,
-      reverseAuctions.revAuctionDOCtoMOC_tasksRunner.tokenIn,
-      reverseAuctions.revAuctionDOCtoMOC_tasksRunner.tokenOut,
-      tasksRunnerContract,
-      reverseAuctions.revAuctionDOCtoMOC_tasksRunner.orderThreshold,
-      reverseAuctions.revAuctionDOCtoMOC_tasksRunner.priceProvider,
-      reverseAuctions.revAuctionDOCtoMOC_tasksRunner.slippage,
-    ],
-    { id: "RevAuctionDOCtoMOC_tasksRunner" },
-  );
-
-  const revAuctionRBTCtoMOC_rocNodes = m.contract(
-    "MocReverseAuction",
-    [
-      core.governor,
-      reverseAuctions.revAuctionRBTCtoMOC_rocNodes.mocSwapper,
-      reverseAuctions.revAuctionRBTCtoMOC_rocNodes.tokenIn,
-      reverseAuctions.revAuctionRBTCtoMOC_rocNodes.tokenOut,
-      reverseAuctions.revAuctionRBTCtoMOC_rocNodes.outputAccount,
-      reverseAuctions.revAuctionRBTCtoMOC_rocNodes.orderThreshold,
-      reverseAuctions.revAuctionRBTCtoMOC_rocNodes.priceProvider,
-      reverseAuctions.revAuctionRBTCtoMOC_rocNodes.slippage,
-    ],
-    { id: "RevAuctionRBTCtoMOC_rocNodes" },
-  );
 
   // ---------------------------------------------------------------------------
   // Stage 5 - RocRewardsBuffer Deployment
@@ -564,9 +562,10 @@ const AddTasksRunnerModule = buildModule("AddTasksRunner", m => {
       revAuctionDOCtoMOC_tasksRunner,
       revAuctionRBTCtoMOC_rocNodes,
       triggerOrderRevAuctions.revAuctionRIFtoMOC_rocRewardsBuffer,
+      triggerOrderRevAuctions.revAuctionMOCtoRIF_rifBucket,
       triggerOrderRevAuctions.revAuctionDOCtoMOC_rocRewardsBuffer,
       rifCommissionSplitterV2.commissionSplitter,
-      changer.rifProRewardsBuffer_rocRewardsBuffer,
+      bufferTasks.rifProRewardsBuffer,
       mocSwapperV3,
       core.mocTokenAddress,
       maxRbtcToMocProvider,
@@ -574,6 +573,7 @@ const AddTasksRunnerModule = buildModule("AddTasksRunner", m => {
       mocSwapperV3Cfg.rbtcToMocPoolFee,
       mocSwapperV3Cfg.mocToRbtcPoolFee,
       rocRewardsBuffer,
+      core.registry,
       core.oracleManager,
       tasksRunnerContract,
     ],
