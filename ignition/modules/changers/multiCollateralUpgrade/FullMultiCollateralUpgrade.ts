@@ -44,7 +44,7 @@ const FullMultiCollateralUpgradeModule = buildModule("FullMultiCollateralUpgrade
     {
       ...feeFlowBaseParams,
       // Inject swapper addresses from MocSwappers deployment
-      swapperDOCMOCAddress: swappers.swapperDOCMOCProxy,
+      swapperDOCMOCAddress: swappers.mocSwapperV3MultihopProxy,
     },
     "FeeFlow",
   );
@@ -78,7 +78,7 @@ const FullMultiCollateralUpgradeModule = buildModule("FullMultiCollateralUpgrade
       ...multiCollateralParams,
       // Inject addresses from other deployments
       docBucketAddress: docBucket.docBucketProxy,
-      rifToDocSwapperAddress: swappers.swapperRIFDOCProxy,
+      rifToDocSwapperAddress: swappers.mocSwapperV3MultihopProxy,
       reverseAuctionDOCtoMOCAddress: feeFlow.reverseAuctionDOCtoMOC,
     },
     "MultiCollateral",
@@ -90,12 +90,9 @@ const FullMultiCollateralUpgradeModule = buildModule("FullMultiCollateralUpgrade
   return {
     // === MocSwappers ===
     interimGovernor: swappers.interimGovernor,
-    swapperDOCMOCImpl: swappers.swapperDOCMOCImpl,
-    swapperDOCMOCProxy: swappers.swapperDOCMOCProxy,
-    swapperDOCMOC: swappers.swapperDOCMOC,
-    swapperRIFDOCImpl: swappers.swapperRIFDOCImpl,
-    swapperRIFDOCProxy: swappers.swapperRIFDOCProxy,
-    swapperRIFDOC: swappers.swapperRIFDOC,
+    mocSwapperV3MultihopImpl: swappers.mocSwapperV3MultihopImpl,
+    mocSwapperV3MultihopProxy: swappers.mocSwapperV3MultihopProxy,
+    mocSwapperV3Multihop: swappers.mocSwapperV3Multihop,
 
     // === FeeFlow ===
     feesSplitterImpl: feeFlow.feesSplitterImpl,

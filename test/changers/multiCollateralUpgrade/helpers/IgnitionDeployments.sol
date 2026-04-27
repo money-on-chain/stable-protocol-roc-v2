@@ -20,7 +20,7 @@ import { Test } from "forge-std/Test.sol";
  * contract MyTest is IgnitionDeployments {
  *     function setUp() public {
  *         _loadDeployedAddresses();
- *         address swapper = getDeployedAddress("Swappers_SwapperDOCMOCProxy");
+ *         address swapper = getDeployedAddress("Swappers_MocSwapperV3MultihopProxy");
  *     }
  * }
  * ```
@@ -65,12 +65,9 @@ abstract contract IgnitionDeployments is Test {
     function _parseDeployedAddresses(string memory json) internal {
         // === MocSwappers ===
         _tryParseAddress(json, "Swappers_InterimGovernor");
-        _tryParseAddress(json, "Swappers_SwapperDOCMOCImplementation");
-        _tryParseAddress(json, "Swappers_SwapperDOCMOCProxy");
-        _tryParseAddress(json, "Swappers_SwapperDOCMOC");
-        _tryParseAddress(json, "Swappers_SwapperRIFDOCImplementation");
-        _tryParseAddress(json, "Swappers_SwapperRIFDOCProxy");
-        _tryParseAddress(json, "Swappers_SwapperRIFDOC");
+        _tryParseAddress(json, "Swappers_MocSwapperV3MultihopImplementation");
+        _tryParseAddress(json, "Swappers_MocSwapperV3MultihopProxy");
+        _tryParseAddress(json, "Swappers_MocSwapperV3Multihop");
         _tryParseAddress(json, "Swappers_RifToDocMaxAmountProvider");
 
         // === FeeFlow ===
@@ -116,7 +113,7 @@ abstract contract IgnitionDeployments is Test {
     }
 
     /// @notice Get a deployed address by contract ID
-    /// @param contractId The contract ID (e.g., "Swappers_SwapperDOCMOCProxy")
+    /// @param contractId The contract ID (e.g., "Swappers_MocSwapperV3MultihopProxy")
     /// @return The deployed address, or address(0) if not found
     function getDeployedAddress(string memory contractId) public view returns (address) {
         return deployedAddresses[contractId];
