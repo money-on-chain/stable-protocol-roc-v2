@@ -77,44 +77,28 @@ export function deployMocSwappers(m: IgnitionModuleBuilder, params: MocSwappersP
     id: `${prefix}InterimGovernor`,
   });
 
-  // Deploy SwapperDOCMOC (MocSwapperV3MultiHop)
-  const swapperDOCMOCImpl = m.contract("MocSwapperV3MultiHop", [], {
-    id: `${prefix}SwapperDOCMOCImplementation`,
+  // Deploy one shared MocSwapperV3MultiHop for all pairs
+  const mocSwapperV3MultihopImpl = m.contract("MocSwapperV3MultiHop", [], {
+    id: `${prefix}MocSwapperV3MultihopImplementation`,
   });
 
-  const swapperDOCMOCInitData = m.encodeFunctionCall(swapperDOCMOCImpl, "initialize", [
+  const mocSwapperV3MultihopInitData = m.encodeFunctionCall(mocSwapperV3MultihopImpl, "initialize", [
     interimGovernor,
     params.pauserAddress,
     params.swapRouterAddress,
     params.coinbaseWrapperAddress,
   ]);
 
-  const swapperDOCMOCProxy = m.contract("ERC1967Proxy", [swapperDOCMOCImpl, swapperDOCMOCInitData], {
-    id: `${prefix}SwapperDOCMOCProxy`,
-  });
+  const mocSwapperV3MultihopProxy = m.contract(
+    "ERC1967Proxy",
+    [mocSwapperV3MultihopImpl, mocSwapperV3MultihopInitData],
+    {
+      id: `${prefix}MocSwapperV3MultihopProxy`,
+    },
+  );
 
-  const swapperDOCMOC = m.contractAt("MocSwapperV3MultiHop", swapperDOCMOCProxy, {
-    id: `${prefix}SwapperDOCMOC`,
-  });
-
-  // Deploy SwapperRIFDOC (MocSwapperV3MultiHop)
-  const swapperRIFDOCImpl = m.contract("MocSwapperV3MultiHop", [], {
-    id: `${prefix}SwapperRIFDOCImplementation`,
-  });
-
-  const swapperRIFDOCInitData = m.encodeFunctionCall(swapperRIFDOCImpl, "initialize", [
-    interimGovernor,
-    params.pauserAddress,
-    params.swapRouterAddress,
-    params.coinbaseWrapperAddress,
-  ]);
-
-  const swapperRIFDOCProxy = m.contract("ERC1967Proxy", [swapperRIFDOCImpl, swapperRIFDOCInitData], {
-    id: `${prefix}SwapperRIFDOCProxy`,
-  });
-
-  const swapperRIFDOC = m.contractAt("MocSwapperV3MultiHop", swapperRIFDOCProxy, {
-    id: `${prefix}SwapperRIFDOC`,
+  const mocSwapperV3Multihop = m.contractAt("MocSwapperV3MultiHop", mocSwapperV3MultihopProxy, {
+    id: `${prefix}MocSwapperV3Multihop`,
   });
 
   // Deploy DataProvider instances for max amount to swap (owner = pauserAddress)
@@ -136,7 +120,7 @@ export function deployMocSwappers(m: IgnitionModuleBuilder, params: MocSwappersP
 
   // Configure swapper paths
   m.call(
-    swapperDOCMOC,
+    mocSwapperV3Multihop,
     "setPath",
     [
       params.docTokenAddress,
@@ -149,7 +133,7 @@ export function deployMocSwappers(m: IgnitionModuleBuilder, params: MocSwappersP
   );
 
   m.call(
-    swapperDOCMOC,
+    mocSwapperV3Multihop,
     "setPath",
     [
       params.mocTokenAddress,
@@ -162,7 +146,7 @@ export function deployMocSwappers(m: IgnitionModuleBuilder, params: MocSwappersP
   );
 
   m.call(
-    swapperRIFDOC,
+    mocSwapperV3Multihop,
     "setPath",
     [
       params.rifTokenAddress,
@@ -175,7 +159,7 @@ export function deployMocSwappers(m: IgnitionModuleBuilder, params: MocSwappersP
   );
 
   m.call(
-    swapperRIFDOC,
+    mocSwapperV3Multihop,
     "setPath",
     [
       params.docTokenAddress,
@@ -188,22 +172,15 @@ export function deployMocSwappers(m: IgnitionModuleBuilder, params: MocSwappersP
   );
 
   // Transfer governance to real governor
-  m.call(swapperDOCMOC, "changeGovernor", [params.governorAddress], {
-    id: `${prefix}TransferGovernanceSwapperDOCMOC`,
-  });
-
-  m.call(swapperRIFDOC, "changeGovernor", [params.governorAddress], {
-    id: `${prefix}TransferGovernanceSwapperRIFDOC`,
+  m.call(mocSwapperV3Multihop, "changeGovernor", [params.governorAddress], {
+    id: `${prefix}TransferGovernanceMocSwapperV3Multihop`,
   });
 
   return {
     interimGovernor,
-    swapperDOCMOCImpl,
-    swapperDOCMOCProxy,
-    swapperDOCMOC,
-    swapperRIFDOCImpl,
-    swapperRIFDOCProxy,
-    swapperRIFDOC,
+    mocSwapperV3MultihopImpl,
+    mocSwapperV3MultihopProxy,
+    mocSwapperV3Multihop,
     docToMocMaxAmountProvider,
     mocToDocMaxAmountProvider,
     rifToDocMaxAmountProvider,

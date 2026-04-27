@@ -654,11 +654,9 @@ contract MigrationForkTests is BaseFork {
 
     /// @notice Test that swappers were deployed correctly
     function test_SwappersDeployedCorrectly() public view {
-        address swapperDOCMOC = getDeployedAddress("Swappers_SwapperDOCMOCProxy");
-        address swapperRIFDOC = getDeployedAddress("Swappers_SwapperRIFDOCProxy");
+        address mocSwapperV3Multihop = getDeployedAddress("Swappers_MocSwapperV3MultihopProxy");
 
-        assertTrue(swapperDOCMOC != address(0), "SwapperDOCMOC should be deployed");
-        assertTrue(swapperRIFDOC != address(0), "SwapperRIFDOC should be deployed");
+        assertTrue(mocSwapperV3Multihop != address(0), "MocSwapperV3Multihop should be deployed");
     }
 
     /// @notice Test that FeeFlow contracts were deployed correctly
