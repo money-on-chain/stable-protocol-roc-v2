@@ -6,9 +6,9 @@
 
     "swapperDOCMOCAddress": "0x0000000000000000000000000000000000000000",
 
-    "mocRewards": "0x240fF84152C2673AdEf4E9642448ae1Df96CA19A",
-    "feeTokenAddressRecipient1": "0x240fF84152C2673AdEf4E9642448ae1Df96CA19A",
-    "feeTokenAddressRecipient2": "0x240fF84152C2673AdEf4E9642448ae1Df96CA19A",
+    "mocRewards": "0xf09006E812BE98c7B18c877Af5C126629acB6cAb",
+    "feeTokenAddressRecipient1": "0xf09006E812BE98c7B18c877Af5C126629acB6cAb",
+    "feeTokenAddressRecipient2": "0x4905F643Db489d9561617638d31875b6bfF79077",
 
     "feesSplitterFeeTokenPct1": "500000000000000000",
 
