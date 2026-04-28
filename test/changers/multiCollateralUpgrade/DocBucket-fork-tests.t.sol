@@ -345,7 +345,13 @@ contract DocBucketForkTests is BaseFork {
         // Execute Liquidation
         mocMultiCollateralGuard.execLiquidation(rifBucket);
 
-        assertEq(rifBucket.getCglb(), rifCglb, "RIF bucket coverage should remain the same after liquidation");
+        // liquidationExecCost introduces a small degree in the coverage, so we check that it remains almost the same
+        assertApproxEqAbs(
+            rifBucket.getCglb(),
+            rifCglb,
+            100000,
+            "RIF bucket coverage should remain almost the same after liquidation"
+        );
         assertGt(docBucket.getCglb(), docCglb, "DOC bucket coverage should increase after liquidation");
 
         assertLt(
