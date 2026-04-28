@@ -74,6 +74,8 @@ abstract contract IgnitionDeployments is Test {
         _tryParseAddress(json, "FeeFlow_FeesSplitterImplementation");
         _tryParseAddress(json, "FeeFlow_FeesSplitterProxy");
         _tryParseAddress(json, "FeeFlow_ReverseAuctionDOCtoMOC");
+        _tryParseAddress(json, "FeeFlow_ReverseAuctionMOCtoDOC");
+        _tryParseAddress(json, "FeeFlow_RocrRewardsBuffer");
 
         // === DocBucket ===
         _tryParseAddress(json, "DocBucket_DocBucketImplementation");

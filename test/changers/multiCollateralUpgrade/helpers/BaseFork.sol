@@ -57,6 +57,8 @@ contract BaseFork is IgnitionDeployments {
 
     CommissionSplitterRC20 public feeFlow;
     MocReverseAuction public reverseAuctionDocToMoc;
+    MocReverseAuction public reverseAuctionMocToDoc;
+    address public rocrRewardsBuffer;
 
     IPriceProvider rifPriceProvider;
     IPriceProvider rbtcUsdPriceProvider;
@@ -93,6 +95,13 @@ contract BaseFork is IgnitionDeployments {
         address reverseAuctionDocToMocAddr = getDeployedAddress("FeeFlow_ReverseAuctionDOCtoMOC");
         require(reverseAuctionDocToMocAddr != address(0), "ReverseAuctionDOCtoMOC not deployed");
         reverseAuctionDocToMoc = MocReverseAuction(payable(reverseAuctionDocToMocAddr));
+
+        address reverseAuctionMocToDocAddr = getDeployedAddress("FeeFlow_ReverseAuctionMOCtoDOC");
+        require(reverseAuctionMocToDocAddr != address(0), "ReverseAuctionMOCtoDOC not deployed");
+        reverseAuctionMocToDoc = MocReverseAuction(payable(reverseAuctionMocToDocAddr));
+
+        rocrRewardsBuffer = getDeployedAddress("FeeFlow_RocrRewardsBuffer");
+        require(rocrRewardsBuffer != address(0), "RocrRewardsBuffer not deployed");
 
         address rifPriceProviderAddr = getDeployedAddress("MultiCollateral_RifPriceProvider");
         require(rifPriceProviderAddr != address(0), "RifPriceProvider not deployed");

@@ -22,7 +22,7 @@ const FeeFlowModule = buildModule("FeeFlow", m => {
   // Swapper address must be provided via parameters for standalone deployment
   const params = {
     ...baseParams,
-    swapperDOCMOCAddress: m.getParameter<string>("swapperDOCMOCAddress"),
+    mocSwapperV3Multihop: m.getParameter<string>("mocSwapperV3Multihop"),
   };
 
   // Deploy using the shared deployer function

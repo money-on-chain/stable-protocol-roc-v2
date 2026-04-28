@@ -5,8 +5,6 @@ import type {
 } from "@nomicfoundation/ignition-core";
 import { getPrefixedParameterName } from "./parameterPrefixes";
 
-const FULL_PERCENT = 1000000000000000000n;
-
 // Type aliases for parameters
 type StringParam = string | ModuleParameterRuntimeValue<string>;
 type BigintParam = bigint | ModuleParameterRuntimeValue<bigint>;
@@ -22,22 +20,27 @@ export interface FeeFlowParams {
   docTokenAddress: StringParam;
   mocTokenAddress: StringParam;
   // These can be ContractFutures from MocSwappers deployment
-  swapperDOCMOCAddress: AddressOrFuture;
-  mocRewards: StringParam;
+  mocSwapperV3Multihop: AddressOrFuture;
+  mocRewardsBuffer: StringParam;
   // Splitter parameters
-  feeTokenAddressRecipient1: StringParam;
-  feeTokenAddressRecipient2: StringParam;
+  foundationTreasury: StringParam;
+  feesSplitterAcTokenPct1: BigintParam;
   feesSplitterFeeTokenPct1: BigintParam;
+  mocRewardsSplitterThreshold: BigintParam;
+  mocRewardsSplitterSplits: bigint[] | ModuleParameterRuntimeValue<bigint[]>;
+  mocRewardsSplitterThresholds: bigint[] | ModuleParameterRuntimeValue<bigint[]>;
   // ReverseAuction parameters
   docToMocOrderThreshold: BigintParam;
   docToMocSlippage: BigintParam;
+  mocToDocOrderThreshold: BigintParam;
+  mocToDocSlippage: BigintParam;
   mocToDocPriceProvider: StringParam;
 }
 
 /**
  * Partial params for FeeFlow - swapper addresses provided separately (from another deployment)
  */
-export type FeeFlowParamsWithoutSwappers = Omit<FeeFlowParams, "swapperDOCMOCAddress">;
+export type FeeFlowParamsWithoutSwappers = Omit<FeeFlowParams, "mocSwapperV3Multihop">;
 
 /**
  * Helper to get FeeFlow parameters from module parameters (excluding swapper addresses)
@@ -52,12 +55,17 @@ export function getFeeFlowParams(m: IgnitionModuleBuilder, parameterPrefix?: str
     governorAddress: getParameter<string>("governorAddress"),
     docTokenAddress: getParameter<string>("docTokenAddress"),
     mocTokenAddress: getParameter<string>("mocTokenAddress"),
-    mocRewards: getParameter<string>("mocRewards"),
-    feeTokenAddressRecipient1: getParameter<string>("feeTokenAddressRecipient1"),
-    feeTokenAddressRecipient2: getParameter<string>("feeTokenAddressRecipient2"),
+    mocRewardsBuffer: getParameter<string>("mocRewardsBuffer"),
+    foundationTreasury: getParameter<string>("foundationTreasury"),
+    feesSplitterAcTokenPct1: getParameter<bigint>("feesSplitterAcTokenPct1"),
     feesSplitterFeeTokenPct1: getParameter<bigint>("feesSplitterFeeTokenPct1"),
+    mocRewardsSplitterThreshold: getParameter<bigint>("mocRewardsSplitterThreshold"),
+    mocRewardsSplitterSplits: getParameter<bigint[]>("mocRewardsSplitterSplits"),
+    mocRewardsSplitterThresholds: getParameter<bigint[]>("mocRewardsSplitterThresholds"),
     docToMocOrderThreshold: getParameter<bigint>("docToMocOrderThreshold"),
     docToMocSlippage: getParameter<bigint>("docToMocSlippage"),
+    mocToDocOrderThreshold: getParameter<bigint>("mocToDocOrderThreshold"),
+    mocToDocSlippage: getParameter<bigint>("mocToDocSlippage"),
     mocToDocPriceProvider: getParameter<string>("mocToDocPriceProvider"),
   };
 }
@@ -69,20 +77,55 @@ export function getFeeFlowParams(m: IgnitionModuleBuilder, parameterPrefix?: str
 export function deployFeeFlow(m: IgnitionModuleBuilder, params: FeeFlowParams, idPrefix: string = "") {
   const prefix = idPrefix ? `${idPrefix}_` : "";
 
-  // Deploy PriceProviderDummy for DOC pegged token, initialized at 1e18
+  // Deploy for DOC/MOC price provider for DOC -> MOC reverse auction
   const docToMocPriceProvider = m.contract("PriceProviderInverse", [params.mocToDocPriceProvider], {
     id: `${prefix}DocToMocPriceProvider`,
   });
 
-  // Deploy ReverseAuctions (splitters need their addresses)
+  // Deploy MOC -> DOC ReverseAuction with temporary output account.
+  // The final output account (DocBucket) is set in MultiCollateralUpgradeChanger.execute().
+  const reverseAuctionMOCtoDOC = m.contract(
+    "MocReverseAuction",
+    [
+      params.governorAddress,
+      params.mocSwapperV3Multihop,
+      params.mocTokenAddress,
+      params.docTokenAddress,
+      params.mocRewardsBuffer, // placeholder output account, will be updated to DocBucket in MultiCollateralUpgradeChanger
+      params.mocToDocOrderThreshold,
+      params.mocToDocPriceProvider,
+      params.mocToDocSlippage,
+    ],
+    { id: `${prefix}ReverseAuctionMOCtoDOC` },
+  );
+
+  // Deploy MOC BufferToken behind proxy and initialize in constructor data.
+  const rocrRewardsBufferImpl = m.contract("BufferToken", [], {
+    id: `${prefix}RocrRewardsBufferImplementation`,
+  });
+
+  const rocrRewardsBufferInitData = m.encodeFunctionCall(rocrRewardsBufferImpl, "initialize", [
+    params.governorAddress,
+    params.mocTokenAddress,
+    params.mocRewardsSplitterThreshold,
+    [params.mocRewardsBuffer, reverseAuctionMOCtoDOC],
+    params.mocRewardsSplitterSplits,
+    params.mocRewardsSplitterThresholds,
+  ]);
+
+  const rocrRewardsBuffer = m.contract("ERC1967Proxy", [rocrRewardsBufferImpl, rocrRewardsBufferInitData], {
+    id: `${prefix}RocrRewardsBuffer`,
+  });
+
+  // Deploy DOC -> MOC ReverseAuction (splitters need its address)
   const reverseAuctionDOCtoMOC = m.contract(
     "MocReverseAuction",
     [
       params.governorAddress,
-      params.swapperDOCMOCAddress,
+      params.mocSwapperV3Multihop,
       params.docTokenAddress,
       params.mocTokenAddress,
-      params.mocRewards, // MOC rewards recipient
+      params.mocRewardsBuffer,
       params.docToMocOrderThreshold,
       docToMocPriceProvider,
       params.docToMocSlippage,
@@ -99,11 +142,11 @@ export function deployFeeFlow(m: IgnitionModuleBuilder, params: FeeFlowParams, i
     params.docTokenAddress, // acToken (DOC)
     params.governorAddress,
     params.mocTokenAddress, // feeToken (MOC)
-    reverseAuctionDOCtoMOC, // acTokenAddressRecipient1_ (DOC -> MOC auction)
-    reverseAuctionDOCtoMOC, // acTokenAddressRecipient2_ (same recipient; zero-address would break 0-value transfer)
-    FULL_PERCENT, // acTokenPctToRecipient1_ = 100%
-    params.feeTokenAddressRecipient1,
-    params.feeTokenAddressRecipient2,
+    params.foundationTreasury, // acTokenAddressRecipient1_ (foundation)
+    reverseAuctionDOCtoMOC, // acTokenAddressRecipient2_ (DOC -> MOC auction)
+    params.feesSplitterAcTokenPct1, // acTokenPctToRecipient1_
+    params.foundationTreasury, // feeTokenAddressRecipient1_ (foundation)
+    rocrRewardsBuffer, // feeTokenAddressRecipient2_ (MOC rewards buffer)
     params.feesSplitterFeeTokenPct1, // feeTokenPctToRecipient1_
   ]);
 
@@ -115,5 +158,7 @@ export function deployFeeFlow(m: IgnitionModuleBuilder, params: FeeFlowParams, i
     feesSplitterImpl,
     feesSplitterProxy,
     reverseAuctionDOCtoMOC,
+    reverseAuctionMOCtoDOC,
+    rocrRewardsBuffer,
   };
 }

@@ -18,7 +18,7 @@
     "redeemTCandTPFee": "1500000000000000",
     "mintTCandTPFee": "1500000000000000",
     "feeTokenPct": "666666666666666666",
-    "feeRetainer": "500000000000000000",
+    "feeRetainer": "250000000000000000",
     "successFee": "0",
     "appreciationFactor": "0",
     "settlementTimeSpan": "115792089237316195423570985008687907853269984665640564039457584007913129639935",
