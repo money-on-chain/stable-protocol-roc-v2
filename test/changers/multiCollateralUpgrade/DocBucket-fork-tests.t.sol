@@ -29,6 +29,8 @@ contract DocBucketForkTests is BaseFork {
     bytes32 private constant MOC_FLOW_REVERSE_AUCTIONS =
         0x0428ec087e0cce276a71d1caf1afe4da32a2d48b3ebe579040612b5bd262ff73;
     bytes32 private constant MOC_MULTI_COLLATERAL_GUARD = keccak256("moc.multi-collateral-guard");
+    // MOC_FLOW_BUFFERS = keccak256(MOC_FLOW\1\BUFFERS)
+    bytes32 private constant MOC_FLOW_BUFFERS = 0x4cb845794d5472a713e41e8e4ddc566dab8d695f1dc6c8edd43dad9d55112a22;
 
     function setUp() public override {
         super.setUp();
@@ -37,19 +39,32 @@ contract DocBucketForkTests is BaseFork {
     function test_RegistryIsUpdatedAfterChanger() public {
         IGovernedRegistryView registry = IGovernedRegistryView(address(changer.governedRegistry()));
         uint256 reverseAuctionsBefore = registry.getAddressArrayLength(MOC_FLOW_REVERSE_AUCTIONS);
+        uint256 buffersBefore = registry.getAddressArrayLength(MOC_FLOW_BUFFERS);
+        assertGt(reverseAuctionsBefore, 0, "Reverse auctions array should have entries before changer");
+        assertGt(buffersBefore, 0, "Buffers array should have entries before changer");
 
         _executeChanger();
         uint256 reverseAuctionsAfter = registry.getAddressArrayLength(MOC_FLOW_REVERSE_AUCTIONS);
+        uint256 buffersAfter = registry.getAddressArrayLength(MOC_FLOW_BUFFERS);
 
         assertEq(
             registry.getAddress(MOC_MULTI_COLLATERAL_GUARD),
             address(mocMultiCollateralGuard),
             "Registry guard should match deployed mocMultiCollateralGuard"
         );
-        assertEq(reverseAuctionsAfter, reverseAuctionsBefore + 1, "Reverse auctions array length should increase by 1");
+        assertEq(reverseAuctionsAfter, reverseAuctionsBefore + 2, "Reverse auctions array length should increase by 2");
         assertTrue(
             registry.addressArrayContains(MOC_FLOW_REVERSE_AUCTIONS, address(reverseAuctionDocToMoc)),
             "Registry should contain DOC->MOC reverse auction"
+        );
+        assertTrue(
+            registry.addressArrayContains(MOC_FLOW_REVERSE_AUCTIONS, address(reverseAuctionMocToDoc)),
+            "Registry should contain MOC->DOC reverse auction"
+        );
+        assertEq(buffersAfter, buffersBefore + 1, "Buffers array length should increase by 1");
+        assertTrue(
+            registry.addressArrayContains(MOC_FLOW_BUFFERS, rocrRewardsBuffer),
+            "Registry buffers should contain rocr rewards buffer"
         );
     }
 

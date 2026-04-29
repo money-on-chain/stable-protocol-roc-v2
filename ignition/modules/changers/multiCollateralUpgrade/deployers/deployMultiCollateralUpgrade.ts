@@ -58,6 +58,7 @@ export interface MultiCollateralUpgradeParams {
   governedRegistryAddress: StringParam;
   reverseAuctionDOCtoMOCAddress?: AddressParam;
   reverseAuctionMOCtoDOCAddress?: AddressParam;
+  rocrRewardsBufferAddress?: AddressParam;
 
   // PeggedTokenParams for DOC bucket
   peggedTokenParams?: {
@@ -277,6 +278,7 @@ export function deployMultiCollateralUpgrade(
       params.governedRegistryAddress, // governedRegistry_
       params.reverseAuctionDOCtoMOCAddress!, // reverseAuctionDOCtoMOC_
       params.reverseAuctionMOCtoDOCAddress!, // reverseAuctionMOCtoDOC_
+      params.rocrRewardsBufferAddress!, // rocrRewardsBuffer_
     ],
     { id: `${prefix}MultiCollateralUpgradeChanger` },
   );
