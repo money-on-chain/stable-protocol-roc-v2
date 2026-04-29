@@ -81,6 +81,7 @@ const FullMultiCollateralUpgradeModule = buildModule("FullMultiCollateralUpgrade
       rifToDocSwapperAddress: swappers.mocSwapperV3MultihopProxy,
       reverseAuctionDOCtoMOCAddress: feeFlow.reverseAuctionDOCtoMOC,
       reverseAuctionMOCtoDOCAddress: feeFlow.reverseAuctionMOCtoDOC,
+      rocrRewardsBufferAddress: feeFlow.rocrRewardsBuffer,
     },
     "MultiCollateral",
   );

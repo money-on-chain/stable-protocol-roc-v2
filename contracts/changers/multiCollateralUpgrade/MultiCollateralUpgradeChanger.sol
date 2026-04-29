@@ -48,6 +48,8 @@ contract MultiCollateralUpgradeChanger is IChangeContract {
     // keccak256("moc.multi-collateral-guard")
     bytes32 private constant MOC_MULTI_COLLATERAL_GUARD =
         0xe703515d757b84b6a6bd1314e6613eb3ea7ece4815e828061398853f8b3d6b1a;
+    // MOC_FLOW_BUFFERS = keccak256(MOC_FLOW\1\BUFFERS)
+    bytes32 public constant MOC_FLOW_BUFFERS = 0x4cb845794d5472a713e41e8e4ddc566dab8d695f1dc6c8edd43dad9d55112a22;
 
     // ------- Storage -------
     // USDRIF proxy contract to be upgraded
@@ -86,6 +88,8 @@ contract MultiCollateralUpgradeChanger is IChangeContract {
     address public immutable reverseAuctionDOCtoMOC;
     // reverse auction MOC -> DOC
     address public immutable reverseAuctionMOCtoDOC;
+    // ROCR rewards buffer
+    address public immutable rocrRewardsBuffer;
 
     /** 
       @notice Constructor
@@ -105,6 +109,7 @@ contract MultiCollateralUpgradeChanger is IChangeContract {
       @param governedRegistry_ moc/shared governed registry
       @param reverseAuctionDOCtoMOC_ reverse auction to register under MOC_FLOW_REVERSE_AUCTIONS
       @param reverseAuctionMOCtoDOC_ reverse auction whose output account is updated to docBucket
+      @param rocrRewardsBuffer_ ROCR rewards buffer to register in governed registry
     */
     constructor(
         MocRif rifBucket_,
@@ -122,7 +127,8 @@ contract MultiCollateralUpgradeChanger is IChangeContract {
         PeggedTokenParams memory usdRifParamsForDocBucket_,
         IGovernedRegistry governedRegistry_,
         address reverseAuctionDOCtoMOC_,
-        address reverseAuctionMOCtoDOC_
+        address reverseAuctionMOCtoDOC_,
+        address rocrRewardsBuffer_
     ) {
         rifBucket = rifBucket_;
         mocRifImplementation = mocRifImplementation_;
@@ -142,6 +148,7 @@ contract MultiCollateralUpgradeChanger is IChangeContract {
         governedRegistry = governedRegistry_;
         reverseAuctionDOCtoMOC = reverseAuctionDOCtoMOC_;
         reverseAuctionMOCtoDOC = reverseAuctionMOCtoDOC_;
+        rocrRewardsBuffer = rocrRewardsBuffer_;
 
         // reverts if some parameter is wrong
         verifySettings();
@@ -258,6 +265,8 @@ contract MultiCollateralUpgradeChanger is IChangeContract {
         // Set MocMultiCollateralGuard and new reverse auction to the governed registry
         governedRegistry.setAddress(MOC_MULTI_COLLATERAL_GUARD, address(mocMultiCollateralGuardProxy));
         governedRegistry.pushAddressArrayElement(MOC_FLOW_REVERSE_AUCTIONS, reverseAuctionDOCtoMOC);
+        governedRegistry.pushAddressArrayElement(MOC_FLOW_REVERSE_AUCTIONS, reverseAuctionMOCtoDOC);
+        governedRegistry.pushAddressArrayElement(MOC_FLOW_BUFFERS, rocrRewardsBuffer);
 
         // reverts if some parameter is wrong
         verifySettings();
