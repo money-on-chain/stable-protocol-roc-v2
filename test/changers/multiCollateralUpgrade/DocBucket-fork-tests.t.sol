@@ -14,6 +14,9 @@ interface IGovernedRegistryView {
 
 interface IBufferBaseView {
     function getOutput(uint256 idx) external view returns (address, uint256, uint256, uint256);
+    function getThreshold() external view returns (uint256);
+    function liquidate() external;
+    function flush(uint256 idx) external;
 }
 
 /// @title Fork Tests with Ignition Deployed Contracts
@@ -250,6 +253,7 @@ contract DocBucketForkTests is BaseFork {
         address feeTokenRecipient2 = feeFlow.feeTokenAddressRecipient2();
         uint256 feeTokenRecipient1BalanceBefore = mocToken.balanceOf(feeTokenRecipient1);
         uint256 feeTokenRecipient2BalanceBefore = mocToken.balanceOf(feeTokenRecipient2);
+        assertEq(feeTokenRecipient2, rocrRewardsBuffer, "Fee token recipient 2 should be rocrRewardsBuffer");
 
         feeFlow.split();
 
@@ -282,9 +286,42 @@ contract DocBucketForkTests is BaseFork {
             "Fee token recipient 2 received MOC tokens"
         );
 
+        // Split rocrRewardsBuffer and verify both outputs receive MOC
+        IBufferBaseView rocrBuffer = IBufferBaseView(rocrRewardsBuffer);
+        (address mocRewardsBufferFromBuffer, , , ) = rocrBuffer.getOutput(0);
+        (address reverseAuctionMocToDocOutput, , , ) = rocrBuffer.getOutput(1);
+        uint256 mocRewardsBufferBalanceBefore = mocToken.balanceOf(mocRewardsBufferFromBuffer);
+        uint256 reverseAuctionMocToDocBalanceBefore = mocToken.balanceOf(reverseAuctionMocToDocOutput);
+
+        // Ensure buffer is above liquidate/flush thresholds for deterministic execution in fork tests
+        (, , , uint256 output0Threshold) = rocrBuffer.getOutput(0);
+        (, , , uint256 output1Threshold) = rocrBuffer.getOutput(1);
+        uint256 targetBufferBalance = rocrBuffer.getThreshold();
+        uint256 minForFlush = (output0Threshold + output1Threshold) + 1;
+        if (minForFlush > targetBufferBalance) targetBufferBalance = minForFlush;
+
+        uint256 bufferBalance = mocToken.balanceOf(rocrRewardsBuffer);
+        if (bufferBalance <= targetBufferBalance) {
+            deal(address(mocToken), rocrRewardsBuffer, targetBufferBalance + 1000 ether);
+        }
+
+        rocrBuffer.liquidate();
+        rocrBuffer.flush(0);
+        rocrBuffer.flush(1);
+
+        assertGt(
+            mocToken.balanceOf(mocRewardsBufferFromBuffer),
+            mocRewardsBufferBalanceBefore,
+            "rocrRewardsBuffer output 0 received MOC tokens"
+        );
+        assertGt(
+            mocToken.balanceOf(reverseAuctionMocToDocOutput),
+            reverseAuctionMocToDocBalanceBefore,
+            "rocrRewardsBuffer output 1 (reverseAuctionMOCtoDOC) received MOC tokens"
+        );
+
         // trigger the reverse auction to ensure it can execute with the received DOC
         address docToMocOutputAccount = reverseAuctionDocToMoc.outputAccount();
-        (address mocRewardsBufferFromBuffer, , , ) = IBufferBaseView(rocrRewardsBuffer).getOutput(0);
         assertEq(
             docToMocOutputAccount,
             mocRewardsBufferFromBuffer,
@@ -304,6 +341,26 @@ contract DocBucketForkTests is BaseFork {
             outputAccountBalanceBefore,
             "mocRewardsBuffer received MOC tokens"
         );
+
+        // Execute MOC->DOC reverse auction and verify DOC bucket receives DOC
+        uint256 docBucketDocBalanceBefore = docToken.balanceOf(address(docBucket));
+        uint256 reverseAuctionMocToDocBalanceBeforeTrigger = mocToken.balanceOf(address(reverseAuctionMocToDoc));
+        reverseAuctionMocToDoc.triggerOrders();
+
+        assertLt(
+            mocToken.balanceOf(address(reverseAuctionMocToDoc)),
+            reverseAuctionMocToDocBalanceBeforeTrigger,
+            "Reverse auction MOC to DOC balance should decrease after triggering orders"
+        );
+        assertGt(
+            docToken.balanceOf(address(docBucket)),
+            docBucketDocBalanceBefore,
+            "DocBucket received DOC tokens from reverse auction MOC to DOC"
+        );
+
+        uint256 nACcbBeforeRefresh = docBucket.nACcb();
+        docBucket.refreshACBalance();
+        assertGt(docBucket.nACcb(), nACcbBeforeRefresh, "DocBucket nACcb should increase after refreshACBalance");
     }
 
     function test_MicroLiquidation() public {

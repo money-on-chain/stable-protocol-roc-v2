@@ -87,7 +87,7 @@
     "prettier:check": "prettier --config .prettierrc --check \"**/*.{js,json,md,sol,ts,yml}\"",
     "release": "standard-version",
     "test": "npx hardhat test solidity",
-    "test:storage": "FOUNDRY_PROFILE=storage forge build && FOUNDRY_PROFILE=storage forge test -vv",
+    "test:storage": "FOUNDRY_PROFILE=storage forge clean && FOUNDRY_PROFILE=storage forge build --force && FOUNDRY_PROFILE=storage forge test -vv",
     "test:fork:mainnet": "./scripts/changers/multiCollateralUpgrade/run-fork-tests.sh rskMainnet",
     "test:all": "npm run test:fork:mainnet && npm run test:storage",
     "merge-params": "node scripts/changers/multiCollateralUpgrade/merge-ignition-params.mjs",
