@@ -58,12 +58,14 @@ const AddTasksRunnerModule = buildModule("AddTasksRunner", m => {
   const bufferTasks = m.getParameter("bufferTasks") as unknown as {
     rocRewardsBuffer: string;
     rifProRewardsBuffer: string;
+    rocrRewardsBuffer: string;
   };
 
   const triggerOrderRevAuctions = m.getParameter("triggerOrderRevAuctions") as unknown as {
     revAuctionRIFtoMOC_rocRewardsBuffer: string;
     revAuctionMOCtoRIF_rifBucket: string;
     revAuctionDOCtoMOC_rocRewardsBuffer: string;
+    revAuctionMOCtoDOC_docBucket: string;
   };
 
   const rifCommissionSplitterV2 = m.getParameter("rifCommissionSplitterV2") as unknown as {
@@ -399,6 +401,11 @@ const AddTasksRunnerModule = buildModule("AddTasksRunner", m => {
     [triggerOrderRevAuctions.revAuctionDOCtoMOC_rocRewardsBuffer, flow.revertSleepTime, flow.taskOwner],
     { id: "TaskTriggerOrderRevAuctionDOCtoMOC_rocRewardsBuffer" },
   );
+  const flowTriggerOrderTaskRevAuctionMOCtoDOC_docBucket = m.contract(
+    "@moc/shared/contracts/tasks/mocFlow/reverseAuction/TaskTriggerOrder.sol:TaskTriggerOrder",
+    [triggerOrderRevAuctions.revAuctionMOCtoDOC_docBucket, flow.revertSleepTime, flow.taskOwner],
+    { id: "TaskTriggerOrderRevAuctionMOCtoDOC_docBucket" },
+  );
   const flowFlushTaskRocRewardsBuffer = m.contract(
     "@moc/shared/contracts/tasks/mocFlow/buffer/TaskFlush.sol:TaskFlush",
     [bufferTasks.rocRewardsBuffer],
@@ -425,6 +432,20 @@ const AddTasksRunnerModule = buildModule("AddTasksRunner", m => {
     [bufferTasks.rifProRewardsBuffer],
     {
       id: "TaskLiquidateRifProRewardsBuffer",
+    },
+  );
+  const flowFlushTaskRocrRewardsBuffer = m.contract(
+    "@moc/shared/contracts/tasks/mocFlow/buffer/TaskFlush.sol:TaskFlush",
+    [bufferTasks.rocrRewardsBuffer],
+    {
+      id: "TaskFlushRocrRewardsBuffer",
+    },
+  );
+  const flowLiquidateTaskRocrRewardsBuffer = m.contract(
+    "@moc/shared/contracts/tasks/mocFlow/buffer/TaskLiquidate.sol:TaskLiquidate",
+    [bufferTasks.rocrRewardsBuffer],
+    {
+      id: "TaskLiquidateRocrRewardsBuffer",
     },
   );
 
@@ -455,10 +476,13 @@ const AddTasksRunnerModule = buildModule("AddTasksRunner", m => {
     flowTriggerOrderTaskRevAuctionRIFtoMOC_rocRewardsBuffer,
     flowTriggerOrderTaskRevAuctionMOCtoRIF_rifBucket,
     flowTriggerOrderTaskRevAuctionDOCtoMOC_rocRewardsBuffer,
+    flowTriggerOrderTaskRevAuctionMOCtoDOC_docBucket,
     flowFlushTaskRocRewardsBuffer,
     flowLiquidateTaskRocRewardsBuffer,
     flowFlushTaskRifProRewardsBuffer,
     flowLiquidateTaskRifProRewardsBuffer,
+    flowFlushTaskRocrRewardsBuffer,
+    flowLiquidateTaskRocrRewardsBuffer,
   ];
 
   const initData = m.encodeFunctionCall(tasksRunnerImpl, "initialize", [
@@ -564,8 +588,10 @@ const AddTasksRunnerModule = buildModule("AddTasksRunner", m => {
       triggerOrderRevAuctions.revAuctionRIFtoMOC_rocRewardsBuffer,
       triggerOrderRevAuctions.revAuctionMOCtoRIF_rifBucket,
       triggerOrderRevAuctions.revAuctionDOCtoMOC_rocRewardsBuffer,
+      triggerOrderRevAuctions.revAuctionMOCtoDOC_docBucket,
       rifCommissionSplitterV2.commissionSplitter,
       bufferTasks.rifProRewardsBuffer,
+      bufferTasks.rocrRewardsBuffer,
       mocSwapperV3,
       core.mocTokenAddress,
       maxRbtcToMocProvider,
@@ -624,10 +650,13 @@ const AddTasksRunnerModule = buildModule("AddTasksRunner", m => {
     flowTriggerOrderTaskRevAuctionRIFtoMOC_rocRewardsBuffer,
     flowTriggerOrderTaskRevAuctionMOCtoRIF_rifBucket,
     flowTriggerOrderTaskRevAuctionDOCtoMOC_rocRewardsBuffer,
+    flowTriggerOrderTaskRevAuctionMOCtoDOC_docBucket,
     flowFlushTaskRocRewardsBuffer,
     flowLiquidateTaskRocRewardsBuffer,
     flowFlushTaskRifProRewardsBuffer,
     flowLiquidateTaskRifProRewardsBuffer,
+    flowFlushTaskRocrRewardsBuffer,
+    flowLiquidateTaskRocrRewardsBuffer,
     addTasksRunnerChanger,
   };
 });

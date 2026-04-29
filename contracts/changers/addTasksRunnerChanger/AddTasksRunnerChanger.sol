@@ -34,22 +34,24 @@ interface IGovernedRegistry {
 }
 
 /**
-  @title AddTasksRunnerChanger
-  @notice This contract is a ChangeContract intended to be used with Moc Aeropulus
-  governance system.
-  @dev 1. Upgrade MocCore & MocQueue for buckets 0 and 1
-       2. Set new MocCoreExpansion for buckets 0 and 1
-       3. Upgrade MocMultiCollateralGuard
-       4. Set coinbase execution fee recipient (RevAuction RBTCtoMOC -> TasksRunner)
-       5. Set rebalance execution fee recipient for buckets 0 and 1 (RevAuction RIFtoMOC and DOCtoMOC -> TasksRunner)
-       6. Set price updates fee recipient (RevAuction RBTCtoMOC -> RocNodes)
-       7. Register TasksRunner in the OracleManager as a CoinPair
-       8. Set current RevAuction RIFtoMOC (from CommissionSplitterV3) output to RocRewardsBuffer
-       9. Set CommissionSplitterV2 fee token output 1 to RocRewardsBuffer
-       10. Set RifProRewardsBuffer output to RocRewardsBuffer
-       11. Set current RevAuction DOCtoMOC (from CommissionSplitterV3) output to RocRewardsBuffer
-       12. Remove reverse auctions and buffer from governed registry
-       12. Set MocSwapperV3 pools for RBTC/MOC and MOC/RBTC
+ * @title AddTasksRunnerChanger
+ * @notice This contract is a ChangeContract intended to be used with Moc Aeropulus
+ * governance system.
+ * @dev 1. Upgrade MocCore & MocQueue for buckets 0 and 1
+ *      2. Set new MocCoreExpansion for buckets 0 and 1
+ *      3. Upgrade MocMultiCollateralGuard
+ *      4. Set coinbase execution fee recipient (RevAuction RBTCtoMOC -> TasksRunner)
+ *      5. Set rebalance execution fee recipient for buckets 0 and 1
+ *         (RevAuction RIFtoMOC and DOCtoMOC -> TasksRunner)
+ *      6. Set price updates fee recipient (RevAuction RBTCtoMOC -> RocNodes)
+ *      7. Register TasksRunner in the OracleManager as a CoinPair
+ *      8. Set newly deployed reverse auctions output to TasksRunner
+ *      9. Set current RevAuction RIFtoMOC output to RocRewardsBuffer
+ *      10. Set RocrRewardsBuffer output 1 to RocRewardsBuffer
+ *      11. Set RifProRewardsBuffer output 0 to RocRewardsBuffer
+ *      12. Set current RevAuction DOCtoMOC output to RocRewardsBuffer
+ *      13. Remove old reverse auctions and buffers from governed registry
+ *      14. Set MocSwapperV3 pools for RBTC/MOC and MOC/RBTC
  */
 contract AddTasksRunnerChanger is IChangeContract {
     bytes32 private constant MOC_FLOW_BUFFERS = 0x4cb845794d5472a713e41e8e4ddc566dab8d695f1dc6c8edd43dad9d55112a22;
@@ -71,8 +73,10 @@ contract AddTasksRunnerChanger is IChangeContract {
     address public immutable revAuctionRIFtoMOC_rocRewardsBuffer;
     address public immutable revAuctionMOCtoRIF_rifBucket;
     address public immutable revAuctionDOCtoMOC_rocRewardsBuffer;
+    address public immutable revAuctionMOCtoDOC_docBucket;
     address public immutable commissionSplitterV2_rocRewardsBuffer;
     address public immutable rifProRewardsBuffer_rocRewardsBuffer;
+    address public immutable rocrRewardsBuffer;
     address public immutable mocSwapperV3;
     address public immutable mocTokenAddress;
     address public immutable maxRbtcToMocProvider;
@@ -101,8 +105,10 @@ contract AddTasksRunnerChanger is IChangeContract {
     @param revAuctionRIFtoMOC_rocRewardsBuffer_ Address for RevAuction RIFtoMOC output recipient (RocRewardsBuffer)
     @param revAuctionMOCtoRIF_rifBucket_ Address of current RevAuction MOCtoRIF (registered in flow reverse auctions)
     @param revAuctionDOCtoMOC_rocRewardsBuffer_ Address for RevAuction DOCtoMOC output recipient (RocRewardsBuffer)
+    @param revAuctionMOCtoDOC_docBucket_ Address of current RevAuction MOCtoDOC (registered in flow reverse auctions)
     @param commissionSplitterV2_rocRewardsBuffer_ Address for CommissionSplitterV2 output recipient (RocRewardsBuffer)
     @param rifProRewardsBuffer_rocRewardsBuffer_ Address for RifProRewardsBuffer output recipient (RocRewardsBuffer)
+    @param rocrRewardsBuffer_ Address of RocrRewardsBuffer (registered in flow buffers)
     @param mocSwapperV3_ Address of MocSwapperV3 to configure RBTC/MOC and MOC/RBTC pools
     @param mocTokenAddress_ Address of MOC token
     @param maxRbtcToMocProvider_ DataProvider used as max amount provider for RBTC->MOC pool
@@ -130,8 +136,10 @@ contract AddTasksRunnerChanger is IChangeContract {
         address revAuctionRIFtoMOC_rocRewardsBuffer_,
         address revAuctionMOCtoRIF_rifBucket_,
         address revAuctionDOCtoMOC_rocRewardsBuffer_,
+        address revAuctionMOCtoDOC_docBucket_,
         address commissionSplitterV2_rocRewardsBuffer_,
         address rifProRewardsBuffer_rocRewardsBuffer_,
+        address rocrRewardsBuffer_,
         address mocSwapperV3_,
         address mocTokenAddress_,
         address maxRbtcToMocProvider_,
@@ -158,8 +166,10 @@ contract AddTasksRunnerChanger is IChangeContract {
         revAuctionRIFtoMOC_rocRewardsBuffer = revAuctionRIFtoMOC_rocRewardsBuffer_;
         revAuctionMOCtoRIF_rifBucket = revAuctionMOCtoRIF_rifBucket_;
         revAuctionDOCtoMOC_rocRewardsBuffer = revAuctionDOCtoMOC_rocRewardsBuffer_;
+        revAuctionMOCtoDOC_docBucket = revAuctionMOCtoDOC_docBucket_;
         commissionSplitterV2_rocRewardsBuffer = commissionSplitterV2_rocRewardsBuffer_;
         rifProRewardsBuffer_rocRewardsBuffer = rifProRewardsBuffer_rocRewardsBuffer_;
+        rocrRewardsBuffer = rocrRewardsBuffer_;
         mocSwapperV3 = mocSwapperV3_;
         mocTokenAddress = mocTokenAddress_;
         maxRbtcToMocProvider = maxRbtcToMocProvider_;
@@ -217,10 +227,10 @@ contract AddTasksRunnerChanger is IChangeContract {
         // 9) Set current RevAuction RIFtoMOC output to RocRewardsBuffer
         IReverseAuction(revAuctionRIFtoMOC_rocRewardsBuffer).setOutputAccount(rocRewardsBuffer);
 
-        // 10) Set CommissionSplitterV2 fee token output 1 to RocRewardsBuffer
-        CommissionSplitterRC20(payable(commissionSplitterV2_rocRewardsBuffer)).setFeeTokenAddressRecipient1(
-            rocRewardsBuffer
-        );
+        // 10) Set RocrRewardsBuffer output 1 to RocRewardsBuffer
+        (, uint256 rocrSplit, , uint256 rocrThreshold) = IBufferToken(rocrRewardsBuffer).getOutput(1);
+        IBufferToken(rocrRewardsBuffer).removeOutput(1);
+        IBufferToken(rocrRewardsBuffer).addOutput(payable(rocRewardsBuffer), rocrSplit, rocrThreshold);
 
         // 11) Set RifProRewardsBuffer output 0 to RocRewardsBuffer
         (, uint256 split, , uint256 threshold) = IBufferToken(rifProRewardsBuffer_rocRewardsBuffer).getOutput(0);
@@ -235,6 +245,8 @@ contract AddTasksRunnerChanger is IChangeContract {
         governedRegistry.removeAddressArrayElement(MOC_FLOW_BUFFERS, rifProRewardsBuffer_rocRewardsBuffer);
         governedRegistry.removeAddressArrayElement(MOC_FLOW_REVERSE_AUCTIONS, revAuctionMOCtoRIF_rifBucket);
         governedRegistry.removeAddressArrayElement(MOC_FLOW_REVERSE_AUCTIONS, revAuctionDOCtoMOC_rocRewardsBuffer);
+        governedRegistry.removeAddressArrayElement(MOC_FLOW_REVERSE_AUCTIONS, revAuctionMOCtoDOC_docBucket);
+        governedRegistry.removeAddressArrayElement(MOC_FLOW_BUFFERS, rocrRewardsBuffer);
 
         // 14) Set RBTC/MOC and MOC/RBTC pools on MocSwapperV3
         IMocSwapperV3(mocSwapperV3).setPool(address(0), mocTokenAddress, rbtcToMocPoolFee, maxRbtcToMocProvider);
