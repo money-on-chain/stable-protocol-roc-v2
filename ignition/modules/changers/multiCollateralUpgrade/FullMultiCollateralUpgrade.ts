@@ -44,7 +44,7 @@ const FullMultiCollateralUpgradeModule = buildModule("FullMultiCollateralUpgrade
     {
       ...feeFlowBaseParams,
       // Inject swapper addresses from MocSwappers deployment
-      swapperDOCMOCAddress: swappers.mocSwapperV3MultihopProxy,
+      mocSwapperV3Multihop: swappers.mocSwapperV3MultihopProxy,
     },
     "FeeFlow",
   );
@@ -80,6 +80,7 @@ const FullMultiCollateralUpgradeModule = buildModule("FullMultiCollateralUpgrade
       docBucketAddress: docBucket.docBucketProxy,
       rifToDocSwapperAddress: swappers.mocSwapperV3MultihopProxy,
       reverseAuctionDOCtoMOCAddress: feeFlow.reverseAuctionDOCtoMOC,
+      reverseAuctionMOCtoDOCAddress: feeFlow.reverseAuctionMOCtoDOC,
     },
     "MultiCollateral",
   );
@@ -98,6 +99,8 @@ const FullMultiCollateralUpgradeModule = buildModule("FullMultiCollateralUpgrade
     feesSplitterImpl: feeFlow.feesSplitterImpl,
     feesSplitterProxy: feeFlow.feesSplitterProxy,
     reverseAuctionDOCtoMOC: feeFlow.reverseAuctionDOCtoMOC,
+    reverseAuctionMOCtoDOC: feeFlow.reverseAuctionMOCtoDOC,
+    rocrRewardsBuffer: feeFlow.rocrRewardsBuffer,
 
     // === DocBucket ===
     docBucketImpl: docBucket.mocCARC20Impl,

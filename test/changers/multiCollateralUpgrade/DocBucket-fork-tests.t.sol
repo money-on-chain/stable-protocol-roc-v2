@@ -12,6 +12,10 @@ interface IGovernedRegistryView {
     function getAddressArrayLength(bytes32 _key) external view returns (uint256);
 }
 
+interface IBufferBaseView {
+    function getOutput(uint256 idx) external view returns (address, uint256, uint256, uint256);
+}
+
 /// @title Fork Tests with Ignition Deployed Contracts
 /// @notice Fork tests that use contracts deployed by Hardhat Ignition
 /// @dev Run ./scripts/changers/multiCollateralUpgrade/run-fork-tests.sh to deploy contracts and run these tests
@@ -237,7 +241,11 @@ contract DocBucketForkTests is BaseFork {
         assertGt(mocFeeFlowBalanceAfter, mocFeeFlowBalanceBefore, "Fee flow received fees from MOC bucket operations");
 
         // trigger split and check that the configured recipients receive the funds
+        address acTokenRecipient1 = feeFlow.acTokenAddressRecipient1();
+        address acTokenRecipient2 = feeFlow.acTokenAddressRecipient2();
+        uint256 acTokenRecipient1BalanceBefore = docToken.balanceOf(acTokenRecipient1);
         uint256 reverseAuctionDocToMocBalanceBefore = docToken.balanceOf(address(reverseAuctionDocToMoc));
+        uint256 acTokenRecipient2BalanceBefore = docToken.balanceOf(acTokenRecipient2);
         address feeTokenRecipient1 = feeFlow.feeTokenAddressRecipient1();
         address feeTokenRecipient2 = feeFlow.feeTokenAddressRecipient2();
         uint256 feeTokenRecipient1BalanceBefore = mocToken.balanceOf(feeTokenRecipient1);
@@ -249,9 +257,19 @@ contract DocBucketForkTests is BaseFork {
         assertEq(mocToken.balanceOf(address(feeFlow)), 0, "Fee flow balance should be 0 after split");
 
         assertGt(
+            docToken.balanceOf(acTokenRecipient1),
+            acTokenRecipient1BalanceBefore,
+            "AC token recipient 1 (foundation) received DOC tokens"
+        );
+        assertGt(
             docToken.balanceOf(address(reverseAuctionDocToMoc)),
             reverseAuctionDocToMocBalanceBefore,
             "Reverse auction DOC to MOC received DOC tokens"
+        );
+        assertGt(
+            docToken.balanceOf(acTokenRecipient2),
+            acTokenRecipient2BalanceBefore,
+            "AC token recipient 2 (reverse auction) received DOC tokens"
         );
         assertGt(
             mocToken.balanceOf(feeTokenRecipient1),
@@ -265,8 +283,14 @@ contract DocBucketForkTests is BaseFork {
         );
 
         // trigger the reverse auction to ensure it can execute with the received DOC
-        address mocRewards = reverseAuctionDocToMoc.outputAccount();
-        uint256 mocRewardsBalanceBefore = mocToken.balanceOf(mocRewards);
+        address docToMocOutputAccount = reverseAuctionDocToMoc.outputAccount();
+        (address mocRewardsBufferFromBuffer, , , ) = IBufferBaseView(rocrRewardsBuffer).getOutput(0);
+        assertEq(
+            docToMocOutputAccount,
+            mocRewardsBufferFromBuffer,
+            "DOC->MOC reverse auction output account should be mocRewardsBuffer"
+        );
+        uint256 outputAccountBalanceBefore = mocToken.balanceOf(docToMocOutputAccount);
         reverseAuctionDocToMoc.triggerOrders();
 
         assertEq(
@@ -275,7 +299,11 @@ contract DocBucketForkTests is BaseFork {
             "Reverse auction DOC to MOC balance should be 0 after triggering orders"
         );
 
-        assertGt(mocToken.balanceOf(mocRewards), mocRewardsBalanceBefore, "MOC rewards received MOC tokens");
+        assertGt(
+            mocToken.balanceOf(docToMocOutputAccount),
+            outputAccountBalanceBefore,
+            "mocRewardsBuffer received MOC tokens"
+        );
     }
 
     function test_MicroLiquidation() public {
@@ -345,7 +373,13 @@ contract DocBucketForkTests is BaseFork {
         // Execute Liquidation
         mocMultiCollateralGuard.execLiquidation(rifBucket);
 
-        assertEq(rifBucket.getCglb(), rifCglb, "RIF bucket coverage should remain the same after liquidation");
+        // liquidationExecCost introduces a small degree in the coverage, so we check that it remains almost the same
+        assertApproxEqAbs(
+            rifBucket.getCglb(),
+            rifCglb,
+            100000,
+            "RIF bucket coverage should remain almost the same after liquidation"
+        );
         assertGt(docBucket.getCglb(), docCglb, "DOC bucket coverage should increase after liquidation");
 
         assertLt(

@@ -12,6 +12,7 @@ import { MocMultiCollateralGuard } from "moc-main-latest/contracts/multiCollater
 import { BucketParams } from "moc-main-latest/contracts/multiCollateral/MocMultiCollateralBase.sol";
 import { MocRC20 } from "moc-main-latest/contracts/tokens/MocRC20.sol";
 import { MocCARC20 } from "moc-main-latest/contracts/collateral/rc20/MocCARC20.sol";
+import { MocReverseAuction } from "moc-main-latest/contracts/auxiliary/MocReverseAuction.sol";
 
 interface IGovernedRegistry {
     function pushAddressArrayElement(bytes32 _key, address _addr) external;
@@ -83,6 +84,8 @@ contract MultiCollateralUpgradeChanger is IChangeContract {
     IGovernedRegistry public immutable governedRegistry;
     // reverse auction DOC -> MOC
     address public immutable reverseAuctionDOCtoMOC;
+    // reverse auction MOC -> DOC
+    address public immutable reverseAuctionMOCtoDOC;
 
     /** 
       @notice Constructor
@@ -101,6 +104,7 @@ contract MultiCollateralUpgradeChanger is IChangeContract {
       @param usdRifParamsForDocBucket_ usdRif params for DOC bucket
       @param governedRegistry_ moc/shared governed registry
       @param reverseAuctionDOCtoMOC_ reverse auction to register under MOC_FLOW_REVERSE_AUCTIONS
+      @param reverseAuctionMOCtoDOC_ reverse auction whose output account is updated to docBucket
     */
     constructor(
         MocRif rifBucket_,
@@ -117,7 +121,8 @@ contract MultiCollateralUpgradeChanger is IChangeContract {
         uint256 rifNewProtectedThrld_,
         PeggedTokenParams memory usdRifParamsForDocBucket_,
         IGovernedRegistry governedRegistry_,
-        address reverseAuctionDOCtoMOC_
+        address reverseAuctionDOCtoMOC_,
+        address reverseAuctionMOCtoDOC_
     ) {
         rifBucket = rifBucket_;
         mocRifImplementation = mocRifImplementation_;
@@ -136,6 +141,7 @@ contract MultiCollateralUpgradeChanger is IChangeContract {
         usdRifParamsForDocBucket = usdRifParamsForDocBucket_;
         governedRegistry = governedRegistry_;
         reverseAuctionDOCtoMOC = reverseAuctionDOCtoMOC_;
+        reverseAuctionMOCtoDOC = reverseAuctionMOCtoDOC_;
 
         // reverts if some parameter is wrong
         verifySettings();
@@ -245,6 +251,9 @@ contract MultiCollateralUpgradeChanger is IChangeContract {
         IMocSwapper[] memory docSwappers = new IMocSwapper[](1);
         docSwappers[0] = rifDocMocSwapper;
         mocMultiCollateralGuardProxy.addBucket(docBucket, docBucketParams, docSwappers);
+
+        // Update MOC->DOC reverse auction output account to the deployed DOC bucket
+        MocReverseAuction(payable(reverseAuctionMOCtoDOC)).setOutputAccount(address(docBucket));
 
         // Set MocMultiCollateralGuard and new reverse auction to the governed registry
         governedRegistry.setAddress(MOC_MULTI_COLLATERAL_GUARD, address(mocMultiCollateralGuardProxy));

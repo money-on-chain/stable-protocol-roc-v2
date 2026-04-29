@@ -26,7 +26,7 @@ export interface BucketParams {
 export interface MultiCollateralUpgradeParams {
   governorAddress: StringParam;
   pauserAddress: StringParam;
-  mocCoreAddress: StringParam;
+  rifBucketAddress: StringParam;
   mocState: StringParam;
   rifPriceProvider: StringParam;
   rbtcUsdPriceProvider: StringParam;
@@ -57,6 +57,7 @@ export interface MultiCollateralUpgradeParams {
   rifToDocSwapperAddress?: AddressParam;
   governedRegistryAddress: StringParam;
   reverseAuctionDOCtoMOCAddress?: AddressParam;
+  reverseAuctionMOCtoDOCAddress?: AddressParam;
 
   // PeggedTokenParams for DOC bucket
   peggedTokenParams?: {
@@ -83,7 +84,7 @@ export function getMultiCollateralUpgradeParams(
   return {
     governorAddress: getParameter<string>("governorAddress"),
     pauserAddress: getParameter<string>("pauserAddress"),
-    mocCoreAddress: getParameter<string>("mocCoreAddress"),
+    rifBucketAddress: getParameter<string>("rifBucketAddress"),
     mocState: getParameter<string>("mocState"),
     rifPriceProvider: getParameter<string>("rifPriceProvider"),
     rbtcUsdPriceProvider: getParameter<string>("rbtcUsdPriceProvider"),
@@ -260,7 +261,7 @@ export function deployMultiCollateralUpgrade(
   const multiCollateralUpgradeChanger = m.contract(
     "MultiCollateralUpgradeChanger",
     [
-      params.mocCoreAddress, // rifBucket_
+      params.rifBucketAddress, // rifBucket_
       mocRifImplementation, // mocRifImplementation_
       usdRifImplementation, // usdRifNewImplementation_
       mocCoreExpansion, // mocMocCoreExpansionImplementation_
@@ -275,6 +276,7 @@ export function deployMultiCollateralUpgrade(
       peggedTokenParamsStruct, // peggedTokenParams_
       params.governedRegistryAddress, // governedRegistry_
       params.reverseAuctionDOCtoMOCAddress!, // reverseAuctionDOCtoMOC_
+      params.reverseAuctionMOCtoDOCAddress!, // reverseAuctionMOCtoDOC_
     ],
     { id: `${prefix}MultiCollateralUpgradeChanger` },
   );

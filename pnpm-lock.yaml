@@ -24,6 +24,9 @@ importers:
 
   .:
     dependencies:
+      '@moc/flow':
+        specifier: git+ssh://git@github.com/money-on-chain/MoC-Flow.git#hardhat
+        version: '@moneyonchain/flow@git+https://git@github.com:money-on-chain/MoC-Flow.git#822d40911b25efe33dcfe0809ee849b2fbd11ff9(hardhat@https://github.com/money-on-chain/hardhat/releases/download/v3.0.10-moc/hardhat-3.0.10.tgz)'
       '@moc/price-oracle-interfaces':
         specifier: git+ssh://git@github.com/money-on-chain/price_oracle_interfaces.git#v0.0.2
         version: price-oracle-interfaces@git+https://git@github.com:money-on-chain/price_oracle_interfaces.git#b632f9e7248bc8b22e6dc2983486f69f0d1a23b9
@@ -5940,7 +5943,6 @@ snapshots:
     dependencies:
       '@moc/shared': '@moneyonchain/shared@git+https://git@github.com:money-on-chain/OMoC-SC-Shared.git#9c0fbacf030c3d1a64bef51bfd42469cddad0c12(hardhat@https://github.com/money-on-chain/hardhat/releases/download/v3.0.10-moc/hardhat-3.0.10.tgz)'
     transitivePeerDependencies:
-      - bluebird
       - bufferutil
       - debug
       - hardhat
@@ -5951,7 +5953,6 @@ snapshots:
     dependencies:
       '@moc/shared': '@moneyonchain/shared@git+https://git@github.com:money-on-chain/OMoC-SC-Shared.git#9c0fbacf030c3d1a64bef51bfd42469cddad0c12(hardhat@https://github.com/money-on-chain/hardhat/releases/download/v3.0.10-moc/hardhat-3.0.10.tgz)'
     transitivePeerDependencies:
-      - bluebird
       - bufferutil
       - debug
       - hardhat

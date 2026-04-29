@@ -663,8 +663,12 @@ contract MigrationForkTests is BaseFork {
     function test_FeeFlowDeployedCorrectly() public view {
         address feesSplitter = getDeployedAddress("FeeFlow_FeesSplitterProxy");
         address reverseAuctionDOCtoMOC = getDeployedAddress("FeeFlow_ReverseAuctionDOCtoMOC");
+        address reverseAuctionMOCtoDOC = getDeployedAddress("FeeFlow_ReverseAuctionMOCtoDOC");
+        address rocrRewardsBufferAddr = getDeployedAddress("FeeFlow_RocrRewardsBuffer");
 
         assertTrue(feesSplitter != address(0), "FeesSplitter should be deployed");
         assertTrue(reverseAuctionDOCtoMOC != address(0), "ReverseAuctionDOCtoMOC should be deployed");
+        assertTrue(reverseAuctionMOCtoDOC != address(0), "ReverseAuctionMOCtoDOC should be deployed");
+        assertTrue(rocrRewardsBufferAddr != address(0), "RocrRewardsBuffer should be deployed");
     }
 }

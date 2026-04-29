@@ -51,6 +51,10 @@ const compilers = [
     settings: { optimizer: { enabled: true, runs: 200 } },
   },
   {
+    version: "0.6.12",
+    settings: { optimizer: { enabled: true, runs: 200 } },
+  },
+  {
     version: "0.7.6",
     settings: { optimizer: { enabled: true, runs: 200 } },
   },
@@ -147,6 +151,8 @@ const config: HardhatUserConfig = {
       "@moc/price-oracle-interfaces/contracts/PriceProviderDocRbtc.sol",
       "@moc/price-oracle-interfaces/contracts/PriceProviderDocUsd.sol",
       "@moc/price-oracle-interfaces/contracts/PriceProviderDiv.sol",
+
+      "@moc/flow/contracts/BufferToken.sol",
 
       "@openzeppelin/contracts/proxy/ERC1967/ERC1967Proxy.sol",
     ],
