@@ -1,97 +1,109 @@
-# ROC V2 protocol
+# ROC V2 Protocol
 
-ROC is an implementation of the Money On Chain V2 main protocol that uses RIF Token as collateral of the system.
-For more information, please refer to the [documentation section](https://github.com/money-on-chain/stable-protocol-core-v2/blob/master/docs/README.md) for the _Moc CA RC20_ variation.
+ROC is an implementation of the Money On Chain V2 protocol using RIF as collateral.
 
-## Getting Started
+For protocol background, see:
+- [MoC CA RC20 docs](https://github.com/money-on-chain/stable-protocol-core-v2/blob/master/docs/README.md)
 
-These instructions will get you a copy of the project up and running on your local machine for development. See deployment for notes on how to deploy the project on a live system.
+## Prerequisites
 
-### Prerequisites
-
-What things you need to install the software and how to install them
+- Node.js (use the version from `.nvmrc`)
+- `pnpm` (project package manager)
+- Access to private GitHub dependencies over SSH
 
 ```bash
-# Install nvm
-curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.35.3/install.sh | bash
-# Install proper node version
+# optional: if using nvm
 nvm use
+
+# enable pnpm via corepack
+corepack enable
 ```
 
-Create `.env` file (you can base on [`.env.example`](./.env.example))
+Create a local `.env` from [`.env.example`](./.env.example).
 
-### Installing
-
-A step by step series of examples that tell you how to get a development env running
-
-Say what the step will be
+## Install
 
 ```bash
-# Install the dependencies
-npm install
+pnpm install
 ```
 
-### Generate Types
-
-In order to get contract types
+## Build
 
 ```bash
-npm run typechain
+pnpm build
 ```
 
-## Deployment
+## Test
 
-This solution has a fully functional deploy mechanism following [hardhat deploy](https://github.com/wighawag/hardhat-deploy) standard.
-It imports smart contracts and deploy scripts from [MoC-main-sc](https://github.com/money-on-chain/stable-protocol-core-v2) repository and uses them to deploy the RC20 Collateralized Asset version, with custom networks configurations. To add networks for deployment or set new deploy parameters see [hardhat.base.config.ts](hardhat.base.config.ts).
-
-You can configure a network as `testing` using [tags](https://github.com/wighawag/hardhat-deploy#tags) mechanism, that will allow you to:
-
-1. deploy and initialize the protocol using a governor mocked to skip governance system
-2. initialize the protocol with Pegged Tokens
-3. transfer governance to the real governor
-
-Otherwise, you can set it as `mainnet` and will be initialized with the real governor. In that way, you must add Pegged Tokens using the governance system. See more in [Areopagus-Governance](https://github.com/money-on-chain/Areopagus-Governance)
-
-For the deployer account, you can either set you mnemonic in the `.env` file, or if you want to use the hashed Private Key directly, set the `PK` environment variable (without `0x` prefix).
-
-### Deploy scripts
-
-To deploy the contracts on a given network, there are two predefine npm tasks, for localhost and rskTesntet networks:
+Run Solidity tests:
 
 ```bash
-npm run deploy-<NETWORK>
+pnpm test
 ```
 
-Where `<NETWORK> = { localhost, rskTesntet }`, is the name of the configuration on [./hardhat.base.config](./hardhat.base.config.ts)
+Run fork tests for the full multi-collateral upgrade flow:
 
-A deployments folder will be created with a sub folder for each network. There you will find a json file for each contract deployed that includes the address and ABI. Naturally, if you want to reset this network deployment, you need to delete it.
+```bash
+pnpm test:fork:mainnet
+```
 
-Keep in mind that all the contracts are upgradeable using [UUPS](https://eips.ethereum.org/EIPS/eip-1822) proxy pattern, so to interact with them you must use the contract implementation ABI but calling the contract proxy address.
+Run storage-layout tests (Foundry profile):
 
-#### Adding new Buckets (only testing)
+```bash
+pnpm test:storage
+```
 
-Once there is a deploy with a base bucket, you can add extra buckets by using moc-core dedicated script. You can run it following the instructions on [exported dependencies](./node_modules/moc-main/export/scripts/addBucket/add-bucket.md) and configuring the bucket params in  [add-bucket.config](./node_modules/moc-main/export/scripts/addBucket/add-bucket.config.js):
+## Deployment (Hardhat Ignition)
 
-`npx hardhat --network <NETWORK> run ./node_modules/moc-main/export/scripts/addBucket/add-rc20-bucket.js`
+This project deploys using **Hardhat Ignition** modules under:
 
-Currently, this is script is just for testing, as it depends on a MockedGovernor to execute the changer
+`ignition/modules/changers/multiCollateralUpgrade/`
 
-## Built With
+Main orchestrator module:
 
-* [Hardhat](https://hardhat.org/) - Task runner
+`ignition/modules/changers/multiCollateralUpgrade/FullMultiCollateralUpgrade.ts`
+
+### Deploy commands
+
+```bash
+pnpm deploy-localhost
+pnpm deploy-rskTestnet
+pnpm deploy-rskMainnet
+```
+
+### Verify commands
+
+```bash
+pnpm verify:rskTestnet
+pnpm verify:rskMainnet
+```
+
+### Parameter management
+
+Merged full parameter files are generated by:
+
+```bash
+pnpm merge-params
+```
+
+Source parameter sets live in:
+
+`ignition/modules/changers/multiCollateralUpgrade/parameters/`
+
+## Useful Scripts
+
+- `pnpm build`: compile contracts and TS
+- `pnpm test`: run Solidity tests via Hardhat
+- `pnpm test:fork:mainnet`: run end-to-end fork tests script
+- `pnpm test:storage`: run Foundry storage checks
+- `pnpm deploy-rskTestnet`: deploy full module to RSK testnet
+- `pnpm deploy-rskMainnet`: deploy full module to RSK mainnet
+- `pnpm release`: create a release with conventional commits
 
 ## Contributing
 
-Please read [CONTRIBUTING.md](./CONTRIBUTING.md) for details on our code of conduct, and the process for submitting pull requests.
-
-## Versioning
-
-We use [SemVer](http://semver.org/) and [conventional commits](https://www.conventionalcommits.org/en/v1.0.0/) for versioning. For the versions available, see the [tags on this repository](https://github.com/your/project/tags).
-
-To create a new release execute the script
-
-`npm run release`
+See [CONTRIBUTING.md](./CONTRIBUTING.md).
 
 ## License
 
-See the [LICENSE](./LICENSE) file for details
+See [LICENSE](./LICENSE).

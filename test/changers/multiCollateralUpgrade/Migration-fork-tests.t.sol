@@ -3,6 +3,7 @@ pragma solidity 0.8.24;
 
 import { BaseFork, IMocCoreLegacy, IMocQueueLegacy } from "./helpers/BaseFork.sol";
 import { MocQueueExecFees } from "moc-main-latest/contracts/queue/MocQueueExecFees.sol";
+import { MocReverseAuction } from "moc-main-latest/contracts/auxiliary/MocReverseAuction.sol";
 
 /// @title Fork Tests with Ignition Deployed Contracts
 /// @notice Fork tests that use contracts deployed by Hardhat Ignition
@@ -660,7 +661,7 @@ contract MigrationForkTests is BaseFork {
     }
 
     /// @notice Test that FeeFlow contracts were deployed correctly
-    function test_FeeFlowDeployedCorrectly() public view {
+    function test_FeeFlowDeployedCorrectly() public {
         address feesSplitter = getDeployedAddress("FeeFlow_FeesSplitterProxy");
         address reverseAuctionDOCtoMOC = getDeployedAddress("FeeFlow_ReverseAuctionDOCtoMOC");
         address reverseAuctionMOCtoDOC = getDeployedAddress("FeeFlow_ReverseAuctionMOCtoDOC");
@@ -670,5 +671,13 @@ contract MigrationForkTests is BaseFork {
         assertTrue(reverseAuctionDOCtoMOC != address(0), "ReverseAuctionDOCtoMOC should be deployed");
         assertTrue(reverseAuctionMOCtoDOC != address(0), "ReverseAuctionMOCtoDOC should be deployed");
         assertTrue(rocrRewardsBufferAddr != address(0), "RocrRewardsBuffer should be deployed");
+
+        _executeChanger();
+
+        assertEq(
+            MocReverseAuction(payable(reverseAuctionMOCtoDOC)).outputAccount(),
+            address(docBucket),
+            "ReverseAuctionMOCtoDOC output account should be DocBucket"
+        );
     }
 }
