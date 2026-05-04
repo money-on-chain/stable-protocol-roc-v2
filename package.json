@@ -7,7 +7,7 @@
   "author": "MOC Investments Corp. 2020",
   "license": "AGPL-3.0",
   "dependencies": {
-    "moc-main-latest": "github:money-on-chain/main-sc-protocol-v2#38b408a8b22bf25d9e7295284670edd4eb6e959e",
+    "moc-main-latest": "github:money-on-chain/main-sc-protocol-v2#88ab4bbe250e522559b5177ec1b38dd2126e3deb",
     "@moc/price-oracle-interfaces": "git+ssh://git@github.com/money-on-chain/price_oracle_interfaces.git#v0.0.2",
     "@moc/oracles": "git+ssh://git@github.com/money-on-chain/OMoC-Decentralized-Oracle.git#076a2b857f0fdb353b6a79814e4fd7e562bede3e",
     "@moc/shared": "git+ssh://git@github.com/money-on-chain/OMoC-SC-Shared.git#113dbc40d21a22c364753fdcd5595129ecde8c3b",

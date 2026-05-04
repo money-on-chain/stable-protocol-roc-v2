@@ -135,12 +135,12 @@ const config: HardhatUserConfig = {
     npmFilesToBuild: [
       "moc-main-latest/contracts/collateral/rc20/MocCARC20.sol",
       "moc-main-latest/contracts/core/MocCoreExpansion.sol",
-      "moc-main-latest/contracts/mocks/PriceProviderMock.sol",
-      "moc-main-latest/contracts/auxiliary/CommissionSplitterRC20.sol",
-      "moc-main-latest/contracts/governance/InterimGovernor.sol",
       "moc-main-latest/contracts/tokens/MocRC20.sol",
       "moc-main-latest/contracts/queue/MocQueue.sol",
       "moc-main-latest/contracts/multiCollateral/MocMultiCollateralGuard.sol",
+      "moc-main-latest/contracts/mocks/PriceProviderMock.sol",
+      "moc-main-latest/contracts/auxiliary/CommissionSplitterRC20.sol",
+      "moc-main-latest/contracts/governance/InterimGovernor.sol",
 
       "moc-main-latest/contracts/auxiliary/MocReverseAuction.sol",
       "moc-main-latest/contracts/multiCollateral/swapper/MocSwapperV3.sol",
@@ -162,9 +162,9 @@ const config: HardhatUserConfig = {
       "@moc/shared/contracts/tasks/mocFlow/reverseAuction/TaskTriggerOrder.sol",
       "@moc/shared/contracts/tasks/mocFlow/buffer/TaskFlush.sol",
       "@moc/shared/contracts/tasks/mocFlow/buffer/TaskLiquidate.sol",
+      "@moc/shared/contracts/BasefeeProvider.sol",
       "@moc/flow/contracts/BufferToken.sol",
-
-      "@moc/flow/contracts/BufferToken.sol",
+      "@moc/oracles/contracts/TasksRunner.sol",
 
       "@openzeppelin/contracts/proxy/ERC1967/ERC1967Proxy.sol",
     ],
@@ -260,7 +260,7 @@ const config: HardhatUserConfig = {
       type: "edr-simulated",
       forking: {
         url: "https://public-node.rsk.co",
-        blockNumber: 8524500,
+        blockNumber: 8525307,
       },
       chainId: 30,
       accounts: {

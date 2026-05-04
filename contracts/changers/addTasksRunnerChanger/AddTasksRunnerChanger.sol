@@ -11,10 +11,6 @@ interface IOracleManager {
     function registerCoinPair(bytes32 coinPair, address addr) external;
 }
 
-interface ITasksRunnerCoinPair {
-    function getCoinPair() external view returns (bytes32);
-}
-
 interface IReverseAuction {
     function setOutputAccount(address outputAccount_) external;
 }
@@ -25,12 +21,12 @@ interface IBufferToken {
     function addOutput(address payable output, uint256 split, uint256 threshold) external;
 }
 
-interface IMocSwapperV3 {
-    function setPool(address tokenA_, address tokenB_, uint24 fee_, address providerSwappingAtoB_) external;
-}
-
 interface IGovernedRegistry {
     function removeAddressArrayElement(bytes32 _key, address value) external;
+}
+
+interface IMocMultiCollateralGuardPriceUpdates {
+    function setPriceUpdatesFeeRecipient(address priceUpdatesFeeRecipient_) external;
 }
 
 /**
@@ -47,11 +43,10 @@ interface IGovernedRegistry {
  *      7. Register TasksRunner in the OracleManager as a CoinPair
  *      8. Set newly deployed reverse auctions output to TasksRunner
  *      9. Set current RevAuction RIFtoMOC output to RocRewardsBuffer
- *      10. Set RocrRewardsBuffer output 1 to RocRewardsBuffer
- *      11. Set RifProRewardsBuffer output 0 to RocRewardsBuffer
+ *      10. Replace RocrRewardsBuffer output 0 (from mocRewardsBuffer to RocRewardsBuffer)
+ *      11. Set RifProRewardsBuffer output 0 (from mocRewardsBuffer to RocRewardsBuffer)
  *      12. Set current RevAuction DOCtoMOC output to RocRewardsBuffer
  *      13. Remove old reverse auctions and buffers from governed registry
- *      14. Set MocSwapperV3 pools for RBTC/MOC and MOC/RBTC
  */
 contract AddTasksRunnerChanger is IChangeContract {
     bytes32 private constant MOC_FLOW_BUFFERS = 0x4cb845794d5472a713e41e8e4ddc566dab8d695f1dc6c8edd43dad9d55112a22;
@@ -77,14 +72,9 @@ contract AddTasksRunnerChanger is IChangeContract {
     address public immutable commissionSplitterV2_rocRewardsBuffer;
     address public immutable rifProRewardsBuffer_rocRewardsBuffer;
     address public immutable rocrRewardsBuffer;
-    address public immutable mocSwapperV3;
-    address public immutable mocTokenAddress;
-    address public immutable maxRbtcToMocProvider;
-    address public immutable maxMocToRbtcProvider;
-    uint24 public immutable rbtcToMocPoolFee;
-    uint24 public immutable mocToRbtcPoolFee;
     IOracleManager public immutable oracleManager;
     address public immutable tasksRunner;
+    bytes32 public immutable tasksRunnerCoinPair;
     address public immutable rocRewardsBuffer;
     IGovernedRegistry public immutable governedRegistry;
 
@@ -109,16 +99,11 @@ contract AddTasksRunnerChanger is IChangeContract {
     @param commissionSplitterV2_rocRewardsBuffer_ Address for CommissionSplitterV2 output recipient (RocRewardsBuffer)
     @param rifProRewardsBuffer_rocRewardsBuffer_ Address for RifProRewardsBuffer output recipient (RocRewardsBuffer)
     @param rocrRewardsBuffer_ Address of RocrRewardsBuffer (registered in flow buffers)
-    @param mocSwapperV3_ Address of MocSwapperV3 to configure RBTC/MOC and MOC/RBTC pools
-    @param mocTokenAddress_ Address of MOC token
-    @param maxRbtcToMocProvider_ DataProvider used as max amount provider for RBTC->MOC pool
-    @param maxMocToRbtcProvider_ DataProvider used as max amount provider for MOC->RBTC pool
-    @param rbtcToMocPoolFee_ Uniswap V3 pool fee for RBTC->MOC swaps
-    @param mocToRbtcPoolFee_ Uniswap V3 pool fee for MOC->RBTC swaps
     @param rocRewardsBuffer_ Address of RocRewardsBuffer
     @param governedRegistry_ Governed registry where old flow addresses are removed
     @param oracleManager_ OracleManager where TasksRunner coin pair will be registered
     @param tasksRunner_ TasksRunner contract to register as coin pair address
+    @param tasksRunnerCoinPair_ Coin pair identifier to register for TasksRunner
   */
     constructor(
         MocMultiCollateralGuard mocMultiCollateralGuard_,
@@ -140,16 +125,11 @@ contract AddTasksRunnerChanger is IChangeContract {
         address commissionSplitterV2_rocRewardsBuffer_,
         address rifProRewardsBuffer_rocRewardsBuffer_,
         address rocrRewardsBuffer_,
-        address mocSwapperV3_,
-        address mocTokenAddress_,
-        address maxRbtcToMocProvider_,
-        address maxMocToRbtcProvider_,
-        uint24 rbtcToMocPoolFee_,
-        uint24 mocToRbtcPoolFee_,
         address rocRewardsBuffer_,
         IGovernedRegistry governedRegistry_,
         IOracleManager oracleManager_,
-        address tasksRunner_
+        address tasksRunner_,
+        bytes32 tasksRunnerCoinPair_
     ) {
         mocMultiCollateralGuard = mocMultiCollateralGuard_;
         mocMultiCollateralGuardImplementation = mocMultiCollateralGuardImplementation_;
@@ -170,16 +150,11 @@ contract AddTasksRunnerChanger is IChangeContract {
         commissionSplitterV2_rocRewardsBuffer = commissionSplitterV2_rocRewardsBuffer_;
         rifProRewardsBuffer_rocRewardsBuffer = rifProRewardsBuffer_rocRewardsBuffer_;
         rocrRewardsBuffer = rocrRewardsBuffer_;
-        mocSwapperV3 = mocSwapperV3_;
-        mocTokenAddress = mocTokenAddress_;
-        maxRbtcToMocProvider = maxRbtcToMocProvider_;
-        maxMocToRbtcProvider = maxMocToRbtcProvider_;
-        rbtcToMocPoolFee = rbtcToMocPoolFee_;
-        mocToRbtcPoolFee = mocToRbtcPoolFee_;
         rocRewardsBuffer = rocRewardsBuffer_;
         governedRegistry = governedRegistry_;
         oracleManager = oracleManager_;
         tasksRunner = tasksRunner_;
+        tasksRunnerCoinPair = tasksRunnerCoinPair_;
     }
 
     /**
@@ -213,11 +188,12 @@ contract AddTasksRunnerChanger is IChangeContract {
         mocMultiCollateralGuard.editBucket(bucket1, _buildBucketParams(bucket1, revAuctionDOCtoMOC_tasksRunner));
 
         // 6) Set price updates fee recipient
-        mocMultiCollateralGuard.setPriceUpdatesFeeRecipient(revAuctionRBTCtoMOC_rocNodes);
+        IMocMultiCollateralGuardPriceUpdates(address(mocMultiCollateralGuard)).setPriceUpdatesFeeRecipient(
+            revAuctionRBTCtoMOC_rocNodes
+        );
 
         // 7) Register TasksRunner as CoinPair in OracleManager
-        bytes32 coinPair = ITasksRunnerCoinPair(tasksRunner).getCoinPair();
-        oracleManager.registerCoinPair(coinPair, tasksRunner);
+        oracleManager.registerCoinPair(tasksRunnerCoinPair, tasksRunner);
 
         // 8) Set newly deployed reverse auctions output to TasksRunner
         IReverseAuction(revAuctionRBTCtoMOC_tasksRunner).setOutputAccount(tasksRunner);
@@ -227,12 +203,12 @@ contract AddTasksRunnerChanger is IChangeContract {
         // 9) Set current RevAuction RIFtoMOC output to RocRewardsBuffer
         IReverseAuction(revAuctionRIFtoMOC_rocRewardsBuffer).setOutputAccount(rocRewardsBuffer);
 
-        // 10) Set RocrRewardsBuffer output 1 to RocRewardsBuffer
-        (, uint256 rocrSplit, , uint256 rocrThreshold) = IBufferToken(rocrRewardsBuffer).getOutput(1);
-        IBufferToken(rocrRewardsBuffer).removeOutput(1);
+        // 10) Replace RocrRewardsBuffer output 0 (from mocRewardsBuffer to RocRewardsBuffer)
+        (, uint256 rocrSplit, , uint256 rocrThreshold) = IBufferToken(rocrRewardsBuffer).getOutput(0);
+        IBufferToken(rocrRewardsBuffer).removeOutput(0);
         IBufferToken(rocrRewardsBuffer).addOutput(payable(rocRewardsBuffer), rocrSplit, rocrThreshold);
 
-        // 11) Set RifProRewardsBuffer output 0 to RocRewardsBuffer
+        // 11) Set RifProRewardsBuffer output 0 (from mocRewardsBuffer to RocRewardsBuffer)
         (, uint256 split, , uint256 threshold) = IBufferToken(rifProRewardsBuffer_rocRewardsBuffer).getOutput(0);
         IBufferToken(rifProRewardsBuffer_rocRewardsBuffer).removeOutput(0);
         IBufferToken(rifProRewardsBuffer_rocRewardsBuffer).addOutput(payable(rocRewardsBuffer), split, threshold);
@@ -247,10 +223,6 @@ contract AddTasksRunnerChanger is IChangeContract {
         governedRegistry.removeAddressArrayElement(MOC_FLOW_REVERSE_AUCTIONS, revAuctionDOCtoMOC_rocRewardsBuffer);
         governedRegistry.removeAddressArrayElement(MOC_FLOW_REVERSE_AUCTIONS, revAuctionMOCtoDOC_docBucket);
         governedRegistry.removeAddressArrayElement(MOC_FLOW_BUFFERS, rocrRewardsBuffer);
-
-        // 14) Set RBTC/MOC and MOC/RBTC pools on MocSwapperV3
-        IMocSwapperV3(mocSwapperV3).setPool(address(0), mocTokenAddress, rbtcToMocPoolFee, maxRbtcToMocProvider);
-        IMocSwapperV3(mocSwapperV3).setPool(mocTokenAddress, address(0), mocToRbtcPoolFee, maxMocToRbtcProvider);
     }
 
     function _buildBucketParams(

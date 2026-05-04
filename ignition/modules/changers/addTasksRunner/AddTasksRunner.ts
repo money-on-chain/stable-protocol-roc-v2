@@ -17,143 +17,134 @@ import { buildModule } from "@nomicfoundation/hardhat-ignition/modules";
  *    using all deployed task addresses (in the order defined in this module)
  * 4) TasksRunner proxy (ERC1967)
  * 5) Four MocReverseAuction contracts used as fee recipients in AddTasksRunnerChanger
- * 6) RocRewardsBuffer proxy (ERC1967) for MOC distribution to TasksRunner and MocRewardsBuffer
- * 7) AddTasksRunnerChanger configured to apply protocol wiring/upgrade steps
+ * 6) RocNodesBuffer proxy (ERC1967) for MOC distribution from roc-nodes reverse auction
+ * 7) RocRewardsBuffer proxy (ERC1967) for MOC distribution to TasksRunner and MocRewardsBuffer
+ * 8) AddTasksRunnerChanger configured to apply protocol wiring/upgrade steps
  */
 const AddTasksRunnerModule = buildModule("AddTasksRunner", m => {
   const ZERO_ADDRESS = "0x0000000000000000000000000000000000000000";
+  const getParameter = <T extends string | bigint | boolean | string[] | bigint[]>(parameterName: string) =>
+    m.getParameter<T>(parameterName);
   // ---------------------------------------------------------------------------
   // Stage 0 - Module Parameters
   // ---------------------------------------------------------------------------
-  const core = m.getParameter("core") as unknown as {
-    governor: string;
-    name: string;
-    mocTokenAddress: string;
-    oracleManager: string;
-    registry: string;
-    minOraclesPerRound: bigint;
-    mocMultiCollateralGuard: string;
-    bucket0: string;
-    bucket1: string;
-    refreshAcBalanceThreshold: bigint;
-    mocRewardsBuffer: string;
+  const core = {
+    governor: getParameter<string>("core.governor"),
+    name: getParameter<string>("core.name"),
+    mocTokenAddress: getParameter<string>("core.mocTokenAddress"),
+    oracleManager: getParameter<string>("core.oracleManager"),
+    registry: getParameter<string>("core.registry"),
+    mocMultiCollateralGuard: getParameter<string>("core.mocMultiCollateralGuard"),
+    bucket0: getParameter<string>("core.bucket0"),
+    bucket1: getParameter<string>("core.bucket1"),
+    refreshAcBalanceThreshold: getParameter<bigint>("core.refreshAcBalanceThreshold"),
+    mocRewardsBuffer: getParameter<string>("core.mocRewardsBuffer"),
   };
 
-  const tasksRunnerCfg = m.getParameter("tasksRunner") as unknown as {
-    maxOraclesPerRound: bigint;
-    maxSubscribedOraclesPerRound: bigint;
-    roundLockPeriod: bigint;
-    maxMissedSigRounds: bigint;
-    maxTasksPerBatch: bigint;
-    tokenToCoinbasePriceProvider: string;
-    baseFeeProvider: string;
-    sharesCapMultiplier: bigint;
+  const tasksRunnerCfg = {
+    minOraclesPerRound: getParameter<bigint>("tasksRunner.minOraclesPerRound"),
+    maxOraclesPerRound: getParameter<bigint>("tasksRunner.maxOraclesPerRound"),
+    maxSubscribedOraclesPerRound: getParameter<bigint>("tasksRunner.maxSubscribedOraclesPerRound"),
+    roundLockPeriod: getParameter<bigint>("tasksRunner.roundLockPeriod"),
+    maxMissedSigRounds: getParameter<bigint>("tasksRunner.maxMissedSigRounds"),
+    maxTasksPerBatch: getParameter<bigint>("tasksRunner.maxTasksPerBatch"),
+    tokenToCoinbasePriceProvider: getParameter<string>("tasksRunner.tokenToCoinbasePriceProvider"),
+    sharesCapMultiplier: getParameter<bigint>("tasksRunner.sharesCapMultiplier"),
   };
 
-  const flow = m.getParameter("flow") as unknown as {
-    revertSleepTime: bigint;
-    taskOwner: string;
+  const flow = {
+    revertSleepTime: getParameter<bigint>("flow.revertSleepTime"),
+    taskOwner: getParameter<string>("flow.taskOwner"),
   };
 
-  const bufferTasks = m.getParameter("bufferTasks") as unknown as {
-    rocRewardsBuffer: string;
-    rifProRewardsBuffer: string;
-    rocrRewardsBuffer: string;
+  const bufferTasks = {
+    rifProRewardsBuffer: getParameter<string>("bufferTasks.rifProRewardsBuffer"),
+    rocrRewardsBuffer: getParameter<string>("bufferTasks.rocrRewardsBuffer"),
   };
 
-  const triggerOrderRevAuctions = m.getParameter("triggerOrderRevAuctions") as unknown as {
-    revAuctionRIFtoMOC_rocRewardsBuffer: string;
-    revAuctionMOCtoRIF_rifBucket: string;
-    revAuctionDOCtoMOC_rocRewardsBuffer: string;
-    revAuctionMOCtoDOC_docBucket: string;
+  const triggerOrderRevAuctions = {
+    revAuctionRIFtoMOC_rocRewardsBuffer: getParameter<string>(
+      "triggerOrderRevAuctions.revAuctionRIFtoMOC_rocRewardsBuffer",
+    ),
+    revAuctionMOCtoRIF_rifBucket: getParameter<string>("triggerOrderRevAuctions.revAuctionMOCtoRIF_rifBucket"),
+    revAuctionDOCtoMOC_rocRewardsBuffer: getParameter<string>(
+      "triggerOrderRevAuctions.revAuctionDOCtoMOC_rocRewardsBuffer",
+    ),
+    revAuctionMOCtoDOC_docBucket: getParameter<string>("triggerOrderRevAuctions.revAuctionMOCtoDOC_docBucket"),
   };
 
-  const rifCommissionSplitterV2 = m.getParameter("rifCommissionSplitterV2") as unknown as {
-    commissionSplitter: string;
-    token: string;
-    feeToken: string;
-    tokenBalanceThreshold: bigint;
-    feeTokenBalanceThreshold: bigint;
+  const rifCommissionSplitterV2 = {
+    commissionSplitter: getParameter<string>("rifCommissionSplitterV2.commissionSplitter"),
+    token: getParameter<string>("rifCommissionSplitterV2.token"),
+    feeToken: getParameter<string>("rifCommissionSplitterV2.feeToken"),
+    tokenBalanceThreshold: getParameter<bigint>("rifCommissionSplitterV2.tokenBalanceThreshold"),
+    feeTokenBalanceThreshold: getParameter<bigint>("rifCommissionSplitterV2.feeTokenBalanceThreshold"),
   };
 
-  const rifCommissionSplitterV3 = m.getParameter("rifCommissionSplitterV3") as unknown as {
-    commissionSplitter: string;
-    token: string;
-    feeToken: string;
-    tokenBalanceThreshold: bigint;
-    feeTokenBalanceThreshold: bigint;
+  const rifCommissionSplitterV3 = {
+    commissionSplitter: getParameter<string>("rifCommissionSplitterV3.commissionSplitter"),
+    token: getParameter<string>("rifCommissionSplitterV3.token"),
+    feeToken: getParameter<string>("rifCommissionSplitterV3.feeToken"),
+    tokenBalanceThreshold: getParameter<bigint>("rifCommissionSplitterV3.tokenBalanceThreshold"),
+    feeTokenBalanceThreshold: getParameter<bigint>("rifCommissionSplitterV3.feeTokenBalanceThreshold"),
   };
 
-  const docCommissionSplitterV2 = m.getParameter("docCommissionSplitterV2") as unknown as {
-    commissionSplitter: string;
-    token: string;
-    feeToken: string;
-    tokenBalanceThreshold: bigint;
-    feeTokenBalanceThreshold: bigint;
+  const docCommissionSplitterV2 = {
+    commissionSplitter: getParameter<string>("docCommissionSplitterV2.commissionSplitter"),
+    token: getParameter<string>("docCommissionSplitterV2.token"),
+    feeToken: getParameter<string>("docCommissionSplitterV2.feeToken"),
+    tokenBalanceThreshold: getParameter<bigint>("docCommissionSplitterV2.tokenBalanceThreshold"),
+    feeTokenBalanceThreshold: getParameter<bigint>("docCommissionSplitterV2.feeTokenBalanceThreshold"),
   };
 
-  const changer = m.getParameter("changer") as unknown as {
-    mocMultiCollateralGuardImplementation: string;
-    mocCoreBucket0Implementation: string;
-    mocCoreBucket1Implementation: string;
-    mocQueueBucket0Implementation: string;
-    mocQueueBucket1Implementation: string;
-    mocCoreExpansionBucket0: string;
-    mocCoreExpansionBucket1: string;
-  };
-
-  const mocSwapperV3Cfg = m.getParameter("mocSwapperV3") as unknown as {
-    pauserAddress: string;
-    swapRouterAddress: string;
-    coinbaseWrapperAddress: string;
-    maxRbtcToMocToSwap: bigint;
-    maxMocToRbtcToSwap: bigint;
-    rbtcToMocPoolFee: bigint;
-    mocToRbtcPoolFee: bigint;
-  };
-
-  const reverseAuctions = m.getParameter("reverseAuctions") as unknown as {
+  const reverseAuctions = {
     revAuctionRBTCtoMOC_tasksRunner: {
-      mocSwapper: string;
-      tokenIn: string;
-      tokenOut: string;
-      orderThreshold: bigint;
-      priceProvider: string;
-      slippage: bigint;
-    };
+      mocSwapper: getParameter<string>("reverseAuctions.revAuctionRBTCtoMOC_tasksRunner.mocSwapper"),
+      tokenIn: getParameter<string>("reverseAuctions.revAuctionRBTCtoMOC_tasksRunner.tokenIn"),
+      tokenOut: getParameter<string>("reverseAuctions.revAuctionRBTCtoMOC_tasksRunner.tokenOut"),
+      orderThreshold: getParameter<bigint>("reverseAuctions.revAuctionRBTCtoMOC_tasksRunner.orderThreshold"),
+      priceProvider: getParameter<string>("reverseAuctions.revAuctionRBTCtoMOC_tasksRunner.priceProvider"),
+      slippage: getParameter<bigint>("reverseAuctions.revAuctionRBTCtoMOC_tasksRunner.slippage"),
+    },
     revAuctionRIFtoMOC_tasksRunner: {
-      mocSwapper: string;
-      tokenIn: string;
-      tokenOut: string;
-      orderThreshold: bigint;
-      priceProvider: string;
-      slippage: bigint;
-    };
+      mocSwapper: getParameter<string>("reverseAuctions.revAuctionRIFtoMOC_tasksRunner.mocSwapper"),
+      tokenIn: getParameter<string>("reverseAuctions.revAuctionRIFtoMOC_tasksRunner.tokenIn"),
+      tokenOut: getParameter<string>("reverseAuctions.revAuctionRIFtoMOC_tasksRunner.tokenOut"),
+      orderThreshold: getParameter<bigint>("reverseAuctions.revAuctionRIFtoMOC_tasksRunner.orderThreshold"),
+      priceProvider: getParameter<string>("reverseAuctions.revAuctionRIFtoMOC_tasksRunner.priceProvider"),
+      slippage: getParameter<bigint>("reverseAuctions.revAuctionRIFtoMOC_tasksRunner.slippage"),
+    },
     revAuctionDOCtoMOC_tasksRunner: {
-      mocSwapper: string;
-      tokenIn: string;
-      tokenOut: string;
-      orderThreshold: bigint;
-      priceProvider: string;
-      slippage: bigint;
-    };
+      mocSwapper: getParameter<string>("reverseAuctions.revAuctionDOCtoMOC_tasksRunner.mocSwapper"),
+      tokenIn: getParameter<string>("reverseAuctions.revAuctionDOCtoMOC_tasksRunner.tokenIn"),
+      tokenOut: getParameter<string>("reverseAuctions.revAuctionDOCtoMOC_tasksRunner.tokenOut"),
+      orderThreshold: getParameter<bigint>("reverseAuctions.revAuctionDOCtoMOC_tasksRunner.orderThreshold"),
+      priceProvider: getParameter<string>("reverseAuctions.revAuctionDOCtoMOC_tasksRunner.priceProvider"),
+      slippage: getParameter<bigint>("reverseAuctions.revAuctionDOCtoMOC_tasksRunner.slippage"),
+    },
     revAuctionRBTCtoMOC_rocNodes: {
-      mocSwapper: string;
-      tokenIn: string;
-      tokenOut: string;
-      orderThreshold: bigint;
-      priceProvider: string;
-      slippage: bigint;
-      outputAccount: string;
-    };
+      mocSwapper: getParameter<string>("reverseAuctions.revAuctionRBTCtoMOC_rocNodes.mocSwapper"),
+      tokenIn: getParameter<string>("reverseAuctions.revAuctionRBTCtoMOC_rocNodes.tokenIn"),
+      tokenOut: getParameter<string>("reverseAuctions.revAuctionRBTCtoMOC_rocNodes.tokenOut"),
+      orderThreshold: getParameter<bigint>("reverseAuctions.revAuctionRBTCtoMOC_rocNodes.orderThreshold"),
+      priceProvider: getParameter<string>("reverseAuctions.revAuctionRBTCtoMOC_rocNodes.priceProvider"),
+      slippage: getParameter<bigint>("reverseAuctions.revAuctionRBTCtoMOC_rocNodes.slippage"),
+    },
   };
 
-  const rocRewardsBufferCfg = m.getParameter("rocRewardsBuffer") as unknown as {
-    threshold: bigint;
-    tasksRunnerSplit: bigint;
-    mocRewardsBufferSplit: bigint;
-    tasksRunnerOutputThreshold: bigint;
-    mocRewardsBufferOutputThreshold: bigint;
+  const rocNodesBufferCfg = {
+    threshold: getParameter<bigint>("rocNodesBuffer.threshold"),
+    outputs: getParameter<string[]>("rocNodesBuffer.outputs"),
+    splits: getParameter<bigint[]>("rocNodesBuffer.splits"),
+    outputThresholds: getParameter<bigint[]>("rocNodesBuffer.outputThresholds"),
+  };
+
+  const rocRewardsBufferCfg = {
+    threshold: getParameter<bigint>("rocRewardsBuffer.threshold"),
+    tasksRunnerSplit: getParameter<bigint>("rocRewardsBuffer.tasksRunnerSplit"),
+    mocRewardsBufferSplit: getParameter<bigint>("rocRewardsBuffer.mocRewardsBufferSplit"),
+    tasksRunnerOutputThreshold: getParameter<bigint>("rocRewardsBuffer.tasksRunnerOutputThreshold"),
+    mocRewardsBufferOutputThreshold: getParameter<bigint>("rocRewardsBuffer.mocRewardsBufferOutputThreshold"),
   };
 
   // ---------------------------------------------------------------------------
@@ -161,6 +152,18 @@ const AddTasksRunnerModule = buildModule("AddTasksRunner", m => {
   // ---------------------------------------------------------------------------
   const tasksRunnerImpl = m.contract("@moc/oracles/contracts/TasksRunner.sol:TasksRunner", [], {
     id: "TasksRunnerImplementation",
+  });
+  const basefeeProvider = m.contract("@moc/shared/contracts/BasefeeProvider.sol:BasefeeProvider", [], {
+    id: "BasefeeProvider",
+  });
+  const bufferTokenImpl = m.contract("@moc/flow/contracts/BufferToken.sol:BufferToken", [], {
+    id: "BufferTokenImplementation",
+  });
+  const rocNodesBufferProxy = m.contract("ERC1967Proxy", [bufferTokenImpl, "0x"], {
+    id: "RocNodesBufferProxy",
+  });
+  const rocNodesBuffer = m.contractAt("@moc/flow/contracts/BufferToken.sol:BufferToken", rocNodesBufferProxy, {
+    id: "RocNodesBuffer",
   });
 
   const roundConfig = {
@@ -173,7 +176,7 @@ const AddTasksRunnerModule = buildModule("AddTasksRunner", m => {
   const tasksRunnerParams = {
     maxTasksPerBatch: tasksRunnerCfg.maxTasksPerBatch,
     tokenToCoinbasePriceProvider: tasksRunnerCfg.tokenToCoinbasePriceProvider,
-    baseFeeProvider: tasksRunnerCfg.baseFeeProvider,
+    baseFeeProvider: basefeeProvider,
     sharesCapMultiplier: tasksRunnerCfg.sharesCapMultiplier,
   };
 
@@ -234,7 +237,7 @@ const AddTasksRunnerModule = buildModule("AddTasksRunner", m => {
       reverseAuctions.revAuctionRBTCtoMOC_rocNodes.mocSwapper,
       reverseAuctions.revAuctionRBTCtoMOC_rocNodes.tokenIn,
       reverseAuctions.revAuctionRBTCtoMOC_rocNodes.tokenOut,
-      reverseAuctions.revAuctionRBTCtoMOC_rocNodes.outputAccount,
+      rocNodesBuffer,
       reverseAuctions.revAuctionRBTCtoMOC_rocNodes.orderThreshold,
       reverseAuctions.revAuctionRBTCtoMOC_rocNodes.priceProvider,
       reverseAuctions.revAuctionRBTCtoMOC_rocNodes.slippage,
@@ -406,16 +409,65 @@ const AddTasksRunnerModule = buildModule("AddTasksRunner", m => {
     [triggerOrderRevAuctions.revAuctionMOCtoDOC_docBucket, flow.revertSleepTime, flow.taskOwner],
     { id: "TaskTriggerOrderRevAuctionMOCtoDOC_docBucket" },
   );
+  // ---------------------------------------------------------------------------
+  // Stage 4 - TasksRunner Initialization and Proxy
+  // ---------------------------------------------------------------------------
+  const tasksBeforeRocRewardsBuffer = [
+    executeQueueTask,
+    updateEmaTaskBucket0,
+    updateEmaTaskBucket1,
+    executeLiquidationTaskBucket0,
+    executeLiquidationTaskBucket1,
+    executeMicroLiquidationTaskBucket0,
+    executeMicroLiquidationTaskBucket1,
+    interestPaymentTaskBucket0,
+    interestPaymentTaskBucket1,
+    settlementTaskBucket0,
+    settlementTaskBucket1,
+    refreshAcBalanceTaskBucket0,
+    refreshAcBalanceTaskBucket1,
+    flowSplitTaskRifCommissionSplitterV2,
+    flowSplitTaskRifCommissionSplitterV3,
+    flowSplitTaskDocCommissionSplitterV2,
+    flowTriggerOrderTaskRevAuctionRBTCtoMOC_tasksRunner,
+    flowTriggerOrderTaskRevAuctionRIFtoMOC_tasksRunner,
+    flowTriggerOrderTaskRevAuctionDOCtoMOC_tasksRunner,
+    flowTriggerOrderTaskRevAuctionRBTCtoMOC_rocNodes,
+    flowTriggerOrderTaskRevAuctionRIFtoMOC_rocRewardsBuffer,
+    flowTriggerOrderTaskRevAuctionMOCtoRIF_rifBucket,
+    flowTriggerOrderTaskRevAuctionDOCtoMOC_rocRewardsBuffer,
+    flowTriggerOrderTaskRevAuctionMOCtoDOC_docBucket,
+  ];
+
+  const tasksRunnerProxy = m.contract("ERC1967Proxy", [tasksRunnerImpl, "0x"], {
+    id: "TasksRunnerProxy",
+  });
+
+  const tasksRunnerContract = m.contractAt("@moc/oracles/contracts/TasksRunner.sol:TasksRunner", tasksRunnerProxy, {
+    id: "TasksRunner",
+  });
+
+  // ---------------------------------------------------------------------------
+  // Stage 5 - Buffers Deployment
+  // ---------------------------------------------------------------------------
+  const rocRewardsBufferProxy = m.contract("ERC1967Proxy", [bufferTokenImpl, "0x"], {
+    id: "RocRewardsBufferProxy",
+  });
+
+  const rocRewardsBuffer = m.contractAt("@moc/flow/contracts/BufferToken.sol:BufferToken", rocRewardsBufferProxy, {
+    id: "RocRewardsBuffer",
+  });
+
   const flowFlushTaskRocRewardsBuffer = m.contract(
     "@moc/shared/contracts/tasks/mocFlow/buffer/TaskFlush.sol:TaskFlush",
-    [bufferTasks.rocRewardsBuffer],
+    [rocRewardsBuffer],
     {
       id: "TaskFlushRocRewardsBuffer",
     },
   );
   const flowLiquidateTaskRocRewardsBuffer = m.contract(
     "@moc/shared/contracts/tasks/mocFlow/buffer/TaskLiquidate.sol:TaskLiquidate",
-    [bufferTasks.rocRewardsBuffer],
+    [rocRewardsBuffer],
     {
       id: "TaskLiquidateRocRewardsBuffer",
     },
@@ -449,34 +501,8 @@ const AddTasksRunnerModule = buildModule("AddTasksRunner", m => {
     },
   );
 
-  // ---------------------------------------------------------------------------
-  // Stage 4 - TasksRunner Initialization and Proxy
-  // ---------------------------------------------------------------------------
   const tasks = [
-    executeQueueTask,
-    updateEmaTaskBucket0,
-    updateEmaTaskBucket1,
-    executeLiquidationTaskBucket0,
-    executeLiquidationTaskBucket1,
-    executeMicroLiquidationTaskBucket0,
-    executeMicroLiquidationTaskBucket1,
-    interestPaymentTaskBucket0,
-    interestPaymentTaskBucket1,
-    settlementTaskBucket0,
-    settlementTaskBucket1,
-    refreshAcBalanceTaskBucket0,
-    refreshAcBalanceTaskBucket1,
-    flowSplitTaskRifCommissionSplitterV2,
-    flowSplitTaskRifCommissionSplitterV3,
-    flowSplitTaskDocCommissionSplitterV2,
-    flowTriggerOrderTaskRevAuctionRBTCtoMOC_tasksRunner,
-    flowTriggerOrderTaskRevAuctionRIFtoMOC_tasksRunner,
-    flowTriggerOrderTaskRevAuctionDOCtoMOC_tasksRunner,
-    flowTriggerOrderTaskRevAuctionRBTCtoMOC_rocNodes,
-    flowTriggerOrderTaskRevAuctionRIFtoMOC_rocRewardsBuffer,
-    flowTriggerOrderTaskRevAuctionMOCtoRIF_rifBucket,
-    flowTriggerOrderTaskRevAuctionDOCtoMOC_rocRewardsBuffer,
-    flowTriggerOrderTaskRevAuctionMOCtoDOC_docBucket,
+    ...tasksBeforeRocRewardsBuffer,
     flowFlushTaskRocRewardsBuffer,
     flowLiquidateTaskRocRewardsBuffer,
     flowFlushTaskRifProRewardsBuffer,
@@ -485,102 +511,97 @@ const AddTasksRunnerModule = buildModule("AddTasksRunner", m => {
     flowLiquidateTaskRocrRewardsBuffer,
   ];
 
-  const initData = m.encodeFunctionCall(tasksRunnerImpl, "initialize", [
-    core.governor,
-    core.name,
-    tasks,
-    core.mocTokenAddress,
-    roundConfig,
-    core.oracleManager,
-    core.registry,
-    core.minOraclesPerRound,
-    tasksRunnerParams,
-  ]);
-
-  const tasksRunnerProxy = m.contract("ERC1967Proxy", [tasksRunnerImpl, initData], {
-    id: "TasksRunnerProxy",
-  });
-
-  const tasksRunnerContract = m.contractAt("@moc/oracles/contracts/TasksRunner.sol:TasksRunner", tasksRunnerProxy, {
-    id: "TasksRunner",
-  });
-
-  // ---------------------------------------------------------------------------
-  // Stage 5 - RocRewardsBuffer Deployment
-  // ---------------------------------------------------------------------------
-  const rocRewardsBufferImpl = m.contract("@moc/flow/contracts/BufferToken.sol:BufferToken", [], {
-    id: "RocRewardsBufferImplementation",
-  });
-
-  const rocRewardsBufferInitData = m.encodeFunctionCall(rocRewardsBufferImpl, "initialize", [
-    core.governor,
-    core.mocTokenAddress,
-    rocRewardsBufferCfg.threshold,
-    [tasksRunnerContract, core.mocRewardsBuffer],
-    [rocRewardsBufferCfg.tasksRunnerSplit, rocRewardsBufferCfg.mocRewardsBufferSplit],
-    [rocRewardsBufferCfg.tasksRunnerOutputThreshold, rocRewardsBufferCfg.mocRewardsBufferOutputThreshold],
-  ]);
-
-  const rocRewardsBufferProxy = m.contract("ERC1967Proxy", [rocRewardsBufferImpl, rocRewardsBufferInitData], {
-    id: "RocRewardsBufferProxy",
-  });
-
-  const rocRewardsBuffer = m.contractAt("@moc/flow/contracts/BufferToken.sol:BufferToken", rocRewardsBufferProxy, {
-    id: "RocRewardsBuffer",
-  });
-
-  // ---------------------------------------------------------------------------
-  // Stage 6 - MocSwapperV3 Deployment (RBTC <-> MOC)
-  // ---------------------------------------------------------------------------
-  const mocSwapperV3Impl = m.contract("MocSwapperV3", [], {
-    id: "MocSwapperV3Implementation",
-  });
-
-  const mocSwapperV3InitData = m.encodeFunctionCall(mocSwapperV3Impl, "initialize", [
-    core.governor,
-    mocSwapperV3Cfg.pauserAddress,
-    mocSwapperV3Cfg.swapRouterAddress,
-    mocSwapperV3Cfg.coinbaseWrapperAddress,
-  ]);
-
-  const mocSwapperV3Proxy = m.contract("ERC1967Proxy", [mocSwapperV3Impl, mocSwapperV3InitData], {
-    id: "MocSwapperV3Proxy",
-  });
-
-  const mocSwapperV3 = m.contractAt("MocSwapperV3", mocSwapperV3Proxy, {
-    id: "MocSwapperV3",
-  });
-
-  const maxRbtcToMocProvider = m.contract(
-    "DataProvider",
-    [mocSwapperV3Cfg.pauserAddress, mocSwapperV3Cfg.maxRbtcToMocToSwap],
+  m.call(
+    tasksRunnerContract,
+    "initialize",
+    [
+      core.governor,
+      core.name,
+      tasks,
+      core.mocTokenAddress,
+      roundConfig,
+      core.oracleManager,
+      core.registry,
+      tasksRunnerCfg.minOraclesPerRound,
+      tasksRunnerParams,
+    ],
     {
-      id: "MaxRbtcToMocProvider",
+      id: "InitializeTasksRunner",
     },
   );
 
-  const maxMocToRbtcProvider = m.contract(
-    "DataProvider",
-    [mocSwapperV3Cfg.pauserAddress, mocSwapperV3Cfg.maxMocToRbtcToSwap],
+  m.call(
+    rocNodesBuffer,
+    "initialize",
+    [
+      core.governor,
+      core.mocTokenAddress,
+      rocNodesBufferCfg.threshold,
+      rocNodesBufferCfg.outputs,
+      rocNodesBufferCfg.splits,
+      rocNodesBufferCfg.outputThresholds,
+    ],
     {
-      id: "MaxMocToRbtcProvider",
+      id: "InitializeRocNodesBuffer",
+    },
+  );
+
+  m.call(
+    rocRewardsBuffer,
+    "initialize",
+    [
+      core.governor,
+      core.mocTokenAddress,
+      rocRewardsBufferCfg.threshold,
+      [tasksRunnerContract, core.mocRewardsBuffer],
+      [rocRewardsBufferCfg.tasksRunnerSplit, rocRewardsBufferCfg.mocRewardsBufferSplit],
+      [rocRewardsBufferCfg.tasksRunnerOutputThreshold, rocRewardsBufferCfg.mocRewardsBufferOutputThreshold],
+    ],
+    {
+      id: "InitializeRocRewardsBuffer",
+    },
+  );
+
+  // These are the latest implementations that AddTasksRunnerChanger will point
+  // the already-upgraded proxies to during the second governance change.
+  const mocMultiCollateralGuardLatestImpl = m.contract(
+    "moc-main-latest/contracts/multiCollateral/MocMultiCollateralGuard.sol:MocMultiCollateralGuard",
+    [],
+    {
+      id: "MocMultiCollateralGuardLatestImplementation",
+    },
+  );
+
+  const mocCoreBucketLatestImpl = m.contract("moc-main-latest/contracts/collateral/rc20/MocCARC20.sol:MocCARC20", [], {
+    id: "MocCoreBucketLatestImplementation",
+  });
+
+  const mocQueueLatestImpl = m.contract("moc-main-latest/contracts/queue/MocQueue.sol:MocQueue", [], {
+    id: "MocQueueLatestImplementation",
+  });
+
+  const mocCoreExpansionLatestImpl = m.contract(
+    "moc-main-latest/contracts/core/MocCoreExpansion.sol:MocCoreExpansion",
+    [],
+    {
+      id: "MocCoreExpansionLatestImplementation",
     },
   );
 
   // ---------------------------------------------------------------------------
-  // Stage 7 - AddTasksRunnerChanger Deployment
+  // Stage 6 - AddTasksRunnerChanger Deployment
   // ---------------------------------------------------------------------------
   const addTasksRunnerChanger = m.contract(
     "AddTasksRunnerChanger",
     [
       core.mocMultiCollateralGuard,
-      changer.mocMultiCollateralGuardImplementation,
-      changer.mocCoreBucket0Implementation,
-      changer.mocCoreBucket1Implementation,
-      changer.mocQueueBucket0Implementation,
-      changer.mocQueueBucket1Implementation,
-      changer.mocCoreExpansionBucket0,
-      changer.mocCoreExpansionBucket1,
+      mocMultiCollateralGuardLatestImpl,
+      mocCoreBucketLatestImpl,
+      mocCoreBucketLatestImpl,
+      mocQueueLatestImpl,
+      mocQueueLatestImpl,
+      mocCoreExpansionLatestImpl,
+      mocCoreExpansionLatestImpl,
       revAuctionRBTCtoMOC_tasksRunner,
       revAuctionRIFtoMOC_tasksRunner,
       revAuctionDOCtoMOC_tasksRunner,
@@ -592,16 +613,11 @@ const AddTasksRunnerModule = buildModule("AddTasksRunner", m => {
       rifCommissionSplitterV2.commissionSplitter,
       bufferTasks.rifProRewardsBuffer,
       bufferTasks.rocrRewardsBuffer,
-      mocSwapperV3,
-      core.mocTokenAddress,
-      maxRbtcToMocProvider,
-      maxMocToRbtcProvider,
-      mocSwapperV3Cfg.rbtcToMocPoolFee,
-      mocSwapperV3Cfg.mocToRbtcPoolFee,
       rocRewardsBuffer,
       core.registry,
       core.oracleManager,
       tasksRunnerContract,
+      core.name,
     ],
     {
       id: "AddTasksRunnerChanger",
@@ -609,7 +625,7 @@ const AddTasksRunnerModule = buildModule("AddTasksRunner", m => {
   );
 
   // ---------------------------------------------------------------------------
-  // Stage 8 - Module Exports
+  // Stage 7 - Module Exports
   // ---------------------------------------------------------------------------
   return {
     tasksRunnerImpl,
@@ -619,14 +635,15 @@ const AddTasksRunnerModule = buildModule("AddTasksRunner", m => {
     revAuctionRIFtoMOC_tasksRunner,
     revAuctionDOCtoMOC_tasksRunner,
     revAuctionRBTCtoMOC_rocNodes,
-    rocRewardsBufferImpl,
+    bufferTokenImpl,
+    rocNodesBufferProxy,
+    rocNodesBuffer,
     rocRewardsBufferProxy,
     rocRewardsBuffer,
-    mocSwapperV3Impl,
-    mocSwapperV3Proxy,
-    mocSwapperV3,
-    maxRbtcToMocProvider,
-    maxMocToRbtcProvider,
+    mocMultiCollateralGuardLatestImpl,
+    mocCoreBucketLatestImpl,
+    mocQueueLatestImpl,
+    mocCoreExpansionLatestImpl,
     executeQueueTask,
     updateEmaTaskBucket0,
     updateEmaTaskBucket1,

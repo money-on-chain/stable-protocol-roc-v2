@@ -180,7 +180,15 @@ run_forge_tests() {
     # The Solidity tests use vm.createSelectFork() to connect to the running
     # Hardhat node, so we pass the URL via FORK_URL env var.
     npx hardhat build
-    FORK_URL="http://127.0.0.1:$NODE_PORT" npx hardhat test solidity -vvv
+    TEST_FILES=()
+    while IFS= read -r file; do
+        TEST_FILES+=("$file")
+    done < <(find test/changers/multiCollateralUpgrade -type f -name "*.t.sol" | sort)
+    if [ ${#TEST_FILES[@]} -eq 0 ]; then
+        log_error "No .t.sol files found under test/changers/multiCollateralUpgrade"
+        exit 1
+    fi
+    FORK_URL="http://127.0.0.1:$NODE_PORT" npx hardhat test solidity "${TEST_FILES[@]}" -vvv
     
     log_success "Tests completed"
 

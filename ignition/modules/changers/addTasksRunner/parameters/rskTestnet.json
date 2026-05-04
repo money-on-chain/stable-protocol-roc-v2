@@ -1,123 +1,78 @@
 {
   "AddTasksRunner": {
-    "core": {
-      "governor": "0x0000000000000000000000000000000000000000",
-      "name": "0x0000000000000000000000000000000000000000000000000000000000000000",
-      "mocTokenAddress": "0x0000000000000000000000000000000000000000",
-      "oracleManager": "0x0000000000000000000000000000000000000000",
-      "registry": "0x0000000000000000000000000000000000000000",
-      "minOraclesPerRound": "0",
-      "mocMultiCollateralGuard": "0x0000000000000000000000000000000000000000",
-      "bucket0": "0x0000000000000000000000000000000000000000",
-      "bucket1": "0x0000000000000000000000000000000000000000",
-      "refreshAcBalanceThreshold": "0",
-      "mocRewardsBuffer": "0x0000000000000000000000000000000000000000"
-    },
-    "tasksRunner": {
-      "maxOraclesPerRound": "0",
-      "maxSubscribedOraclesPerRound": "0",
-      "roundLockPeriod": "0",
-      "maxMissedSigRounds": "0",
-      "maxTasksPerBatch": "0",
-      "tokenToCoinbasePriceProvider": "0x0000000000000000000000000000000000000000",
-      "baseFeeProvider": "0x0000000000000000000000000000000000000000",
-      "sharesCapMultiplier": "0"
-    },
-    "flow": {
-      "revertSleepTime": "0",
-      "taskOwner": "0x0000000000000000000000000000000000000000"
-    },
-    "rifCommissionSplitterV2": {
-      "commissionSplitter": "0x0000000000000000000000000000000000000000",
-      "token": "0x0000000000000000000000000000000000000000",
-      "feeToken": "0x0000000000000000000000000000000000000000",
-      "tokenBalanceThreshold": "0",
-      "feeTokenBalanceThreshold": "0"
-    },
-    "rifCommissionSplitterV3": {
-      "commissionSplitter": "0x0000000000000000000000000000000000000000",
-      "token": "0x0000000000000000000000000000000000000000",
-      "feeToken": "0x0000000000000000000000000000000000000000",
-      "tokenBalanceThreshold": "0",
-      "feeTokenBalanceThreshold": "0"
-    },
-    "docCommissionSplitterV2": {
-      "commissionSplitter": "0x0000000000000000000000000000000000000000",
-      "token": "0x0000000000000000000000000000000000000000",
-      "feeToken": "0x0000000000000000000000000000000000000000",
-      "tokenBalanceThreshold": "0",
-      "feeTokenBalanceThreshold": "0"
-    },
-    "changer": {
-      "mocMultiCollateralGuardImplementation": "0x0000000000000000000000000000000000000000",
-      "mocCoreBucket0Implementation": "0x0000000000000000000000000000000000000000",
-      "mocCoreBucket1Implementation": "0x0000000000000000000000000000000000000000",
-      "mocQueueBucket0Implementation": "0x0000000000000000000000000000000000000000",
-      "mocQueueBucket1Implementation": "0x0000000000000000000000000000000000000000",
-      "mocCoreExpansionBucket0": "0x0000000000000000000000000000000000000000",
-      "mocCoreExpansionBucket1": "0x0000000000000000000000000000000000000000"
-    },
-    "reverseAuctions": {
-      "revAuctionRBTCtoMOC_tasksRunner": {
-        "mocSwapper": "0x0000000000000000000000000000000000000000",
-        "tokenIn": "0x0000000000000000000000000000000000000000",
-        "tokenOut": "0x0000000000000000000000000000000000000000",
-        "orderThreshold": "0",
-        "priceProvider": "0x0000000000000000000000000000000000000000",
-        "slippage": "0"
-      },
-      "revAuctionRIFtoMOC_tasksRunner": {
-        "mocSwapper": "0x0000000000000000000000000000000000000000",
-        "tokenIn": "0x0000000000000000000000000000000000000000",
-        "tokenOut": "0x0000000000000000000000000000000000000000",
-        "orderThreshold": "0",
-        "priceProvider": "0x0000000000000000000000000000000000000000",
-        "slippage": "0"
-      },
-      "revAuctionDOCtoMOC_tasksRunner": {
-        "mocSwapper": "0x0000000000000000000000000000000000000000",
-        "tokenIn": "0x0000000000000000000000000000000000000000",
-        "tokenOut": "0x0000000000000000000000000000000000000000",
-        "orderThreshold": "0",
-        "priceProvider": "0x0000000000000000000000000000000000000000",
-        "slippage": "0"
-      },
-      "revAuctionRBTCtoMOC_rocNodes": {
-        "mocSwapper": "0x0000000000000000000000000000000000000000",
-        "tokenIn": "0x0000000000000000000000000000000000000000",
-        "tokenOut": "0x0000000000000000000000000000000000000000",
-        "outputAccount": "0x0000000000000000000000000000000000000000",
-        "orderThreshold": "0",
-        "priceProvider": "0x0000000000000000000000000000000000000000",
-        "slippage": "0"
-      }
-    },
-    "rocRewardsBuffer": {
-      "threshold": "0",
-      "tasksRunnerSplit": "0",
-      "mocRewardsBufferSplit": "0",
-      "tasksRunnerOutputThreshold": "0",
-      "mocRewardsBufferOutputThreshold": "0"
-    },
-    "triggerOrderRevAuctions": {
-      "revAuctionRIFtoMOC_rocRewardsBuffer": "0x0000000000000000000000000000000000000000",
-      "revAuctionMOCtoRIF_rifBucket": "0x0000000000000000000000000000000000000000",
-      "revAuctionDOCtoMOC_rocRewardsBuffer": "0x0000000000000000000000000000000000000000",
-      "revAuctionMOCtoDOC_docBucket": "0x0000000000000000000000000000000000000000"
-    },
-    "mocSwapperV3": {
-      "pauserAddress": "0x0000000000000000000000000000000000000000",
-      "swapRouterAddress": "0x0000000000000000000000000000000000000000",
-      "coinbaseWrapperAddress": "0x0000000000000000000000000000000000000000",
-      "maxRbtcToMocToSwap": "0",
-      "maxMocToRbtcToSwap": "0",
-      "rbtcToMocPoolFee": "0",
-      "mocToRbtcPoolFee": "0"
-    },
-    "bufferTasks": {
-      "rocRewardsBuffer": "0x0000000000000000000000000000000000000000",
-      "rifProRewardsBuffer": "0x0000000000000000000000000000000000000000",
-      "rocrRewardsBuffer": "0x0000000000000000000000000000000000000000"
-    }
+    "core.governor": "0x0000000000000000000000000000000000000000",
+    "core.name": "0x5461736b7352756e6e6572000000000000000000000000000000000000000000",
+    "core.mocTokenAddress": "0x0000000000000000000000000000000000000000",
+    "core.oracleManager": "0x0000000000000000000000000000000000000000",
+    "core.registry": "0x0000000000000000000000000000000000000000",
+    "core.mocMultiCollateralGuard": "0x0000000000000000000000000000000000000000",
+    "core.bucket0": "0x0000000000000000000000000000000000000000",
+    "core.bucket1": "0x0000000000000000000000000000000000000000",
+    "core.refreshAcBalanceThreshold": "0",
+    "core.mocRewardsBuffer": "0x0000000000000000000000000000000000000000",
+    "tasksRunner.minOraclesPerRound": "0",
+    "tasksRunner.maxOraclesPerRound": "0",
+    "tasksRunner.maxSubscribedOraclesPerRound": "0",
+    "tasksRunner.roundLockPeriod": "0",
+    "tasksRunner.maxMissedSigRounds": "0",
+    "tasksRunner.maxTasksPerBatch": "0",
+    "tasksRunner.tokenToCoinbasePriceProvider": "0x0000000000000000000000000000000000000000",
+    "tasksRunner.sharesCapMultiplier": "0",
+    "flow.revertSleepTime": "0",
+    "flow.taskOwner": "0x0000000000000000000000000000000000000000",
+    "rifCommissionSplitterV2.commissionSplitter": "0x0000000000000000000000000000000000000000",
+    "rifCommissionSplitterV2.token": "0x0000000000000000000000000000000000000000",
+    "rifCommissionSplitterV2.feeToken": "0x0000000000000000000000000000000000000000",
+    "rifCommissionSplitterV2.tokenBalanceThreshold": "0",
+    "rifCommissionSplitterV2.feeTokenBalanceThreshold": "0",
+    "rifCommissionSplitterV3.commissionSplitter": "0x0000000000000000000000000000000000000000",
+    "rifCommissionSplitterV3.token": "0x0000000000000000000000000000000000000000",
+    "rifCommissionSplitterV3.feeToken": "0x0000000000000000000000000000000000000000",
+    "rifCommissionSplitterV3.tokenBalanceThreshold": "0",
+    "rifCommissionSplitterV3.feeTokenBalanceThreshold": "0",
+    "docCommissionSplitterV2.commissionSplitter": "0x0000000000000000000000000000000000000000",
+    "docCommissionSplitterV2.token": "0x0000000000000000000000000000000000000000",
+    "docCommissionSplitterV2.feeToken": "0x0000000000000000000000000000000000000000",
+    "docCommissionSplitterV2.tokenBalanceThreshold": "0",
+    "docCommissionSplitterV2.feeTokenBalanceThreshold": "0",
+    "reverseAuctions.revAuctionRBTCtoMOC_tasksRunner.mocSwapper": "0x0000000000000000000000000000000000000000",
+    "reverseAuctions.revAuctionRBTCtoMOC_tasksRunner.tokenIn": "0x0000000000000000000000000000000000000000",
+    "reverseAuctions.revAuctionRBTCtoMOC_tasksRunner.tokenOut": "0x0000000000000000000000000000000000000000",
+    "reverseAuctions.revAuctionRBTCtoMOC_tasksRunner.orderThreshold": "0",
+    "reverseAuctions.revAuctionRBTCtoMOC_tasksRunner.priceProvider": "0x0000000000000000000000000000000000000000",
+    "reverseAuctions.revAuctionRBTCtoMOC_tasksRunner.slippage": "0",
+    "reverseAuctions.revAuctionRIFtoMOC_tasksRunner.mocSwapper": "0x0000000000000000000000000000000000000000",
+    "reverseAuctions.revAuctionRIFtoMOC_tasksRunner.tokenIn": "0x0000000000000000000000000000000000000000",
+    "reverseAuctions.revAuctionRIFtoMOC_tasksRunner.tokenOut": "0x0000000000000000000000000000000000000000",
+    "reverseAuctions.revAuctionRIFtoMOC_tasksRunner.orderThreshold": "0",
+    "reverseAuctions.revAuctionRIFtoMOC_tasksRunner.priceProvider": "0x0000000000000000000000000000000000000000",
+    "reverseAuctions.revAuctionRIFtoMOC_tasksRunner.slippage": "0",
+    "reverseAuctions.revAuctionDOCtoMOC_tasksRunner.mocSwapper": "0x0000000000000000000000000000000000000000",
+    "reverseAuctions.revAuctionDOCtoMOC_tasksRunner.tokenIn": "0x0000000000000000000000000000000000000000",
+    "reverseAuctions.revAuctionDOCtoMOC_tasksRunner.tokenOut": "0x0000000000000000000000000000000000000000",
+    "reverseAuctions.revAuctionDOCtoMOC_tasksRunner.orderThreshold": "0",
+    "reverseAuctions.revAuctionDOCtoMOC_tasksRunner.priceProvider": "0x0000000000000000000000000000000000000000",
+    "reverseAuctions.revAuctionDOCtoMOC_tasksRunner.slippage": "0",
+    "reverseAuctions.revAuctionRBTCtoMOC_rocNodes.mocSwapper": "0x0000000000000000000000000000000000000000",
+    "reverseAuctions.revAuctionRBTCtoMOC_rocNodes.tokenIn": "0x0000000000000000000000000000000000000000",
+    "reverseAuctions.revAuctionRBTCtoMOC_rocNodes.tokenOut": "0x0000000000000000000000000000000000000000",
+    "reverseAuctions.revAuctionRBTCtoMOC_rocNodes.orderThreshold": "0",
+    "reverseAuctions.revAuctionRBTCtoMOC_rocNodes.priceProvider": "0x0000000000000000000000000000000000000000",
+    "reverseAuctions.revAuctionRBTCtoMOC_rocNodes.slippage": "0",
+    "rocNodesBuffer.threshold": "0",
+    "rocNodesBuffer.outputs": ["0x0000000000000000000000000000000000000000"],
+    "rocNodesBuffer.splits": ["0"],
+    "rocNodesBuffer.outputThresholds": ["0"],
+    "rocRewardsBuffer.threshold": "0",
+    "rocRewardsBuffer.tasksRunnerSplit": "0",
+    "rocRewardsBuffer.mocRewardsBufferSplit": "0",
+    "rocRewardsBuffer.tasksRunnerOutputThreshold": "0",
+    "rocRewardsBuffer.mocRewardsBufferOutputThreshold": "0",
+    "triggerOrderRevAuctions.revAuctionRIFtoMOC_rocRewardsBuffer": "0x0000000000000000000000000000000000000000",
+    "triggerOrderRevAuctions.revAuctionMOCtoRIF_rifBucket": "0x0000000000000000000000000000000000000000",
+    "triggerOrderRevAuctions.revAuctionDOCtoMOC_rocRewardsBuffer": "0x0000000000000000000000000000000000000000",
+    "triggerOrderRevAuctions.revAuctionMOCtoDOC_docBucket": "0x0000000000000000000000000000000000000000",
+    "bufferTasks.rifProRewardsBuffer": "0x0000000000000000000000000000000000000000",
+    "bufferTasks.rocrRewardsBuffer": "0x0000000000000000000000000000000000000000"
   }
 }

@@ -153,12 +153,17 @@ export function deployMultiCollateralUpgrade(
     swapTPforTPExecCost: params.rifSwapTPforTPExecCost,
     swapTPforTCExecCost: params.rifSwapTPforTCExecCost,
     swapTCforTPExecCost: params.rifSwapTCforTPExecCost,
+    priceUpdatesCost: 0n,
   };
 
   // Deploy MocMultiCollateralGuard Implementation
-  const mocMultiCollateralGuardImpl = m.contract("MocMultiCollateralGuard", [], {
-    id: `${prefix}MocMultiCollateralGuardImplementation`,
-  });
+  const mocMultiCollateralGuardImpl = m.contract(
+    "moc-main-latest/contracts/multiCollateral/MocMultiCollateralGuard.sol:MocMultiCollateralGuard",
+    [],
+    {
+      id: `${prefix}MocMultiCollateralGuardImplementation`,
+    },
+  );
 
   // Encode initialize data for MocMultiCollateralGuard
   const guardInitData = m.encodeFunctionCall(mocMultiCollateralGuardImpl, "initialize", [
@@ -166,6 +171,7 @@ export function deployMultiCollateralUpgrade(
     params.pauserAddress,
     params.microLiquidationExecCost,
     params.liquidationExecCost,
+    params.coinbaseExecFeeRecipient,
     params.coinbaseExecFeeRecipient,
     params.maxOperPerBatch,
     params.useMaxLastPublicationBlock,
