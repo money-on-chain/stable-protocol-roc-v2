@@ -25,3 +25,4 @@ deployments/hardhat
 *.tsbuildinfo
 coverage.json
 npm-debug.log*
+.DS_Store
