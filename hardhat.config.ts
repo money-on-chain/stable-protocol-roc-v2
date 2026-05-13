@@ -266,11 +266,11 @@ const config: HardhatUserConfig = {
     },
   },
   ignition: {
-    blockPollingInterval: 10000,
-    timeBeforeBumpingFees: 600000,
-    maxFeeBumps: 5,
+    blockPollingInterval: 5000,
+    timeBeforeBumpingFees: 120000,
+    maxFeeBumps: 10,
     requiredConfirmations: 1,
-    maxUnconfirmedTxs: 2,
+    maxUnconfirmedTxs: 1,
   },
   paths: {
     artifacts: "./artifacts",
@@ -283,7 +283,7 @@ const config: HardhatUserConfig = {
     solidity: {
       ffi: true,
       fsPermissions: {
-        readDirectory: ["./out", "./test"],
+        readDirectory: ["./out", "./test", "./ignition/deployments"],
       },
     },
   },

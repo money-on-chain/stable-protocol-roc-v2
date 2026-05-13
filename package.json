@@ -88,14 +88,13 @@
     "release": "standard-version",
     "test": "npx hardhat test solidity",
     "test:storage": "FOUNDRY_PROFILE=storage forge clean && FOUNDRY_PROFILE=storage forge build --force && FOUNDRY_PROFILE=storage forge test -vv",
-    "test:fork:mainnet": "./scripts/changers/multiCollateralUpgrade/run-fork-tests.sh rskMainnet",
-    "test:all": "npm run test:fork:mainnet && npm run test:storage",
+    "test:fork:mainnet": "npx hardhat test solidity -vvv",
+    "test:all": "npm run test && npm run test:storage",
     "merge-params": "node scripts/changers/multiCollateralUpgrade/merge-ignition-params.mjs",
-    "deploy-localhost": "npx hardhat ignition deploy ./ignition/modules/changers/multiCollateralUpgrade/FullMultiCollateralUpgrade.ts",
     "deploy-rskTestnet": "npx hardhat ignition deploy ./ignition/modules/changers/multiCollateralUpgrade/FullMultiCollateralUpgrade.ts --network rskTestnet --parameters ./ignition/modules/changers/multiCollateralUpgrade/parameters/full-rskTestnet.json",
     "deploy-rskMainnet": "npx hardhat ignition deploy ./ignition/modules/changers/multiCollateralUpgrade/FullMultiCollateralUpgrade.ts --network rskMainnet --parameters ./ignition/modules/changers/multiCollateralUpgrade/parameters/full-rskMainnet.json",
     "verify:rskTestnet": "npx hardhat ignition verify --network rskTestnet",
-    "verify:rskMainnet": "npx hardhat ignition verify --network rskMainnet",
+    "verify:rskMainnet": "npx hardhat ignition verify --network rskMainnet chain-30",
     "tenderly-verify:rskTestnet": "npx hardhat run scripts/tenderly-verify.ts --network rskTestnet"
   },
   "pnpm": {

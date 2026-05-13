@@ -21,7 +21,6 @@ interface IBufferBaseView {
 
 /// @title Fork Tests with Ignition Deployed Contracts
 /// @notice Fork tests that use contracts deployed by Hardhat Ignition
-/// @dev Run ./scripts/changers/multiCollateralUpgrade/run-fork-tests.sh to deploy contracts and run these tests
 contract DocBucketForkTests is BaseFork {
     bytes32 private constant DEFAULT_ADMIN_ROLE = 0x00;
     bytes32 private constant MINTER_ROLE = keccak256("MINTER_ROLE");
@@ -385,7 +384,7 @@ contract DocBucketForkTests is BaseFork {
         _addTCandTP();
 
         // RIF price goes down
-        uint256 newPrice = 0.005 ether;
+        uint256 newPrice = 0.0065 ether;
         bytes memory data = abi.encodeWithSelector(IPriceProvider.peek.selector);
         bytes memory forcedReturnData = abi.encode(newPrice, true);
         vm.mockCall(address(rifPriceProvider), data, forcedReturnData);

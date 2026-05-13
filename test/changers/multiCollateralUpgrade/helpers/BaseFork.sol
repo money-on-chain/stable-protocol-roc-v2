@@ -17,8 +17,7 @@ import { CommissionSplitterRC20 } from "moc-main-latest/contracts/auxiliary/Comm
 import { MocReverseAuction } from "moc-main-latest/contracts/auxiliary/MocReverseAuction.sol";
 
 /// @title Fork Tests with Ignition Deployed Contracts
-/// @notice Fork tests that use contracts deployed by Hardhat Ignition
-/// @dev Run ./scripts/run-fork-tests.sh to deploy contracts and run these tests
+/// @notice Fork tests that use contracts deployed by Hardhat Ignition on mainnet
 contract BaseFork is IgnitionDeployments {
     // ============ Constants ============
     uint256 constant MAX_UINT = type(uint256).max;
@@ -119,16 +118,19 @@ contract BaseFork is IgnitionDeployments {
     }
 
     function setUp() public virtual {
-        // Fork from the running anvil instance which has both mainnet state
-        // and Ignition-deployed contracts
-        string memory forkUrl = vm.envOr("FORK_URL", string("http://127.0.0.1:8545"));
-        vm.createSelectFork(forkUrl);
+        // Prefer explicit FORK_URL. If not provided, fallback to RSK mainnet RPC.
+        string memory defaultMainnetForkUrl = vm.envOr("RSK_MAINNET_RPC_URL", string("https://public-node.rsk.co"));
+        string memory forkUrl = vm.envOr("FORK_URL", defaultMainnetForkUrl);
+        vm.createSelectFork(forkUrl, 8830500);
 
         // Load deployed addresses from Ignition
         _loadDeployedAddresses();
 
         // Check if we have the deployed contracts
-        require(addressesLoaded, "Deployed addresses not loaded. Run ./scripts/run-fork-tests.sh first");
+        require(
+            addressesLoaded,
+            "Deployed addresses not loaded. Check ignition/deployments/chain-30/deployed_addresses.json"
+        );
 
         // Initialize the MocRif bucket from mainnet
         rifBucket = MocRif(payable(MOC_CORE_ADDRESS));

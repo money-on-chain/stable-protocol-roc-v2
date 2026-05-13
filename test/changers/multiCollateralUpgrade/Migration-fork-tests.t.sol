@@ -7,7 +7,6 @@ import { MocReverseAuction } from "moc-main-latest/contracts/auxiliary/MocRevers
 
 /// @title Fork Tests with Ignition Deployed Contracts
 /// @notice Fork tests that use contracts deployed by Hardhat Ignition
-/// @dev Run ./scripts/changers/multiCollateralUpgrade/run-fork-tests.sh to deploy contracts and run these tests
 contract MigrationForkTests is BaseFork {
     // State before upgrade
     uint256 public coverageBefore;
