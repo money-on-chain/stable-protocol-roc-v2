@@ -69,7 +69,6 @@ contract AddTasksRunnerChanger is IChangeContract {
     address public immutable revAuctionMOCtoRIF_rifBucket;
     address public immutable revAuctionDOCtoMOC_rocRewardsBuffer;
     address public immutable revAuctionMOCtoDOC_docBucket;
-    address public immutable commissionSplitterV2_rocRewardsBuffer;
     address public immutable rifProRewardsBuffer_rocRewardsBuffer;
     address public immutable rocrRewardsBuffer;
     IOracleManager public immutable oracleManager;
@@ -96,7 +95,6 @@ contract AddTasksRunnerChanger is IChangeContract {
     @param revAuctionMOCtoRIF_rifBucket_ Address of current RevAuction MOCtoRIF (registered in flow reverse auctions)
     @param revAuctionDOCtoMOC_rocRewardsBuffer_ Address for RevAuction DOCtoMOC output recipient (RocRewardsBuffer)
     @param revAuctionMOCtoDOC_docBucket_ Address of current RevAuction MOCtoDOC (registered in flow reverse auctions)
-    @param commissionSplitterV2_rocRewardsBuffer_ Address for CommissionSplitterV2 output recipient (RocRewardsBuffer)
     @param rifProRewardsBuffer_rocRewardsBuffer_ Address for RifProRewardsBuffer output recipient (RocRewardsBuffer)
     @param rocrRewardsBuffer_ Address of RocrRewardsBuffer (registered in flow buffers)
     @param rocRewardsBuffer_ Address of RocRewardsBuffer
@@ -122,7 +120,6 @@ contract AddTasksRunnerChanger is IChangeContract {
         address revAuctionMOCtoRIF_rifBucket_,
         address revAuctionDOCtoMOC_rocRewardsBuffer_,
         address revAuctionMOCtoDOC_docBucket_,
-        address commissionSplitterV2_rocRewardsBuffer_,
         address rifProRewardsBuffer_rocRewardsBuffer_,
         address rocrRewardsBuffer_,
         address rocRewardsBuffer_,
@@ -147,7 +144,6 @@ contract AddTasksRunnerChanger is IChangeContract {
         revAuctionMOCtoRIF_rifBucket = revAuctionMOCtoRIF_rifBucket_;
         revAuctionDOCtoMOC_rocRewardsBuffer = revAuctionDOCtoMOC_rocRewardsBuffer_;
         revAuctionMOCtoDOC_docBucket = revAuctionMOCtoDOC_docBucket_;
-        commissionSplitterV2_rocRewardsBuffer = commissionSplitterV2_rocRewardsBuffer_;
         rifProRewardsBuffer_rocRewardsBuffer = rifProRewardsBuffer_rocRewardsBuffer_;
         rocrRewardsBuffer = rocrRewardsBuffer_;
         rocRewardsBuffer = rocRewardsBuffer_;

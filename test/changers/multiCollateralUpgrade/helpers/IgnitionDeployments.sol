@@ -6,14 +6,12 @@ import { Test } from "forge-std/Test.sol";
 /**
  * @title IgnitionDeployments
  * @notice Helper contract to load addresses deployed by Hardhat Ignition
- * @dev Reads from test/fixtures/deployed-addresses.json
+ * @dev Reads from an Ignition deployed_addresses.json file
  *
  * Usage:
- * 1. Run the fork test script: `./scripts/run-fork-tests.sh`
- * 2. Or manually:
- *    - Deploy with Ignition: `npx hardhat ignition deploy ...`
- *    - Export addresses (done by the script)
- * 3. In your test, inherit from this and call _loadDeployedAddresses()
+ * 1. Keep `ignition/deployments/chain-30/deployed_addresses.json` up to date
+ * 2. In your test, inherit from this and call _loadDeployedAddresses()
+ * 3. Optional: override path with IGNITION_DEPLOYED_ADDRESSES_PATH
  *
  * Example:
  * ```solidity
@@ -26,8 +24,11 @@ import { Test } from "forge-std/Test.sol";
  * ```
  */
 abstract contract IgnitionDeployments is Test {
-    /// @notice Path to the deployed addresses JSON file
-    string constant DEPLOYED_ADDRESSES_PATH = "test/changers/multiCollateralUpgrade/fixtures/deployed-addresses.json";
+    /// @notice Default path to the deployed addresses JSON file (mainnet deployment)
+    string constant DEFAULT_DEPLOYED_ADDRESSES_PATH = "ignition/deployments/chain-30/deployed_addresses.json";
+
+    /// @notice Ignition module prefix used in raw deployed_addresses.json keys
+    string constant MODULE_PREFIX = "FullMultiCollateralUpgrade#";
 
     /// @notice Mapping of contract ID to deployed address
     mapping(string => address) public deployedAddresses;
@@ -43,8 +44,13 @@ abstract contract IgnitionDeployments is Test {
     function _loadDeployedAddresses() internal {
         if (addressesLoaded) return;
 
+        string memory deployedAddressesPath = vm.envOr(
+            "IGNITION_DEPLOYED_ADDRESSES_PATH",
+            string(DEFAULT_DEPLOYED_ADDRESSES_PATH)
+        );
+
         // Check if file exists by trying to read it
-        try vm.readFile(DEPLOYED_ADDRESSES_PATH) returns (string memory json) {
+        try vm.readFile(deployedAddressesPath) returns (string memory json) {
             bytes memory jsonBytes = bytes(json);
             if (jsonBytes.length == 0 || keccak256(jsonBytes) == keccak256(bytes("{}"))) {
                 emit log("Warning: Deployed addresses file is empty");
@@ -56,7 +62,8 @@ abstract contract IgnitionDeployments is Test {
             addressesLoaded = true;
         } catch {
             emit log("Warning: Could not load deployed addresses from Ignition");
-            emit log("Run ./scripts/changers/multiCollateralUpgrade/run-fork-tests.sh to deploy contracts first");
+            emit log_named_string("Tried path", deployedAddressesPath);
+            emit log("Set IGNITION_DEPLOYED_ADDRESSES_PATH if your deployment JSON is in a different location");
         }
     }
 
@@ -107,6 +114,17 @@ abstract contract IgnitionDeployments is Test {
         try vm.parseJsonAddress(json, selector) returns (address addr) {
             if (addr != address(0)) {
                 deployedAddresses[key] = addr;
+                loadedContracts.push(key);
+                return;
+            }
+        } catch {
+            // Try raw Ignition key format: "ModuleName#FutureId"
+        }
+
+        string memory prefixedSelector = string.concat(".", MODULE_PREFIX, key);
+        try vm.parseJsonAddress(json, prefixedSelector) returns (address prefixedAddr) {
+            if (prefixedAddr != address(0)) {
+                deployedAddresses[key] = prefixedAddr;
                 loadedContracts.push(key);
             }
         } catch {

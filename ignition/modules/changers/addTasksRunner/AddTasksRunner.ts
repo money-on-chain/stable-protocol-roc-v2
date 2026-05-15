@@ -610,7 +610,6 @@ const AddTasksRunnerModule = buildModule("AddTasksRunner", m => {
       triggerOrderRevAuctions.revAuctionMOCtoRIF_rifBucket,
       triggerOrderRevAuctions.revAuctionDOCtoMOC_rocRewardsBuffer,
       triggerOrderRevAuctions.revAuctionMOCtoDOC_docBucket,
-      rifCommissionSplitterV2.commissionSplitter,
       bufferTasks.rifProRewardsBuffer,
       bufferTasks.rocrRewardsBuffer,
       rocRewardsBuffer,

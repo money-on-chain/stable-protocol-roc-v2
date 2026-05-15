@@ -41,7 +41,7 @@ Run Solidity tests:
 pnpm test
 ```
 
-Run fork tests for the full multi-collateral upgrade flow:
+Run fork tests for the full multi-collateral upgrade flow (using mainnet fork + `ignition/deployments/chain-30`):
 
 ```bash
 pnpm test:fork:mainnet
@@ -66,7 +66,6 @@ Main orchestrator module:
 ### Deploy commands
 
 ```bash
-pnpm deploy-localhost
 pnpm deploy-rskTestnet
 pnpm deploy-rskMainnet
 ```
@@ -94,7 +93,7 @@ Source parameter sets live in:
 
 - `pnpm build`: compile contracts and TS
 - `pnpm test`: run Solidity tests via Hardhat
-- `pnpm test:fork:mainnet`: run end-to-end fork tests script
+- `pnpm test:fork:mainnet`: run solidity fork tests against mainnet state and `chain-30` deployed addresses
 - `pnpm test:storage`: run Foundry storage checks
 - `pnpm deploy-rskTestnet`: deploy full module to RSK testnet
 - `pnpm deploy-rskMainnet`: deploy full module to RSK mainnet

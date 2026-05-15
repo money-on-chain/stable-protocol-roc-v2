@@ -36,9 +36,6 @@ importers:
       '@moc/shared':
         specifier: git+ssh://git@github.com/money-on-chain/OMoC-SC-Shared.git#113dbc40d21a22c364753fdcd5595129ecde8c3b
         version: '@moneyonchain/shared@git+https://git@github.com:money-on-chain/OMoC-SC-Shared.git#113dbc40d21a22c364753fdcd5595129ecde8c3b(hardhat@https://github.com/money-on-chain/hardhat/releases/download/v3.0.10-moc/hardhat-3.0.10.tgz)'
-      moc-main-audited:
-        specifier: github:money-on-chain/main-sc-protocol-v2#v1.1.2
-        version: main-sc-protocol-v2@git+https://git@github.com:money-on-chain/main-sc-protocol-v2.git#4e1571e184e2844c0b5efafc2ebd4fe74588c13e
       moc-main-latest:
         specifier: github:money-on-chain/main-sc-protocol-v2#88ab4bbe250e522559b5177ec1b38dd2126e3deb
         version: main-sc-protocol-v2@git+https://git@github.com:money-on-chain/main-sc-protocol-v2.git#88ab4bbe250e522559b5177ec1b38dd2126e3deb
@@ -3404,10 +3401,6 @@ packages:
   main-sc-protocol-v2@git+https://git@github.com:money-on-chain/main-sc-protocol-v2.git#18aaf09628662e4db45440b5b0b1cdf7e7d0b054:
     resolution: {commit: 18aaf09628662e4db45440b5b0b1cdf7e7d0b054, repo: git@github.com:money-on-chain/main-sc-protocol-v2.git, type: git}
     version: 1.0.0
-
-  main-sc-protocol-v2@git+https://git@github.com:money-on-chain/main-sc-protocol-v2.git#4e1571e184e2844c0b5efafc2ebd4fe74588c13e:
-    resolution: {commit: 4e1571e184e2844c0b5efafc2ebd4fe74588c13e, repo: git@github.com:money-on-chain/main-sc-protocol-v2.git, type: git}
-    version: 1.0.13
 
   main-sc-protocol-v2@git+https://git@github.com:money-on-chain/main-sc-protocol-v2.git#6be1db69c05a9de0dc6fe80c70c6abe8e592611d:
     resolution: {commit: 6be1db69c05a9de0dc6fe80c70c6abe8e592611d, repo: git@github.com:money-on-chain/main-sc-protocol-v2.git, type: git}
@@ -9357,18 +9350,6 @@ snapshots:
       hardhat-deploy: 0.11.30
       hardhat-storage-layout: 0.1.7(hardhat@https://github.com/money-on-chain/hardhat/releases/download/v3.0.10-moc/hardhat-3.0.10.tgz)
       solc: 0.8.20
-    transitivePeerDependencies:
-      - bufferutil
-      - debug
-      - supports-color
-      - utf-8-validate
-
-  main-sc-protocol-v2@git+https://git@github.com:money-on-chain/main-sc-protocol-v2.git#4e1571e184e2844c0b5efafc2ebd4fe74588c13e:
-    dependencies:
-      hardhat: https://github.com/money-on-chain/hardhat/releases/download/v3.0.10-moc/hardhat-3.0.10.tgz
-      hardhat-deploy: 0.14.0
-      hardhat-storage-layout: 0.1.7(hardhat@https://github.com/money-on-chain/hardhat/releases/download/v3.0.10-moc/hardhat-3.0.10.tgz)
-      solc: 0.8.24
     transitivePeerDependencies:
       - bufferutil
       - debug
