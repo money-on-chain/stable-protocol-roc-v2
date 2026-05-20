@@ -5,7 +5,7 @@ import { buildModule } from "@nomicfoundation/hardhat-ignition/modules";
  *
  * Deploys:
  * 1) TasksRunner implementation
- * 2) Task contracts from @moc/shared:
+ * 2) Task contracts from @moc/oracles:
  *    - V3: TaskExecuteQueueV3, TaskUpdateEmaV3 (bucket0/bucket1),
  *      TaskExecuteLiquidationV3 (bucket0/bucket1),
  *      TaskExecuteMicroLiquidationV3 (bucket0/bucket1),
@@ -153,7 +153,7 @@ const AddTasksRunnerModule = buildModule("AddTasksRunner", m => {
   const tasksRunnerImpl = m.contract("@moc/oracles/contracts/TasksRunner.sol:TasksRunner", [], {
     id: "TasksRunnerImplementation",
   });
-  const basefeeProvider = m.contract("@moc/shared/contracts/BasefeeProvider.sol:BasefeeProvider", [], {
+  const basefeeProvider = m.contract("@moc/oracles/contracts/BasefeeProvider.sol:BasefeeProvider", [], {
     id: "BasefeeProvider",
   });
   const bufferTokenImpl = m.contract("@moc/flow/contracts/BufferToken.sol:BufferToken", [], {
@@ -250,20 +250,20 @@ const AddTasksRunnerModule = buildModule("AddTasksRunner", m => {
   // ---------------------------------------------------------------------------
   // 3.1 - V3 and V2V3 operational tasks
   const executeQueueTask = m.contract(
-    "@moc/shared/contracts/tasks/v3/TaskExecuteQueueV3.sol:TaskExecuteQueueV3",
+    "@moc/oracles/contracts/tasks/v3/TaskExecuteQueueV3.sol:TaskExecuteQueueV3",
     [core.mocMultiCollateralGuard],
     { id: "TaskExecuteQueueV3" },
   );
 
   const updateEmaTaskBucket0 = m.contract(
-    "@moc/shared/contracts/tasks/v3/TaskUpdateEmaV3.sol:TaskUpdateEmaV3",
+    "@moc/oracles/contracts/tasks/v3/TaskUpdateEmaV3.sol:TaskUpdateEmaV3",
     [core.bucket0],
     {
       id: "TaskUpdateEmaV3Bucket0",
     },
   );
   const updateEmaTaskBucket1 = m.contract(
-    "@moc/shared/contracts/tasks/v3/TaskUpdateEmaV3.sol:TaskUpdateEmaV3",
+    "@moc/oracles/contracts/tasks/v3/TaskUpdateEmaV3.sol:TaskUpdateEmaV3",
     [core.bucket1],
     {
       id: "TaskUpdateEmaV3Bucket1",
@@ -271,47 +271,47 @@ const AddTasksRunnerModule = buildModule("AddTasksRunner", m => {
   );
 
   const executeLiquidationTaskBucket0 = m.contract(
-    "@moc/shared/contracts/tasks/v3/TaskExecuteLiquidationV3.sol:TaskExecuteLiquidationV3",
+    "@moc/oracles/contracts/tasks/v3/TaskExecuteLiquidationV3.sol:TaskExecuteLiquidationV3",
     [core.mocMultiCollateralGuard, core.bucket0],
     { id: "TaskExecuteLiquidationV3Bucket0" },
   );
   const executeLiquidationTaskBucket1 = m.contract(
-    "@moc/shared/contracts/tasks/v3/TaskExecuteLiquidationV3.sol:TaskExecuteLiquidationV3",
+    "@moc/oracles/contracts/tasks/v3/TaskExecuteLiquidationV3.sol:TaskExecuteLiquidationV3",
     [core.mocMultiCollateralGuard, core.bucket1],
     { id: "TaskExecuteLiquidationV3Bucket1" },
   );
 
   const executeMicroLiquidationTaskBucket0 = m.contract(
-    "@moc/shared/contracts/tasks/v3/TaskExecuteMicroLiquidationV3.sol:TaskExecuteMicroLiquidationV3",
+    "@moc/oracles/contracts/tasks/v3/TaskExecuteMicroLiquidationV3.sol:TaskExecuteMicroLiquidationV3",
     [core.mocMultiCollateralGuard, core.bucket0],
     { id: "TaskExecuteMicroLiquidationV3Bucket0" },
   );
   const executeMicroLiquidationTaskBucket1 = m.contract(
-    "@moc/shared/contracts/tasks/v3/TaskExecuteMicroLiquidationV3.sol:TaskExecuteMicroLiquidationV3",
+    "@moc/oracles/contracts/tasks/v3/TaskExecuteMicroLiquidationV3.sol:TaskExecuteMicroLiquidationV3",
     [core.mocMultiCollateralGuard, core.bucket1],
     { id: "TaskExecuteMicroLiquidationV3Bucket1" },
   );
 
   const interestPaymentTaskBucket0 = m.contract(
-    "@moc/shared/contracts/tasks/v3/TaskInterestPaymentV3.sol:TaskInterestPaymentV3",
+    "@moc/oracles/contracts/tasks/v3/TaskInterestPaymentV3.sol:TaskInterestPaymentV3",
     [core.bucket0],
     { id: "TaskInterestPaymentV3Bucket0" },
   );
   const interestPaymentTaskBucket1 = m.contract(
-    "@moc/shared/contracts/tasks/v3/TaskInterestPaymentV3.sol:TaskInterestPaymentV3",
+    "@moc/oracles/contracts/tasks/v3/TaskInterestPaymentV3.sol:TaskInterestPaymentV3",
     [core.bucket1],
     { id: "TaskInterestPaymentV3Bucket1" },
   );
 
   const settlementTaskBucket0 = m.contract(
-    "@moc/shared/contracts/tasks/v3/TaskSettlementV3.sol:TaskSettlementV3",
+    "@moc/oracles/contracts/tasks/v3/TaskSettlementV3.sol:TaskSettlementV3",
     [core.bucket0],
     {
       id: "TaskSettlementV3Bucket0",
     },
   );
   const settlementTaskBucket1 = m.contract(
-    "@moc/shared/contracts/tasks/v3/TaskSettlementV3.sol:TaskSettlementV3",
+    "@moc/oracles/contracts/tasks/v3/TaskSettlementV3.sol:TaskSettlementV3",
     [core.bucket1],
     {
       id: "TaskSettlementV3Bucket1",
@@ -319,19 +319,19 @@ const AddTasksRunnerModule = buildModule("AddTasksRunner", m => {
   );
 
   const refreshAcBalanceTaskBucket0 = m.contract(
-    "@moc/shared/contracts/tasks/v2v3/TaskRefreshACBalanceV2V3.sol:TaskRefreshACBalanceV2V3",
+    "@moc/oracles/contracts/tasks/v2v3/TaskRefreshACBalanceV2V3.sol:TaskRefreshACBalanceV2V3",
     [core.bucket0, core.refreshAcBalanceThreshold],
     { id: "TaskRefreshACBalanceV2V3Bucket0" },
   );
   const refreshAcBalanceTaskBucket1 = m.contract(
-    "@moc/shared/contracts/tasks/v2v3/TaskRefreshACBalanceV2V3.sol:TaskRefreshACBalanceV2V3",
+    "@moc/oracles/contracts/tasks/v2v3/TaskRefreshACBalanceV2V3.sol:TaskRefreshACBalanceV2V3",
     [core.bucket1, core.refreshAcBalanceThreshold],
     { id: "TaskRefreshACBalanceV2V3Bucket1" },
   );
 
   // 3.2 - Flow tasks (split, trigger-order, flush, liquidate)
   const flowSplitTaskRifCommissionSplitterV2 = m.contract(
-    "@moc/shared/contracts/tasks/mocFlow/commissionSplitter/TaskSplit.sol:TaskSplit",
+    "@moc/oracles/contracts/tasks/mocFlow/commissionSplitter/TaskSplit.sol:TaskSplit",
     [
       rifCommissionSplitterV2.commissionSplitter,
       rifCommissionSplitterV2.token,
@@ -344,7 +344,7 @@ const AddTasksRunnerModule = buildModule("AddTasksRunner", m => {
     },
   );
   const flowSplitTaskRifCommissionSplitterV3 = m.contract(
-    "@moc/shared/contracts/tasks/mocFlow/commissionSplitter/TaskSplit.sol:TaskSplit",
+    "@moc/oracles/contracts/tasks/mocFlow/commissionSplitter/TaskSplit.sol:TaskSplit",
     [
       rifCommissionSplitterV3.commissionSplitter,
       rifCommissionSplitterV3.token,
@@ -357,7 +357,7 @@ const AddTasksRunnerModule = buildModule("AddTasksRunner", m => {
     },
   );
   const flowSplitTaskDocCommissionSplitterV2 = m.contract(
-    "@moc/shared/contracts/tasks/mocFlow/commissionSplitter/TaskSplit.sol:TaskSplit",
+    "@moc/oracles/contracts/tasks/mocFlow/commissionSplitter/TaskSplit.sol:TaskSplit",
     [
       docCommissionSplitterV2.commissionSplitter,
       docCommissionSplitterV2.token,
@@ -370,42 +370,42 @@ const AddTasksRunnerModule = buildModule("AddTasksRunner", m => {
     },
   );
   const flowTriggerOrderTaskRevAuctionRBTCtoMOC_tasksRunner = m.contract(
-    "@moc/shared/contracts/tasks/mocFlow/reverseAuction/TaskTriggerOrder.sol:TaskTriggerOrder",
+    "@moc/oracles/contracts/tasks/mocFlow/reverseAuction/TaskTriggerOrder.sol:TaskTriggerOrder",
     [revAuctionRBTCtoMOC_tasksRunner, flow.revertSleepTime, flow.taskOwner],
     { id: "TaskTriggerOrderRevAuctionRBTCtoMOC_tasksRunner" },
   );
   const flowTriggerOrderTaskRevAuctionRIFtoMOC_tasksRunner = m.contract(
-    "@moc/shared/contracts/tasks/mocFlow/reverseAuction/TaskTriggerOrder.sol:TaskTriggerOrder",
+    "@moc/oracles/contracts/tasks/mocFlow/reverseAuction/TaskTriggerOrder.sol:TaskTriggerOrder",
     [revAuctionRIFtoMOC_tasksRunner, flow.revertSleepTime, flow.taskOwner],
     { id: "TaskTriggerOrderRevAuctionRIFtoMOC_tasksRunner" },
   );
   const flowTriggerOrderTaskRevAuctionDOCtoMOC_tasksRunner = m.contract(
-    "@moc/shared/contracts/tasks/mocFlow/reverseAuction/TaskTriggerOrder.sol:TaskTriggerOrder",
+    "@moc/oracles/contracts/tasks/mocFlow/reverseAuction/TaskTriggerOrder.sol:TaskTriggerOrder",
     [revAuctionDOCtoMOC_tasksRunner, flow.revertSleepTime, flow.taskOwner],
     { id: "TaskTriggerOrderRevAuctionDOCtoMOC_tasksRunner" },
   );
   const flowTriggerOrderTaskRevAuctionRBTCtoMOC_rocNodes = m.contract(
-    "@moc/shared/contracts/tasks/mocFlow/reverseAuction/TaskTriggerOrder.sol:TaskTriggerOrder",
+    "@moc/oracles/contracts/tasks/mocFlow/reverseAuction/TaskTriggerOrder.sol:TaskTriggerOrder",
     [revAuctionRBTCtoMOC_rocNodes, flow.revertSleepTime, flow.taskOwner],
     { id: "TaskTriggerOrderRevAuctionRBTCtoMOC_rocNodes" },
   );
   const flowTriggerOrderTaskRevAuctionRIFtoMOC_rocRewardsBuffer = m.contract(
-    "@moc/shared/contracts/tasks/mocFlow/reverseAuction/TaskTriggerOrder.sol:TaskTriggerOrder",
+    "@moc/oracles/contracts/tasks/mocFlow/reverseAuction/TaskTriggerOrder.sol:TaskTriggerOrder",
     [triggerOrderRevAuctions.revAuctionRIFtoMOC_rocRewardsBuffer, flow.revertSleepTime, flow.taskOwner],
     { id: "TaskTriggerOrderRevAuctionRIFtoMOC_rocRewardsBuffer" },
   );
   const flowTriggerOrderTaskRevAuctionMOCtoRIF_rifBucket = m.contract(
-    "@moc/shared/contracts/tasks/mocFlow/reverseAuction/TaskTriggerOrder.sol:TaskTriggerOrder",
+    "@moc/oracles/contracts/tasks/mocFlow/reverseAuction/TaskTriggerOrder.sol:TaskTriggerOrder",
     [triggerOrderRevAuctions.revAuctionMOCtoRIF_rifBucket, flow.revertSleepTime, flow.taskOwner],
     { id: "TaskTriggerOrderRevAuctionMOCtoRIF_rifBucket" },
   );
   const flowTriggerOrderTaskRevAuctionDOCtoMOC_rocRewardsBuffer = m.contract(
-    "@moc/shared/contracts/tasks/mocFlow/reverseAuction/TaskTriggerOrder.sol:TaskTriggerOrder",
+    "@moc/oracles/contracts/tasks/mocFlow/reverseAuction/TaskTriggerOrder.sol:TaskTriggerOrder",
     [triggerOrderRevAuctions.revAuctionDOCtoMOC_rocRewardsBuffer, flow.revertSleepTime, flow.taskOwner],
     { id: "TaskTriggerOrderRevAuctionDOCtoMOC_rocRewardsBuffer" },
   );
   const flowTriggerOrderTaskRevAuctionMOCtoDOC_docBucket = m.contract(
-    "@moc/shared/contracts/tasks/mocFlow/reverseAuction/TaskTriggerOrder.sol:TaskTriggerOrder",
+    "@moc/oracles/contracts/tasks/mocFlow/reverseAuction/TaskTriggerOrder.sol:TaskTriggerOrder",
     [triggerOrderRevAuctions.revAuctionMOCtoDOC_docBucket, flow.revertSleepTime, flow.taskOwner],
     { id: "TaskTriggerOrderRevAuctionMOCtoDOC_docBucket" },
   );
@@ -459,42 +459,42 @@ const AddTasksRunnerModule = buildModule("AddTasksRunner", m => {
   });
 
   const flowFlushTaskRocRewardsBuffer = m.contract(
-    "@moc/shared/contracts/tasks/mocFlow/buffer/TaskFlush.sol:TaskFlush",
+    "@moc/oracles/contracts/tasks/mocFlow/buffer/TaskFlush.sol:TaskFlush",
     [rocRewardsBuffer],
     {
       id: "TaskFlushRocRewardsBuffer",
     },
   );
   const flowLiquidateTaskRocRewardsBuffer = m.contract(
-    "@moc/shared/contracts/tasks/mocFlow/buffer/TaskLiquidate.sol:TaskLiquidate",
+    "@moc/oracles/contracts/tasks/mocFlow/buffer/TaskLiquidate.sol:TaskLiquidate",
     [rocRewardsBuffer],
     {
       id: "TaskLiquidateRocRewardsBuffer",
     },
   );
   const flowFlushTaskRifProRewardsBuffer = m.contract(
-    "@moc/shared/contracts/tasks/mocFlow/buffer/TaskFlush.sol:TaskFlush",
+    "@moc/oracles/contracts/tasks/mocFlow/buffer/TaskFlush.sol:TaskFlush",
     [bufferTasks.rifProRewardsBuffer],
     {
       id: "TaskFlushRifProRewardsBuffer",
     },
   );
   const flowLiquidateTaskRifProRewardsBuffer = m.contract(
-    "@moc/shared/contracts/tasks/mocFlow/buffer/TaskLiquidate.sol:TaskLiquidate",
+    "@moc/oracles/contracts/tasks/mocFlow/buffer/TaskLiquidate.sol:TaskLiquidate",
     [bufferTasks.rifProRewardsBuffer],
     {
       id: "TaskLiquidateRifProRewardsBuffer",
     },
   );
   const flowFlushTaskRocrRewardsBuffer = m.contract(
-    "@moc/shared/contracts/tasks/mocFlow/buffer/TaskFlush.sol:TaskFlush",
+    "@moc/oracles/contracts/tasks/mocFlow/buffer/TaskFlush.sol:TaskFlush",
     [bufferTasks.rocrRewardsBuffer],
     {
       id: "TaskFlushRocrRewardsBuffer",
     },
   );
   const flowLiquidateTaskRocrRewardsBuffer = m.contract(
-    "@moc/shared/contracts/tasks/mocFlow/buffer/TaskLiquidate.sol:TaskLiquidate",
+    "@moc/oracles/contracts/tasks/mocFlow/buffer/TaskLiquidate.sol:TaskLiquidate",
     [bufferTasks.rocrRewardsBuffer],
     {
       id: "TaskLiquidateRocrRewardsBuffer",
