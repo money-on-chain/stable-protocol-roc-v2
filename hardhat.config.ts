@@ -283,7 +283,7 @@ const config: HardhatUserConfig = {
     solidity: {
       ffi: true,
       fsPermissions: {
-        readDirectory: ["./out", "./test", "./ignition/deployments"],
+        readDirectory: ["./out", "./test", "./ignition"],
       },
     },
   },

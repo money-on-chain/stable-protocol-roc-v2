@@ -93,6 +93,8 @@
     "merge-params": "node scripts/changers/multiCollateralUpgrade/merge-ignition-params.mjs",
     "deploy-rskTestnet": "npx hardhat ignition deploy ./ignition/modules/changers/multiCollateralUpgrade/FullMultiCollateralUpgrade.ts --network rskTestnet --parameters ./ignition/modules/changers/multiCollateralUpgrade/parameters/full-rskTestnet.json",
     "deploy-rskMainnet": "npx hardhat ignition deploy ./ignition/modules/changers/multiCollateralUpgrade/FullMultiCollateralUpgrade.ts --network rskMainnet --parameters ./ignition/modules/changers/multiCollateralUpgrade/parameters/full-rskMainnet.json",
+    "deploy-pauser-split-rskTestnet": "npx hardhat ignition deploy ./ignition/modules/changers/pauserSplit/PauserSplitChanger.ts --network rskTestnet --parameters ./ignition/modules/changers/pauserSplit/parameters/rskTestnet.json",
+    "deploy-pauser-split-rskMainnet": "npx hardhat ignition deploy ./ignition/modules/changers/pauserSplit/PauserSplitChanger.ts --network rskMainnet --parameters ./ignition/modules/changers/pauserSplit/parameters/rskMainnet.json",
     "verify:rskTestnet": "npx hardhat ignition verify --network rskTestnet",
     "verify:rskMainnet": "npx hardhat ignition verify --network rskMainnet chain-30",
     "tenderly-verify:rskTestnet": "npx hardhat run scripts/tenderly-verify.ts --network rskTestnet"
