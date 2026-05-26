@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: UNLICENSED
-pragma solidity 0.8.20;
+pragma solidity 0.8.24;
 
-import { IChangeContract } from "moc-main/contracts/interfaces/IChangeContract.sol";
-import { MocVendors } from "moc-main/contracts/vendors/MocVendors.sol";
+import { IChangeContract } from "moc-main-latest/contracts/interfaces/IChangeContract.sol";
+import { MocVendors } from "moc-main-latest/contracts/vendors/MocVendors.sol";
 
 /**
   @title MocVendorsUpgradeChanger
