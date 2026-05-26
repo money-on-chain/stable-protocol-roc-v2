@@ -29,3 +29,4 @@ ignition/modules/changers/multiCollateralUpgrade/parameters/full-rskMainnet.json
 *.tsbuildinfo
 coverage.json
 npm-debug.log*
+.DS_Store
