@@ -3,20 +3,14 @@ import type { HttpNetworkAccountsUserConfig } from "hardhat/types/config";
 import { resolve, dirname } from "path";
 import { fileURLToPath } from "url";
 import { config as dotenvConfig } from "dotenv";
-import hardhatToolboxMochaEthers from "@nomicfoundation/hardhat-toolbox-mocha-ethers";
+import hardhatEthers from "@nomicfoundation/hardhat-ethers";
+import hardhatIgnition from "@nomicfoundation/hardhat-ignition";
+import hardhatIgnitionEthers from "@nomicfoundation/hardhat-ignition-ethers";
+import hardhatMocha from "@nomicfoundation/hardhat-mocha";
+import hardhatNetworkHelpers from "@nomicfoundation/hardhat-network-helpers";
+import hardhatTypechain from "@nomicfoundation/hardhat-typechain";
+import hardhatVerify from "@nomicfoundation/hardhat-verify";
 import hardhatContractSizer from "@solidstate/hardhat-contract-sizer";
-import "@nomicfoundation/hardhat-verify";
-
-// Note: @nomicfoundation/hardhat-toolbox-mocha-ethers includes:
-// - @nomicfoundation/hardhat-ethers
-// - @nomicfoundation/hardhat-ethers-chai-matchers
-// - @nomicfoundation/hardhat-ignition
-// - @nomicfoundation/hardhat-ignition-ethers
-// - @nomicfoundation/hardhat-keystore
-// - @nomicfoundation/hardhat-mocha
-// - @nomicfoundation/hardhat-network-helpers
-// - @nomicfoundation/hardhat-typechain
-// - @nomicfoundation/hardhat-verify
 
 // ESM equivalent of __dirname
 const __filename = fileURLToPath(import.meta.url);
@@ -120,7 +114,16 @@ const compilers = [
 ];
 
 const config: HardhatUserConfig = {
-  plugins: [hardhatToolboxMochaEthers, hardhatContractSizer],
+  plugins: [
+    hardhatEthers,
+    hardhatIgnition,
+    hardhatIgnitionEthers,
+    hardhatMocha,
+    hardhatNetworkHelpers,
+    hardhatTypechain,
+    hardhatVerify,
+    hardhatContractSizer,
+  ],
 
   solidity: {
     profiles: {
@@ -135,12 +138,12 @@ const config: HardhatUserConfig = {
     npmFilesToBuild: [
       "moc-main-latest/contracts/collateral/rc20/MocCARC20.sol",
       "moc-main-latest/contracts/core/MocCoreExpansion.sol",
-      "moc-main-latest/contracts/mocks/PriceProviderMock.sol",
-      "moc-main-latest/contracts/auxiliary/CommissionSplitterRC20.sol",
-      "moc-main-latest/contracts/governance/InterimGovernor.sol",
       "moc-main-latest/contracts/tokens/MocRC20.sol",
       "moc-main-latest/contracts/queue/MocQueue.sol",
       "moc-main-latest/contracts/multiCollateral/MocMultiCollateralGuard.sol",
+      "moc-main-latest/contracts/mocks/PriceProviderMock.sol",
+      "moc-main-latest/contracts/auxiliary/CommissionSplitterRC20.sol",
+      "moc-main-latest/contracts/governance/InterimGovernor.sol",
 
       "moc-main-latest/contracts/auxiliary/MocReverseAuction.sol",
       "moc-main-latest/contracts/multiCollateral/swapper/MocSwapperV3.sol",
@@ -151,8 +154,20 @@ const config: HardhatUserConfig = {
       "@moc/price-oracle-interfaces/contracts/PriceProviderDocRbtc.sol",
       "@moc/price-oracle-interfaces/contracts/PriceProviderDocUsd.sol",
       "@moc/price-oracle-interfaces/contracts/PriceProviderDiv.sol",
-
+      "@moc/oracles/contracts/tasks/v3/TaskExecuteQueueV3.sol",
+      "@moc/oracles/contracts/tasks/v3/TaskUpdateEmaV3.sol",
+      "@moc/oracles/contracts/tasks/v3/TaskExecuteLiquidationV3.sol",
+      "@moc/oracles/contracts/tasks/v3/TaskExecuteMicroLiquidationV3.sol",
+      "@moc/oracles/contracts/tasks/v3/TaskInterestPaymentV3.sol",
+      "@moc/oracles/contracts/tasks/v3/TaskSettlementV3.sol",
+      "@moc/oracles/contracts/tasks/v2v3/TaskRefreshACBalanceV2V3.sol",
+      "@moc/oracles/contracts/tasks/mocFlow/commissionSplitter/TaskSplit.sol",
+      "@moc/oracles/contracts/tasks/mocFlow/reverseAuction/TaskTriggerOrder.sol",
+      "@moc/oracles/contracts/tasks/mocFlow/buffer/TaskFlush.sol",
+      "@moc/oracles/contracts/tasks/mocFlow/buffer/TaskLiquidate.sol",
+      "@moc/oracles/contracts/BasefeeProvider.sol",
       "@moc/flow/contracts/BufferToken.sol",
+      "@moc/oracles/contracts/TasksRunner.sol",
 
       "@openzeppelin/contracts/proxy/ERC1967/ERC1967Proxy.sol",
     ],
@@ -248,7 +263,7 @@ const config: HardhatUserConfig = {
       type: "edr-simulated",
       forking: {
         url: "https://public-node.rsk.co",
-        blockNumber: 8524500,
+        blockNumber: 8525307,
       },
       chainId: 30,
       accounts: {

@@ -78,9 +78,13 @@ export function deployMocSwappers(m: IgnitionModuleBuilder, params: MocSwappersP
   });
 
   // Deploy one shared MocSwapperV3MultiHop for all pairs
-  const mocSwapperV3MultihopImpl = m.contract("MocSwapperV3MultiHop", [], {
-    id: `${prefix}MocSwapperV3MultihopImplementation`,
-  });
+  const mocSwapperV3MultihopImpl = m.contract(
+    "moc-main-latest/contracts/multiCollateral/swapper/MocSwapperV3MultiHop.sol:MocSwapperV3MultiHop",
+    [],
+    {
+      id: `${prefix}MocSwapperV3MultihopImplementation`,
+    },
+  );
 
   const mocSwapperV3MultihopInitData = m.encodeFunctionCall(mocSwapperV3MultihopImpl, "initialize", [
     interimGovernor,
@@ -97,9 +101,13 @@ export function deployMocSwappers(m: IgnitionModuleBuilder, params: MocSwappersP
     },
   );
 
-  const mocSwapperV3Multihop = m.contractAt("MocSwapperV3MultiHop", mocSwapperV3MultihopProxy, {
-    id: `${prefix}MocSwapperV3Multihop`,
-  });
+  const mocSwapperV3Multihop = m.contractAt(
+    "moc-main-latest/contracts/multiCollateral/swapper/MocSwapperV3MultiHop.sol:MocSwapperV3MultiHop",
+    mocSwapperV3MultihopProxy,
+    {
+      id: `${prefix}MocSwapperV3Multihop`,
+    },
+  );
 
   // Deploy DataProvider instances for max amount to swap (owner = pauserAddress)
   const docToMocMaxAmountProvider = m.contract("DataProvider", [params.pauserAddress, params.maxDocToMocToSwap], {

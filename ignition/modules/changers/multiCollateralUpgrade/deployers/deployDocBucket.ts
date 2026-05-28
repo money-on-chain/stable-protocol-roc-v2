@@ -160,12 +160,14 @@ export function deployDocBucket(m: IgnitionModuleBuilder, params: DocBucketParam
   });
 
   // Deploy MocCoreExpansion
-  const mocCoreExpansion = m.contract("MocCoreExpansion", [], {
+  const mocCoreExpansion = m.contract("moc-main-latest/contracts/core/MocCoreExpansion.sol:MocCoreExpansion", [], {
     id: `${prefix}DocBucketCoreExpansion`,
   });
 
   // Deploy MocQueue
-  const mocQueueImpl = m.contract("MocQueue", [], { id: `${prefix}DocBucketQueueImplementation` });
+  const mocQueueImpl = m.contract("moc-main-latest/contracts/queue/MocQueue.sol:MocQueue", [], {
+    id: `${prefix}DocBucketQueueImplementation`,
+  });
 
   const execCostParams = {
     tcMintExecCost: params.tcMintExecCost,
@@ -177,6 +179,7 @@ export function deployDocBucket(m: IgnitionModuleBuilder, params: DocBucketParam
     swapTPforTPExecCost: params.swapTPforTPExecCost,
     swapTPforTCExecCost: params.swapTPforTCExecCost,
     swapTCforTPExecCost: params.swapTCforTPExecCost,
+    priceUpdatesCost: 0n,
   };
 
   const queueInitData = m.encodeFunctionCall(mocQueueImpl, "initialize", [
