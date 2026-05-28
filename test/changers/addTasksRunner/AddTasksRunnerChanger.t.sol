@@ -55,15 +55,13 @@ contract AddTasksRunnerChangerForkTests is BaseFork {
         0x0428ec087e0cce276a71d1caf1afe4da32a2d48b3ebe579040612b5bd262ff73;
     address private constant ORACLE_OWNER_1 = 0x4e9e0e64ff95f9a629D1F756119fA636F30BbACD;
     address private constant ORACLE_OWNER_2 = 0xd6fdad4e02477A05A492F1AC51cfE0883C470022;
-    address private constant ORACLE_OWNER_3 = 0x711a1AB9C5390B381D3E54F17387Aa3A221F1F25;
+    address private constant ORACLE_OWNER_3 = 0xC9acAf0Ab55cADC285F109E20d9Ba5cCa81d02D6;
 
     function setUp() public override {
         super.setUp();
     }
 
-    function test_ExecuteBothChangersInSequence() public {
-        _executeMultiCollateralChanger();
-
+    function test_ExecuteAddTasksRunnerChanger() public {
         vm.expectCall(
             address(addTasksRunnerChanger.oracleManager()),
             abi.encodeWithSignature(
@@ -137,7 +135,6 @@ contract AddTasksRunnerChangerForkTests is BaseFork {
     }
 
     function test_TasksRunnerContainsAllExpectedTasks() public {
-        _executeMultiCollateralChanger();
         _executeAddTasksRunnerChanger();
 
         string memory json = vm.readFile(TASKS_DEPLOYED_ADDRESSES_PATH);
@@ -185,7 +182,6 @@ contract AddTasksRunnerChangerForkTests is BaseFork {
     }
 
     function test_BuffersOutputsAreSet() public {
-        _executeMultiCollateralChanger();
         _executeAddTasksRunnerChanger();
 
         IBufferTokenView rocrBuffer = IBufferTokenView(addTasksRunnerChanger.rocrRewardsBuffer());
@@ -237,7 +233,6 @@ contract AddTasksRunnerChangerForkTests is BaseFork {
     }
 
     function test_RegistryEntriesAreRemoved() public {
-        _executeMultiCollateralChanger();
         _executeAddTasksRunnerChanger();
 
         IGovernedRegistryView registry = IGovernedRegistryView(address(addTasksRunnerChanger.governedRegistry()));
@@ -284,7 +279,6 @@ contract AddTasksRunnerChangerForkTests is BaseFork {
     }
 
     function test_SubscribedOraclesCanRunTasks() public {
-        _executeMultiCollateralChanger();
         _executeAddTasksRunnerChanger();
 
         ITasksRunnerView tasksRunner = ITasksRunnerView(addTasksRunnerChanger.tasksRunner());

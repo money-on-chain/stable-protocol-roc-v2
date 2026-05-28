@@ -5,9 +5,9 @@
     "core.mocTokenAddress": "0x9AC7fE28967B30E3A4e6e03286d715b42B453D10",
     "core.oracleManager": "0x64A5634b2d1f17DC7C4765aAcD222f8e9Eb7712C",
     "core.registry": "0xCD101a2414256DA8F8E25d7b483b3cf639a71683",
-    "core.mocMultiCollateralGuard": "0x0000000000000000000000000000000000000000",
+    "core.mocMultiCollateralGuard": "0x0237Ad1f0831b479a344E56646BC48B0885cF46F",
     "core.bucket0": "0xA27024Ed70035E46dba712609fc2Afa1c97aA36A",
-    "core.bucket1": "0x0000000000000000000000000000000000000000",
+    "core.bucket1": "0x697535055Aa7AfD2C280523C7B062b1F05284661",
     "core.refreshAcBalanceThreshold": "100000000000000000000",
     "core.mocRewardsBuffer": "0xf09006E812BE98c7B18c877Af5C126629acB6cAb",
     "tasksRunner.minOraclesPerRound": "1",
@@ -30,7 +30,7 @@
     "rifCommissionSplitterV3.feeToken": "0x9AC7fE28967B30E3A4e6e03286d715b42B453D10",
     "rifCommissionSplitterV3.tokenBalanceThreshold": "1000000000000000000000",
     "rifCommissionSplitterV3.feeTokenBalanceThreshold": "1000000000000000000000",
-    "docCommissionSplitterV2.commissionSplitter": "0x0000000000000000000000000000000000000000",
+    "docCommissionSplitterV2.commissionSplitter": "0xfc5E1B8468327B60cA1C6e32672249De9a10FfDc",
     "docCommissionSplitterV2.token": "0xe700691dA7b9851F2F35f8b8182c69c53CcaD9Db",
     "docCommissionSplitterV2.feeToken": "0x9AC7fE28967B30E3A4e6e03286d715b42B453D10",
     "docCommissionSplitterV2.tokenBalanceThreshold": "100000000000000000000",
@@ -51,7 +51,7 @@
     "reverseAuctions.revAuctionDOCtoMOC_tasksRunner.tokenIn": "0xe700691dA7b9851F2F35f8b8182c69c53CcaD9Db",
     "reverseAuctions.revAuctionDOCtoMOC_tasksRunner.tokenOut": "0x9AC7fE28967B30E3A4e6e03286d715b42B453D10",
     "reverseAuctions.revAuctionDOCtoMOC_tasksRunner.orderThreshold": "1000000000000000000",
-    "reverseAuctions.revAuctionDOCtoMOC_tasksRunner.priceProvider": "0x0000000000000000000000000000000000000000",
+    "reverseAuctions.revAuctionDOCtoMOC_tasksRunner.priceProvider": "0x40b03AF84c40f8bE049F447a0D268447925F7b0C",
     "reverseAuctions.revAuctionDOCtoMOC_tasksRunner.slippage": "30000000000000000",
     "reverseAuctions.revAuctionRBTCtoMOC_rocNodes.mocSwapper": "0x60A8e0Ea47450f8FA74b705b7c0d60Ff22fD5e3F",
     "reverseAuctions.revAuctionRBTCtoMOC_rocNodes.tokenIn": "0x0000000000000000000000000000000000000000",
@@ -70,9 +70,9 @@
     "rocRewardsBuffer.mocRewardsBufferOutputThreshold": "0",
     "triggerOrderRevAuctions.revAuctionRIFtoMOC_rocRewardsBuffer": "0x323f6117A256E8f697Ac8d2816eb71e9B7134809",
     "triggerOrderRevAuctions.revAuctionMOCtoRIF_rifBucket": "0xd3D1aFc638cEF2C55D2Ee33e0C355972f11Be065",
-    "triggerOrderRevAuctions.revAuctionDOCtoMOC_rocRewardsBuffer": "0x0000000000000000000000000000000000000000",
-    "triggerOrderRevAuctions.revAuctionMOCtoDOC_docBucket": "0x0000000000000000000000000000000000000000",
+    "triggerOrderRevAuctions.revAuctionDOCtoMOC_rocRewardsBuffer": "0x883e3433c236Abd3c301FFc9B59EA478C0C21c9a",
+    "triggerOrderRevAuctions.revAuctionMOCtoDOC_docBucket": "0x3EB689a01c4e8ccaC7c72097104FF37Ccf907bBE",
     "bufferTasks.rifProRewardsBuffer": "0x09A84d61c1A10f1D5fb3267DFb00D16ca0DaCC30",
-    "bufferTasks.rocrRewardsBuffer": "0x0000000000000000000000000000000000000000"
+    "bufferTasks.rocrRewardsBuffer": "0x9Ea22Ca83dD42A4b8E4C797bBcd6dFE4413EE8F8"
   }
 }

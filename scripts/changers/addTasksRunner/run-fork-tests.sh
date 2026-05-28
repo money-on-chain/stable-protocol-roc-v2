@@ -1,13 +1,12 @@
 #!/bin/bash
 # =============================================================================
-# Script to run fork tests with both changers deployed via Ignition
+# Script to run AddTasksRunner fork tests
 #
 # This script:
 # 1. Starts a Hardhat node forking RSK mainnet (in-memory EDR)
-# 2. Deploys FullMultiCollateralUpgrade (includes MultiCollateralUpgradeChanger)
-# 3. Deploys AddTasksRunner (includes AddTasksRunnerChanger)
-# 4. Exports merged deployed addresses from both deployments
-# 5. Runs Solidity tests that fork from the running Hardhat node
+# 2. Deploys AddTasksRunner (includes AddTasksRunnerChanger)
+# 3. Exports merged deployed addresses
+# 4. Runs Solidity tests that fork from the running Hardhat node
 #
 # Usage:
 #   ./scripts/changers/addTasksRunner/run-fork-tests.sh [network]
@@ -22,9 +21,12 @@ set -e
 NETWORK="${1:-rskMainnet}"
 NODE_PORT=8545
 NODE_PID=""
-MC_DEPLOYMENT_ID="chain-test-mc"
+MC_DEPLOYMENT_ID="${MC_DEPLOYMENT_ID:-chain-30}"
 ADD_TASKS_DEPLOYMENT_ID="chain-test-add-tasks"
 DEPLOYED_ADDRESSES_FILE="test/changers/addTasksRunner/fixtures/deployed-addresses.json"
+FORK_BLOCK_NUMBER="${FORK_BLOCK_NUMBER:-}"
+FORK_BLOCK_NUMBER="8886244"
+FORK_RPC_URL="${FORK_RPC_URL:-${RSK_MAINNET_RPC_URL:-https://public-node.rsk.co}}"
 
 # Colors for output
 RED='\033[0;31m'
@@ -71,10 +73,13 @@ check_requirements() {
 }
 
 start_node() {
-    log_info "Starting Hardhat node forking RSK mainnet (network: rskMainnetFork)..."
+    log_info "Starting Hardhat node forking RSK mainnet..."
+    log_info "Fork RPC URL: $FORK_RPC_URL"
 
     lsof -ti:$NODE_PORT | xargs kill -9 2>/dev/null || true
-    npx hardhat node --network rskMainnetFork --port $NODE_PORT &> /tmp/hardhat-node.log &
+
+    log_info "Using fork block number: $FORK_BLOCK_NUMBER"
+    npx hardhat node --fork "$FORK_RPC_URL" --fork-block-number "$FORK_BLOCK_NUMBER" --chain-id 30 --port $NODE_PORT &> /tmp/hardhat-node.log &
 
     NODE_PID=$!
 
@@ -94,19 +99,6 @@ start_node() {
     exit 1
 }
 
-generate_mc_params() {
-    log_info "Generating merged MultiCollateral params for $NETWORK..."
-
-    node scripts/changers/multiCollateralUpgrade/merge-ignition-params.mjs "$NETWORK"
-
-    if [ ! -f "ignition/modules/changers/multiCollateralUpgrade/parameters/full-$NETWORK.json" ]; then
-        log_error "Failed to generate MultiCollateral parameters file"
-        exit 1
-    fi
-
-    log_success "Parameters generated: ignition/modules/changers/multiCollateralUpgrade/parameters/full-$NETWORK.json"
-}
-
 validate_add_tasks_params() {
     local add_tasks_params="ignition/modules/changers/addTasksRunner/parameters/$NETWORK.json"
     if [ ! -f "$add_tasks_params" ]; then
@@ -117,31 +109,15 @@ validate_add_tasks_params() {
     log_success "Using AddTasksRunner parameters: $add_tasks_params"
 }
 
-generate_add_tasks_params() {
-    log_info "Generating merged AddTasksRunner params for $NETWORK using deployment $MC_DEPLOYMENT_ID..."
-
-    node scripts/changers/addTasksRunner/merge-ignition-params.mjs "$NETWORK" "$MC_DEPLOYMENT_ID"
-
-    if [ ! -f "ignition/modules/changers/addTasksRunner/parameters/full-$NETWORK.json" ]; then
-        log_error "Failed to generate AddTasksRunner parameters file"
+validate_mc_deployment_addresses() {
+    MC_FILE="ignition/deployments/$MC_DEPLOYMENT_ID/deployed_addresses.json"
+    if [ ! -f "$MC_FILE" ]; then
+        log_error "Missing MultiCollateral deployed addresses file: $MC_FILE"
+        log_error "Set MC_DEPLOYMENT_ID to an existing deployment containing MultiCollateral addresses."
         exit 1
     fi
 
-    log_success "Parameters generated: ignition/modules/changers/addTasksRunner/parameters/full-$NETWORK.json"
-}
-
-deploy_multi_collateral() {
-    log_info "Deploying FullMultiCollateralUpgrade via Ignition..."
-
-    rm -rf "ignition/deployments/$MC_DEPLOYMENT_ID"
-
-    echo "y" | npx hardhat ignition deploy \
-        ignition/modules/changers/multiCollateralUpgrade/FullMultiCollateralUpgrade.ts \
-        --parameters "ignition/modules/changers/multiCollateralUpgrade/parameters/full-$NETWORK.json" \
-        --network localhost \
-        --deployment-id "$MC_DEPLOYMENT_ID"
-
-    log_success "FullMultiCollateralUpgrade deployed"
+    log_success "Using MultiCollateral deployed addresses: $MC_FILE"
 }
 
 deploy_add_tasks_runner() {
@@ -151,7 +127,7 @@ deploy_add_tasks_runner() {
 
     echo "y" | npx hardhat ignition deploy \
         ignition/modules/changers/addTasksRunner/AddTasksRunner.ts \
-        --parameters "ignition/modules/changers/addTasksRunner/parameters/full-$NETWORK.json" \
+        --parameters "ignition/modules/changers/addTasksRunner/parameters/$NETWORK.json" \
         --network localhost \
         --deployment-id "$ADD_TASKS_DEPLOYMENT_ID"
 
@@ -210,22 +186,20 @@ run_forge_tests() {
 
     log_success "Tests completed"
 
-    rm -rf "ignition/deployments/$MC_DEPLOYMENT_ID"
     rm -rf "ignition/deployments/$ADD_TASKS_DEPLOYMENT_ID"
 }
 
 main() {
     log_info "=========================================="
-    log_info "Fork Tests with Both Changers"
+    log_info "Fork Tests for AddTasksRunner"
     log_info "Network: $NETWORK"
+    log_info "MultiCollateral deployment id: $MC_DEPLOYMENT_ID"
     log_info "=========================================="
 
     check_requirements
+    validate_mc_deployment_addresses
     start_node
-    generate_mc_params
     validate_add_tasks_params
-    deploy_multi_collateral
-    generate_add_tasks_params
     deploy_add_tasks_runner
     export_addresses
     run_forge_tests

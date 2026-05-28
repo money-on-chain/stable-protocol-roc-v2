@@ -276,7 +276,6 @@ const config: HardhatUserConfig = {
       type: "http",
       url: "http://localhost:8545",
       chainId: chainIds.rskMainnet,
-      accounts,
       gas: 30000000,
     },
   },

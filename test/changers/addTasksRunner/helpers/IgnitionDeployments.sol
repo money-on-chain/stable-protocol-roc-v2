@@ -5,8 +5,10 @@ import { Test } from "forge-std/Test.sol";
 
 abstract contract IgnitionDeployments is Test {
     string constant DEPLOYED_ADDRESSES_PATH = "test/changers/addTasksRunner/fixtures/deployed-addresses.json";
+    string constant MC_DEPLOYED_ADDRESSES_PATH = "ignition/deployments/chain-30/deployed_addresses.json";
 
     mapping(string => address) public deployedAddresses;
+    mapping(string => address) public multiCollateralDeployedAddresses;
     bool public addressesLoaded;
 
     function _loadDeployedAddresses() internal {
@@ -30,6 +32,14 @@ abstract contract IgnitionDeployments is Test {
         _tryParseAddress(json, "AddTasksRunner_AddTasksRunnerChanger");
         _tryParseAddress(json, "AddTasksRunnerChanger");
 
+        string memory mcJson = vm.readFile(MC_DEPLOYED_ADDRESSES_PATH);
+        bytes memory mcJsonBytes = bytes(mcJson);
+        require(mcJsonBytes.length > 0, "MultiCollateral deployed addresses file is empty");
+
+        _tryParseMultiCollateralAddress(mcJson, "MultiCollateral_MocQueueProxy");
+        _tryParseMultiCollateralAddress(mcJson, "MultiCollateral_MocMultiCollateralGuardProxy");
+        _tryParseMultiCollateralAddress(mcJson, "DocBucket_DocBucketProxy");
+
         addressesLoaded = true;
     }
 
@@ -44,5 +54,18 @@ abstract contract IgnitionDeployments is Test {
 
     function getDeployedAddress(string memory contractId) public view returns (address) {
         return deployedAddresses[contractId];
+    }
+
+    function _tryParseMultiCollateralAddress(string memory mcJson, string memory key) internal {
+        string memory selector = string.concat(".FullMultiCollateralUpgrade#", key);
+        try vm.parseJsonAddress(mcJson, selector) returns (address addr) {
+            if (addr != address(0)) {
+                multiCollateralDeployedAddresses[key] = addr;
+            }
+        } catch {}
+    }
+
+    function getMultiCollateralDeployedAddress(string memory contractId) public view returns (address) {
+        return multiCollateralDeployedAddresses[contractId];
     }
 }
