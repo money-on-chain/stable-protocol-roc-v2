@@ -9,7 +9,7 @@
   "dependencies": {
     "moc-main-latest": "git+ssh://git@github.com/money-on-chain/main-sc-protocol-v2#v3.0.0",
     "@moc/price-oracle-interfaces": "git+ssh://git@github.com/money-on-chain/price_oracle_interfaces.git#v0.0.2",
-    "@moc/oracles": "git+ssh://git@github.com/money-on-chain/OMoC-Decentralized-Oracle.git#v3.0.0",
+    "@moc/oracles": "git+ssh://git@github.com/money-on-chain/OMoC-Decentralized-Oracle.git#v3.0.4",
     "@moc/flow": "git+ssh://git@github.com/money-on-chain/MoC-Flow.git#v3.0.0",
     "solc": "0.8.24"
   },

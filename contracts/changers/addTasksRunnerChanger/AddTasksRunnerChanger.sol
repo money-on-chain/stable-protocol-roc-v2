@@ -15,12 +15,6 @@ interface IReverseAuction {
     function setOutputAccount(address outputAccount_) external;
 }
 
-interface IBufferToken {
-    function getOutput(uint256 idx) external view returns (address, uint256, uint256, uint256);
-    function removeOutput(uint256 idx) external;
-    function addOutput(address payable output, uint256 split, uint256 threshold) external;
-}
-
 interface IGovernedRegistry {
     function removeAddressArrayElement(bytes32 _key, address value) external;
 }
@@ -42,11 +36,7 @@ interface IMocMultiCollateralGuardPriceUpdates {
  *      6. Set price updates fee recipient (RevAuction RBTCtoMOC -> RocNodes)
  *      7. Register TasksRunner in the OracleManager as a CoinPair
  *      8. Set newly deployed reverse auctions output to TasksRunner
- *      9. Set current RevAuction RIFtoMOC output to RocRewardsBuffer
- *      10. Replace RocrRewardsBuffer output 0 (from mocRewardsBuffer to RocRewardsBuffer)
- *      11. Set RifProRewardsBuffer output 0 (from mocRewardsBuffer to RocRewardsBuffer)
- *      12. Set current RevAuction DOCtoMOC output to RocRewardsBuffer
- *      13. Remove old reverse auctions and buffers from governed registry
+ *      9. Remove old reverse auctions and buffers from governed registry
  */
 contract AddTasksRunnerChanger is IChangeContract {
     bytes32 private constant MOC_FLOW_BUFFERS = 0x4cb845794d5472a713e41e8e4ddc566dab8d695f1dc6c8edd43dad9d55112a22;
@@ -69,12 +59,16 @@ contract AddTasksRunnerChanger is IChangeContract {
     address public immutable revAuctionMOCtoRIF_rifBucket;
     address public immutable revAuctionDOCtoMOC_rocRewardsBuffer;
     address public immutable revAuctionMOCtoDOC_docBucket;
+    address public immutable revAuctionRBTCtoMOC_mocRewardsBuffer;
+    address public immutable revAuctionMOCtoRBTC_mocV1;
     address public immutable rifProRewardsBuffer_rocRewardsBuffer;
     address public immutable rocrRewardsBuffer;
+    address public immutable bitProRewardsBuffer;
+    address public immutable bproRewardsBuffer;
+    address public immutable mocRewardsBuffer;
     IOracleManager public immutable oracleManager;
     address public immutable tasksRunner;
     bytes32 public immutable tasksRunnerCoinPair;
-    address public immutable rocRewardsBuffer;
     IGovernedRegistry public immutable governedRegistry;
 
     /**
@@ -91,13 +85,17 @@ contract AddTasksRunnerChanger is IChangeContract {
     @param revAuctionRIFtoMOC_tasksRunner_ Address for bucket 0 rebalance execution fee recipient (TasksRunner)
     @param revAuctionDOCtoMOC_tasksRunner_ Address for bucket 1 rebalance execution fee recipient (TasksRunner)
     @param revAuctionRBTCtoMOC_rocNodes_ Address for price updates fee recipient (RocNodes)
-    @param revAuctionRIFtoMOC_rocRewardsBuffer_ Address for RevAuction RIFtoMOC output recipient (RocRewardsBuffer)
+    @param revAuctionRIFtoMOC_rocRewardsBuffer_ Address for RevAuction RIFtoMOC output recipient
     @param revAuctionMOCtoRIF_rifBucket_ Address of current RevAuction MOCtoRIF (registered in flow reverse auctions)
-    @param revAuctionDOCtoMOC_rocRewardsBuffer_ Address for RevAuction DOCtoMOC output recipient (RocRewardsBuffer)
+    @param revAuctionDOCtoMOC_rocRewardsBuffer_ Address for RevAuction DOCtoMOC output recipient
     @param revAuctionMOCtoDOC_docBucket_ Address of current RevAuction MOCtoDOC (registered in flow reverse auctions)
-    @param rifProRewardsBuffer_rocRewardsBuffer_ Address for RifProRewardsBuffer output recipient (RocRewardsBuffer)
+    @param revAuctionRBTCtoMOC_mocRewardsBuffer_ Address of current RevAuction RBTCtoMOC for MocRewardsBuffer
+    @param revAuctionMOCtoRBTC_mocV1_ Address of current RevAuction MOCtoRBTC for mocV1
+    @param rifProRewardsBuffer_rocRewardsBuffer_ Address for RifProRewardsBuffer output recipient
     @param rocrRewardsBuffer_ Address of RocrRewardsBuffer (registered in flow buffers)
-    @param rocRewardsBuffer_ Address of RocRewardsBuffer
+    @param bitProRewardsBuffer_ Address of BitProRewardsBuffer (registered in flow buffers)
+    @param bproRewardsBuffer_ Address of BproRewardsBuffer (registered in flow buffers)
+    @param mocRewardsBuffer_ Address of MocRewardsBuffer (registered in flow buffers)
     @param governedRegistry_ Governed registry where old flow addresses are removed
     @param oracleManager_ OracleManager where TasksRunner coin pair will be registered
     @param tasksRunner_ TasksRunner contract to register as coin pair address
@@ -120,9 +118,13 @@ contract AddTasksRunnerChanger is IChangeContract {
         address revAuctionMOCtoRIF_rifBucket_,
         address revAuctionDOCtoMOC_rocRewardsBuffer_,
         address revAuctionMOCtoDOC_docBucket_,
+        address revAuctionRBTCtoMOC_mocRewardsBuffer_,
+        address revAuctionMOCtoRBTC_mocV1_,
         address rifProRewardsBuffer_rocRewardsBuffer_,
         address rocrRewardsBuffer_,
-        address rocRewardsBuffer_,
+        address bitProRewardsBuffer_,
+        address bproRewardsBuffer_,
+        address mocRewardsBuffer_,
         IGovernedRegistry governedRegistry_,
         IOracleManager oracleManager_,
         address tasksRunner_,
@@ -144,9 +146,13 @@ contract AddTasksRunnerChanger is IChangeContract {
         revAuctionMOCtoRIF_rifBucket = revAuctionMOCtoRIF_rifBucket_;
         revAuctionDOCtoMOC_rocRewardsBuffer = revAuctionDOCtoMOC_rocRewardsBuffer_;
         revAuctionMOCtoDOC_docBucket = revAuctionMOCtoDOC_docBucket_;
+        revAuctionRBTCtoMOC_mocRewardsBuffer = revAuctionRBTCtoMOC_mocRewardsBuffer_;
+        revAuctionMOCtoRBTC_mocV1 = revAuctionMOCtoRBTC_mocV1_;
         rifProRewardsBuffer_rocRewardsBuffer = rifProRewardsBuffer_rocRewardsBuffer_;
         rocrRewardsBuffer = rocrRewardsBuffer_;
-        rocRewardsBuffer = rocRewardsBuffer_;
+        bitProRewardsBuffer = bitProRewardsBuffer_;
+        bproRewardsBuffer = bproRewardsBuffer_;
+        mocRewardsBuffer = mocRewardsBuffer_;
         governedRegistry = governedRegistry_;
         oracleManager = oracleManager_;
         tasksRunner = tasksRunner_;
@@ -196,29 +202,18 @@ contract AddTasksRunnerChanger is IChangeContract {
         IReverseAuction(revAuctionRIFtoMOC_tasksRunner).setOutputAccount(tasksRunner);
         IReverseAuction(revAuctionDOCtoMOC_tasksRunner).setOutputAccount(tasksRunner);
 
-        // 9) Set current RevAuction RIFtoMOC output to RocRewardsBuffer
-        IReverseAuction(revAuctionRIFtoMOC_rocRewardsBuffer).setOutputAccount(rocRewardsBuffer);
-
-        // 10) Replace RocrRewardsBuffer output 0 (from mocRewardsBuffer to RocRewardsBuffer)
-        (, uint256 rocrSplit, , uint256 rocrThreshold) = IBufferToken(rocrRewardsBuffer).getOutput(0);
-        IBufferToken(rocrRewardsBuffer).removeOutput(0);
-        IBufferToken(rocrRewardsBuffer).addOutput(payable(rocRewardsBuffer), rocrSplit, rocrThreshold);
-
-        // 11) Set RifProRewardsBuffer output 0 (from mocRewardsBuffer to RocRewardsBuffer)
-        (, uint256 split, , uint256 threshold) = IBufferToken(rifProRewardsBuffer_rocRewardsBuffer).getOutput(0);
-        IBufferToken(rifProRewardsBuffer_rocRewardsBuffer).removeOutput(0);
-        IBufferToken(rifProRewardsBuffer_rocRewardsBuffer).addOutput(payable(rocRewardsBuffer), split, threshold);
-
-        // 12) Set current RevAuction DOCtoMOC output to RocRewardsBuffer
-        IReverseAuction(revAuctionDOCtoMOC_rocRewardsBuffer).setOutputAccount(rocRewardsBuffer);
-
-        // 13) Remove reverse auctions and buffer from governed registry
+        // 9) Remove reverse auctions and buffers from governed registry
         governedRegistry.removeAddressArrayElement(MOC_FLOW_REVERSE_AUCTIONS, revAuctionRIFtoMOC_rocRewardsBuffer);
         governedRegistry.removeAddressArrayElement(MOC_FLOW_BUFFERS, rifProRewardsBuffer_rocRewardsBuffer);
         governedRegistry.removeAddressArrayElement(MOC_FLOW_REVERSE_AUCTIONS, revAuctionMOCtoRIF_rifBucket);
         governedRegistry.removeAddressArrayElement(MOC_FLOW_REVERSE_AUCTIONS, revAuctionDOCtoMOC_rocRewardsBuffer);
         governedRegistry.removeAddressArrayElement(MOC_FLOW_REVERSE_AUCTIONS, revAuctionMOCtoDOC_docBucket);
+        governedRegistry.removeAddressArrayElement(MOC_FLOW_REVERSE_AUCTIONS, revAuctionRBTCtoMOC_mocRewardsBuffer);
+        governedRegistry.removeAddressArrayElement(MOC_FLOW_REVERSE_AUCTIONS, revAuctionMOCtoRBTC_mocV1);
         governedRegistry.removeAddressArrayElement(MOC_FLOW_BUFFERS, rocrRewardsBuffer);
+        governedRegistry.removeAddressArrayElement(MOC_FLOW_BUFFERS, bitProRewardsBuffer);
+        governedRegistry.removeAddressArrayElement(MOC_FLOW_BUFFERS, bproRewardsBuffer);
+        governedRegistry.removeAddressArrayElement(MOC_FLOW_BUFFERS, mocRewardsBuffer);
     }
 
     function _buildBucketParams(
