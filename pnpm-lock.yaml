@@ -145,9 +145,6 @@ importers:
       husky:
         specifier: 9.1.7
         version: 9.1.7
-      moc-main-stable:
-        specifier: github:money-on-chain/main-sc-protocol-v2#v1.0.7-rc
-        version: main-sc-protocol-v2@git+https://git@github.com:money-on-chain/main-sc-protocol-v2.git#18aaf09628662e4db45440b5b0b1cdf7e7d0b054
       prettier:
         specifier: 3.8.1
         version: 3.8.1
@@ -198,8 +195,8 @@ packages:
   '@aws-crypto/util@5.2.0':
     resolution: {integrity: sha512-4RkU9EsI6ZpBve5fseQlGNUWKMa1RLPQ1dnjnQoe07ldfIzcsGb5hC5W0Dm7u423KWzawlrpbjXBrXCEv9zazQ==}
 
-  '@aws-sdk/client-lambda@3.1056.0':
-    resolution: {integrity: sha512-ReG6Pj7yZKyh+wD2uG+6PP5LcAet2hArf7rLNokoUZCRxEBf0kbRtvfCSAMAoXbTXLKhIwbH6/6E1FbJDxDmLQ==}
+  '@aws-sdk/client-lambda@3.1057.0':
+    resolution: {integrity: sha512-JoaE3QNvPqOSHJtcAFfza7BRoGUNerIKlSVhsKCBsa1i54Vto1YWUS7itkUELK2rpvS8kNZMPliPxDdi/oV5dw==}
     engines: {node: '>=20.0.0'}
 
   '@aws-sdk/core@3.974.15':
@@ -214,16 +211,16 @@ packages:
     resolution: {integrity: sha512-TT76RN1NkI9WoyZqCNxOw6/WBMF7pYOTJcXbMokNFU+euSG40Kaf/t/FhDACVZWP+43wEM6ZynIPIkzS1wR1iA==}
     engines: {node: '>=20.0.0'}
 
-  '@aws-sdk/credential-provider-ini@3.972.45':
-    resolution: {integrity: sha512-sJe5ZWibO4s7RWjFQ8Zol76KxoJcIYyEZH1/wxQSBMSIAAxzaJ8cS/ITAaIHWUQvDKQdt18+cJAHKWB7n1Jmrg==}
+  '@aws-sdk/credential-provider-ini@3.972.46':
+    resolution: {integrity: sha512-hvcgcwOiS0nb2XFb5Op1Pz/vYaWz5K8kKullziGpdNRuG0NwzRXseuPt2CoBqknHGaSPVesu1aOn2OcctEYdCA==}
     engines: {node: '>=20.0.0'}
 
   '@aws-sdk/credential-provider-login@3.972.45':
     resolution: {integrity: sha512-MZQv4SNjByk1iOKmrqmzcUF/uCB05wjvEHyXKxmGQTUANTIVayX6HPUF0bzkWLvtnkH7sAn9kUCfkXbSpj9sDA==}
     engines: {node: '>=20.0.0'}
 
-  '@aws-sdk/credential-provider-node@3.972.46':
-    resolution: {integrity: sha512-cS4w0jzDRb1jOlkiJS3y80OxddHzkky/MN9k3NYs5jganNKVLjF0lpvjlwS118oGMr3cdAfOlVdo8gLurTSE7w==}
+  '@aws-sdk/credential-provider-node@3.972.47':
+    resolution: {integrity: sha512-HrId+C0DWA5qDIyLG64/kjUB2RNtPypxmABnIctK+TA1P1kHlOYoE/Wf5T5tKOMKgb08P7k/zNyhvfJ3lh5Oag==}
     engines: {node: '>=20.0.0'}
 
   '@aws-sdk/credential-provider-process@3.972.41':
@@ -2221,9 +2218,6 @@ packages:
     resolution: {integrity: sha512-VIZB+ibDhx7ObhAe7OVtoEbuP4h/MuOTHJ+J8h/eBXotJYl0fBgR72xDFCKgIh22OJZIOVNxBMWuhAr10r8HdA==}
     engines: {node: '>=6'}
 
-  hardhat-deploy@0.11.30:
-    resolution: {integrity: sha512-FpMP1zSa24NEARVh/vwFCJJa9Gws3SBRZbVIDYMIvleoH3yOwFcdWY68zfGoxrm4kRHNcaiVNAXVFTm0enKR0A==}
-
   hardhat-deploy@0.14.0:
     resolution: {integrity: sha512-jZm0bJGHeH7dEyCzz69hsS8HlNNLJLjXDQVlStczulf54vYJUfRvZ+t3x20QsdXQoXUe6Qujlp8cKbx6JjFpZw==}
 
@@ -2605,10 +2599,6 @@ packages:
   lru-cache@7.18.3:
     resolution: {integrity: sha512-jumlc0BIUrS3qJGgIkWZsyfAM7NCWiBcCDhnd+3NNM5KbBmLTgHVfWBcg6W+rLUsIpzpERPsvwUP7CckAQSOoA==}
     engines: {node: '>=12'}
-
-  main-sc-protocol-v2@git+https://git@github.com:money-on-chain/main-sc-protocol-v2.git#18aaf09628662e4db45440b5b0b1cdf7e7d0b054:
-    resolution: {commit: 18aaf09628662e4db45440b5b0b1cdf7e7d0b054, repo: git@github.com:money-on-chain/main-sc-protocol-v2.git, type: git}
-    version: 1.0.0
 
   main-sc-protocol-v2@git+https://git@github.com:money-on-chain/main-sc-protocol-v2.git#a5d9947ac588c3d9ec01581fa9250ec26a19bb4d:
     resolution: {commit: a5d9947ac588c3d9ec01581fa9250ec26a19bb4d, repo: git@github.com:money-on-chain/main-sc-protocol-v2.git, type: git}
@@ -3281,11 +3271,6 @@ packages:
     engines: {node: '>=8.0.0'}
     hasBin: true
 
-  solc@0.8.20:
-    resolution: {integrity: sha512-fPRnGspIEqmhu63RFO3pc79sLA7ZmzO0Uy0L5l6hEt2wAsq0o7UV6pXkAp3Mfv9IBhg7Px/oTu3a+y4gs3BWrQ==}
-    engines: {node: '>=10.0.0'}
-    hasBin: true
-
   solc@0.8.24:
     resolution: {integrity: sha512-G5yUqjTUPc8Np74sCFwfsevhBPlUifUOfhYrgyu6CmYlC6feSw0YS6eZW47XDT23k3JYdKx5nJ+Q7whCEmNcoA==}
     engines: {node: '>=10.0.0'}
@@ -3704,12 +3689,6 @@ packages:
     peerDependencies:
       ethers: ~5.7.0
 
-  zksync-web3@0.14.4:
-    resolution: {integrity: sha512-kYehMD/S6Uhe1g434UnaMN+sBr9nQm23Ywn0EUP5BfQCsbjcr3ORuS68PosZw8xUTu3pac7G6YMSnNHk+fwzvg==}
-    deprecated: This package has been deprecated in favor of zksync-ethers@5.0.0
-    peerDependencies:
-      ethers: ^5.7.0
-
   zod@3.25.76:
     resolution: {integrity: sha512-gzUt/qt81nXsFGKIFcC3YnfEAx5NkunCfnDlvuBSSFS02bcXu4Lmea0AFIUwbLWxWPx3d9p8S5QoaujKcNQxcQ==}
 
@@ -3761,12 +3740,12 @@ snapshots:
       '@smithy/util-utf8': 2.3.0
       tslib: 2.8.1
 
-  '@aws-sdk/client-lambda@3.1056.0':
+  '@aws-sdk/client-lambda@3.1057.0':
     dependencies:
       '@aws-crypto/sha256-browser': 5.2.0
       '@aws-crypto/sha256-js': 5.2.0
       '@aws-sdk/core': 3.974.15
-      '@aws-sdk/credential-provider-node': 3.972.46
+      '@aws-sdk/credential-provider-node': 3.972.47
       '@aws-sdk/types': 3.973.9
       '@smithy/core': 3.24.5
       '@smithy/fetch-http-handler': 5.4.5
@@ -3803,7 +3782,7 @@ snapshots:
       '@smithy/types': 4.14.2
       tslib: 2.8.1
 
-  '@aws-sdk/credential-provider-ini@3.972.45':
+  '@aws-sdk/credential-provider-ini@3.972.46':
     dependencies:
       '@aws-sdk/core': 3.974.15
       '@aws-sdk/credential-provider-env': 3.972.41
@@ -3828,11 +3807,11 @@ snapshots:
       '@smithy/types': 4.14.2
       tslib: 2.8.1
 
-  '@aws-sdk/credential-provider-node@3.972.46':
+  '@aws-sdk/credential-provider-node@3.972.47':
     dependencies:
       '@aws-sdk/credential-provider-env': 3.972.41
       '@aws-sdk/credential-provider-http': 3.972.43
-      '@aws-sdk/credential-provider-ini': 3.972.45
+      '@aws-sdk/credential-provider-ini': 3.972.46
       '@aws-sdk/credential-provider-process': 3.972.41
       '@aws-sdk/credential-provider-sso': 3.972.45
       '@aws-sdk/credential-provider-web-identity': 3.972.45
@@ -4803,7 +4782,7 @@ snapshots:
 
   '@openzeppelin/defender-sdk-base-client@2.7.1(encoding@0.1.13)':
     dependencies:
-      '@aws-sdk/client-lambda': 3.1056.0
+      '@aws-sdk/client-lambda': 3.1057.0
       amazon-cognito-identity-js: 6.3.16(encoding@0.1.13)
       async-retry: 1.3.3
       axios: 1.16.1
@@ -6382,37 +6361,6 @@ snapshots:
 
   hard-rejection@2.1.0: {}
 
-  hardhat-deploy@0.11.30:
-    dependencies:
-      '@ethersproject/abi': 5.8.0
-      '@ethersproject/abstract-signer': 5.8.0
-      '@ethersproject/address': 5.8.0
-      '@ethersproject/bignumber': 5.8.0
-      '@ethersproject/bytes': 5.8.0
-      '@ethersproject/constants': 5.8.0
-      '@ethersproject/contracts': 5.8.0
-      '@ethersproject/providers': 5.8.0
-      '@ethersproject/solidity': 5.8.0
-      '@ethersproject/transactions': 5.8.0
-      '@ethersproject/wallet': 5.8.0
-      '@types/qs': 6.15.1
-      axios: 0.21.4(debug@4.4.3)
-      chalk: 4.1.2
-      chokidar: 3.6.0
-      debug: 4.4.3(supports-color@8.1.1)
-      enquirer: 2.4.1
-      ethers: 5.8.0
-      form-data: 4.0.5
-      fs-extra: 10.1.0
-      match-all: 1.2.7
-      murmur-128: 0.2.1
-      qs: 6.15.2
-      zksync-web3: 0.14.4(ethers@5.8.0)
-    transitivePeerDependencies:
-      - bufferutil
-      - supports-color
-      - utf-8-validate
-
   hardhat-deploy@0.14.0:
     dependencies:
       '@ethersproject/abi': 5.8.0
@@ -6788,18 +6736,6 @@ snapshots:
       yallist: 4.0.0
 
   lru-cache@7.18.3: {}
-
-  main-sc-protocol-v2@git+https://git@github.com:money-on-chain/main-sc-protocol-v2.git#18aaf09628662e4db45440b5b0b1cdf7e7d0b054:
-    dependencies:
-      hardhat: https://github.com/money-on-chain/hardhat/releases/download/v3.0.10-moc/hardhat-3.0.10.tgz
-      hardhat-deploy: 0.11.30
-      hardhat-storage-layout: 0.1.7(hardhat@https://github.com/money-on-chain/hardhat/releases/download/v3.0.10-moc/hardhat-3.0.10.tgz)
-      solc: 0.8.20
-    transitivePeerDependencies:
-      - bufferutil
-      - debug
-      - supports-color
-      - utf-8-validate
 
   main-sc-protocol-v2@git+https://git@github.com:money-on-chain/main-sc-protocol-v2.git#a5d9947ac588c3d9ec01581fa9250ec26a19bb4d:
     dependencies:
@@ -7492,18 +7428,6 @@ snapshots:
       semver: 5.7.2
       tmp: 0.0.33
 
-  solc@0.8.20:
-    dependencies:
-      command-exists: 1.2.9
-      commander: 8.3.0
-      follow-redirects: 1.16.0(debug@4.4.3)
-      js-sha3: 0.8.0
-      memorystream: 0.3.1
-      semver: 5.7.2
-      tmp: 0.0.33
-    transitivePeerDependencies:
-      - debug
-
   solc@0.8.24:
     dependencies:
       command-exists: 1.2.9
@@ -7931,10 +7855,6 @@ snapshots:
   yocto-queue@0.1.0: {}
 
   zksync-ethers@5.11.2(ethers@5.8.0):
-    dependencies:
-      ethers: 5.8.0
-
-  zksync-web3@0.14.4(ethers@5.8.0):
     dependencies:
       ethers: 5.8.0
 
