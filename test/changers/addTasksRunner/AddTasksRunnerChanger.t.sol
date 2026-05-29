@@ -55,15 +55,13 @@ contract AddTasksRunnerChangerForkTests is BaseFork {
         0x0428ec087e0cce276a71d1caf1afe4da32a2d48b3ebe579040612b5bd262ff73;
     address private constant ORACLE_OWNER_1 = 0x4e9e0e64ff95f9a629D1F756119fA636F30BbACD;
     address private constant ORACLE_OWNER_2 = 0xd6fdad4e02477A05A492F1AC51cfE0883C470022;
-    address private constant ORACLE_OWNER_3 = 0x711a1AB9C5390B381D3E54F17387Aa3A221F1F25;
+    address private constant ORACLE_OWNER_3 = 0xC9acAf0Ab55cADC285F109E20d9Ba5cCa81d02D6;
 
     function setUp() public override {
         super.setUp();
     }
 
-    function test_ExecuteBothChangersInSequence() public {
-        _executeMultiCollateralChanger();
-
+    function test_ExecuteAddTasksRunnerChanger() public {
         vm.expectCall(
             address(addTasksRunnerChanger.oracleManager()),
             abi.encodeWithSignature(
@@ -116,13 +114,13 @@ contract AddTasksRunnerChangerForkTests is BaseFork {
         );
         assertEq(
             IReverseAuctionView(addTasksRunnerChanger.revAuctionRIFtoMOC_rocRewardsBuffer()).outputAccount(),
-            addTasksRunnerChanger.rocRewardsBuffer(),
-            "RIF->MOC legacy auction output should point to rocRewardsBuffer"
+            MOC_REWARDS_BUFFER,
+            "RIF->MOC legacy auction output should point to mocRewardsBuffer"
         );
         assertEq(
             IReverseAuctionView(addTasksRunnerChanger.revAuctionDOCtoMOC_rocRewardsBuffer()).outputAccount(),
-            addTasksRunnerChanger.rocRewardsBuffer(),
-            "DOC->MOC legacy auction output should point to rocRewardsBuffer"
+            MOC_REWARDS_BUFFER,
+            "DOC->MOC legacy auction output should point to mocRewardsBuffer"
         );
         assertEq(
             IReverseAuctionView(addTasksRunnerChanger.revAuctionMOCtoRIF_rifBucket()).outputAccount(),
@@ -137,11 +135,18 @@ contract AddTasksRunnerChangerForkTests is BaseFork {
     }
 
     function test_TasksRunnerContainsAllExpectedTasks() public {
-        _executeMultiCollateralChanger();
         _executeAddTasksRunnerChanger();
 
         string memory json = vm.readFile(TASKS_DEPLOYED_ADDRESSES_PATH);
-        string[30] memory taskKeys = [
+        string[45] memory taskKeys = [
+            "TaskUpdateEmaV1",
+            "TaskDailyInratePaymentV1",
+            "TaskEvalLiquidationV1",
+            "TaskInterestPaymentV1",
+            "TaskSettlementV1",
+            "TaskMintStep",
+            "TaskSwitchRoundCoinPair",
+            "TaskDistributeSupporters",
             "TaskExecuteQueueV3",
             "TaskUpdateEmaV3Bucket0",
             "TaskUpdateEmaV3Bucket1",
@@ -153,11 +158,13 @@ contract AddTasksRunnerChangerForkTests is BaseFork {
             "TaskInterestPaymentV3Bucket1",
             "TaskSettlementV3Bucket0",
             "TaskSettlementV3Bucket1",
-            "TaskRefreshACBalanceV2V3Bucket0",
-            "TaskRefreshACBalanceV2V3Bucket1",
+            "TaskRefreshACBalanceV3Bucket0",
+            "TaskRefreshACBalanceV3Bucket1",
             "TaskSplitRifCommissionSplitterV2",
             "TaskSplitRifCommissionSplitterV3",
             "TaskSplitDocCommissionSplitterV2",
+            "TaskSplitMocCommissionSplitterV2",
+            "TaskSplitMocCommissionSplitterV3",
             "TaskTriggerOrderRevAuctionRBTCtoMOC_tasksRunner",
             "TaskTriggerOrderRevAuctionRIFtoMOC_tasksRunner",
             "TaskTriggerOrderRevAuctionDOCtoMOC_tasksRunner",
@@ -166,12 +173,17 @@ contract AddTasksRunnerChangerForkTests is BaseFork {
             "TaskTriggerOrderRevAuctionMOCtoRIF_rifBucket",
             "TaskTriggerOrderRevAuctionDOCtoMOC_rocRewardsBuffer",
             "TaskTriggerOrderRevAuctionMOCtoDOC_docBucket",
-            "TaskFlushRocRewardsBuffer",
-            "TaskLiquidateRocRewardsBuffer",
+            "TaskTriggerOrderRevAuctionRBTCtoMOC_mocRewardsBuffer",
+            "TaskTriggerOrderRevAuctionMOCtoRBTC_mocV1",
             "TaskFlushRifProRewardsBuffer",
             "TaskLiquidateRifProRewardsBuffer",
             "TaskFlushRocrRewardsBuffer",
-            "TaskLiquidateRocrRewardsBuffer"
+            "TaskLiquidateRocrRewardsBuffer",
+            "TaskFlushBitProRewardsBuffer",
+            "TaskFlushBproRewardsBuffer",
+            "TaskLiquidateBproRewardsBuffer",
+            "TaskFlushMocRewardsBuffer",
+            "TaskLiquidateMocRewardsBuffer"
         ];
 
         ITasksRunnerView tasksRunner = ITasksRunnerView(addTasksRunnerChanger.tasksRunner());
@@ -185,45 +197,27 @@ contract AddTasksRunnerChangerForkTests is BaseFork {
     }
 
     function test_BuffersOutputsAreSet() public {
-        _executeMultiCollateralChanger();
         _executeAddTasksRunnerChanger();
 
         IBufferTokenView rocrBuffer = IBufferTokenView(addTasksRunnerChanger.rocrRewardsBuffer());
         (address rocrOutput0, , , ) = rocrBuffer.getOutput(0);
-        assertEq(
-            rocrOutput0,
-            addTasksRunnerChanger.revAuctionMOCtoDOC_docBucket(),
-            "RocrRewardsBuffer output 0 should be revAuctionMOCtoDOC_docBucket"
-        );
-
+        assertEq(rocrOutput0, MOC_REWARDS_BUFFER, "RocrRewardsBuffer output 0 should be mocRewardsBuffer");
         (address rocrOutput1, , , ) = rocrBuffer.getOutput(1);
         assertEq(
             rocrOutput1,
-            addTasksRunnerChanger.rocRewardsBuffer(),
-            "RocrRewardsBuffer output 1 should be rocRewardsBuffer"
+            addTasksRunnerChanger.revAuctionMOCtoDOC_docBucket(),
+            "RocrRewardsBuffer output 1 should be revAuctionMOCtoDOC_docBucket"
         );
 
         IBufferTokenView rifProBuffer = IBufferTokenView(addTasksRunnerChanger.rifProRewardsBuffer_rocRewardsBuffer());
         (address rifProOutput0, , , ) = rifProBuffer.getOutput(0);
-        assertEq(
-            rifProOutput0,
-            addTasksRunnerChanger.revAuctionMOCtoRIF_rifBucket(),
-            "RifProRewardsBuffer output 0 should be revAuctionMOCtoRIF_rifBucket"
-        );
+        assertEq(rifProOutput0, MOC_REWARDS_BUFFER, "RifProRewardsBuffer output 0 should be mocRewardsBuffer");
         (address rifProOutput1, , , ) = rifProBuffer.getOutput(1);
         assertEq(
             rifProOutput1,
-            addTasksRunnerChanger.rocRewardsBuffer(),
-            "RifProRewardsBuffer output 1 should be rocRewardsBuffer"
+            addTasksRunnerChanger.revAuctionMOCtoRIF_rifBucket(),
+            "RifProRewardsBuffer output 1 should be revAuctionMOCtoRIF_rifBucket"
         );
-
-        IBufferTokenView rocBuffer = IBufferTokenView(addTasksRunnerChanger.rocRewardsBuffer());
-
-        (address rocOutput0, , , ) = rocBuffer.getOutput(0);
-        assertEq(rocOutput0, addTasksRunnerChanger.tasksRunner(), "RocRewardsBuffer output 0 should be tasksRunner");
-
-        (address rocOutput1, , , ) = rocBuffer.getOutput(1);
-        assertEq(rocOutput1, MOC_REWARDS_BUFFER, "RocRewardsBuffer output 1 should be mocRewardsBuffer");
 
         string memory json = vm.readFile(TASKS_DEPLOYED_ADDRESSES_PATH);
         address expectedRocNodesBuffer = vm.parseJsonAddress(json, ".RocNodesBuffer");
@@ -237,7 +231,6 @@ contract AddTasksRunnerChangerForkTests is BaseFork {
     }
 
     function test_RegistryEntriesAreRemoved() public {
-        _executeMultiCollateralChanger();
         _executeAddTasksRunnerChanger();
 
         IGovernedRegistryView registry = IGovernedRegistryView(address(addTasksRunnerChanger.governedRegistry()));
@@ -278,13 +271,35 @@ contract AddTasksRunnerChangerForkTests is BaseFork {
             "Registry should not contain revAuctionMOCtoDOC_docBucket"
         );
         assertFalse(
+            registry.addressArrayContains(
+                MOC_FLOW_REVERSE_AUCTIONS,
+                addTasksRunnerChanger.revAuctionRBTCtoMOC_mocRewardsBuffer()
+            ),
+            "Registry should not contain revAuctionRBTCtoMOC_mocRewardsBuffer"
+        );
+        assertFalse(
+            registry.addressArrayContains(MOC_FLOW_REVERSE_AUCTIONS, addTasksRunnerChanger.revAuctionMOCtoRBTC_mocV1()),
+            "Registry should not contain revAuctionMOCtoRBTC_mocV1"
+        );
+        assertFalse(
             registry.addressArrayContains(MOC_FLOW_BUFFERS, addTasksRunnerChanger.rocrRewardsBuffer()),
             "Registry should not contain rocrRewardsBuffer"
+        );
+        assertFalse(
+            registry.addressArrayContains(MOC_FLOW_BUFFERS, addTasksRunnerChanger.bitProRewardsBuffer()),
+            "Registry should not contain bitProRewardsBuffer"
+        );
+        assertFalse(
+            registry.addressArrayContains(MOC_FLOW_BUFFERS, addTasksRunnerChanger.bproRewardsBuffer()),
+            "Registry should not contain bproRewardsBuffer"
+        );
+        assertFalse(
+            registry.addressArrayContains(MOC_FLOW_BUFFERS, addTasksRunnerChanger.mocRewardsBuffer()),
+            "Registry should not contain mocRewardsBuffer"
         );
     }
 
     function test_SubscribedOraclesCanRunTasks() public {
-        _executeMultiCollateralChanger();
         _executeAddTasksRunnerChanger();
 
         ITasksRunnerView tasksRunner = ITasksRunnerView(addTasksRunnerChanger.tasksRunner());
