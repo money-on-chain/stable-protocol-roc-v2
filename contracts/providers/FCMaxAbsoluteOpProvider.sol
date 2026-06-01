@@ -11,6 +11,8 @@ import { IDataProvider } from "moc-main-latest/contracts/interfaces/IDataProvide
 contract FCMaxAbsoluteOpProvider is Ownable, IDataProvider {
     bytes32 public data;
 
+    event DataUpdated(uint256 newData);
+
     constructor(address owner_, uint256 initialData_) Ownable() {
         _transferOwnership(owner_);
         data = bytes32(initialData_);
@@ -22,5 +24,6 @@ contract FCMaxAbsoluteOpProvider is Ownable, IDataProvider {
 
     function setMaxAbsoluteOperation(uint256 data_) external onlyOwner {
         data = bytes32(data_);
+        emit DataUpdated(data_);
     }
 }
