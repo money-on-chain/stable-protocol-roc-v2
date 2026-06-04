@@ -598,6 +598,22 @@ const AddTasksRunnerModule = buildModule("AddTasksRunner", m => {
   // ---------------------------------------------------------------------------
   // Stage 4 - TasksRunner Deployment and Initialization
   // ---------------------------------------------------------------------------
+  const tasksRunnerProxy = m.contract("ERC1967Proxy", [tasksRunnerImpl, "0x"], {
+    id: "TasksRunnerProxy",
+  });
+
+  const tasksRunnerContract = m.contractAt("@moc/oracles/contracts/TasksRunner.sol:TasksRunner", tasksRunnerProxy, {
+    id: "TasksRunner",
+  });
+
+  const switchRoundTasksRunnerCoinPairTask = m.contract(
+    "@moc/oracles/contracts/tasks/oracles/TaskSwitchRoundCoinPair.sol:TaskSwitchRoundCoinPair",
+    [tasksRunnerProxy],
+    {
+      id: "TaskSwitchRoundTasksRunnerCoinPair",
+    },
+  );
+
   const tasks = [
     updateEmaTaskV1,
     dailyInratePaymentTaskV1,
@@ -606,6 +622,7 @@ const AddTasksRunnerModule = buildModule("AddTasksRunner", m => {
     settlementTaskV1,
     mintStepTask,
     switchRoundCoinPairTask,
+    switchRoundTasksRunnerCoinPairTask,
     distributeSupportersTask,
     executeQueueTask,
     updateEmaTaskBucket0,
@@ -647,14 +664,6 @@ const AddTasksRunnerModule = buildModule("AddTasksRunner", m => {
     flowFlushTaskMocRewardsBuffer,
     flowLiquidateTaskMocRewardsBuffer,
   ];
-
-  const tasksRunnerProxy = m.contract("ERC1967Proxy", [tasksRunnerImpl, "0x"], {
-    id: "TasksRunnerProxy",
-  });
-
-  const tasksRunnerContract = m.contractAt("@moc/oracles/contracts/TasksRunner.sol:TasksRunner", tasksRunnerProxy, {
-    id: "TasksRunner",
-  });
 
   m.call(
     tasksRunnerContract,
@@ -782,6 +791,7 @@ const AddTasksRunnerModule = buildModule("AddTasksRunner", m => {
     settlementTaskV1,
     mintStepTask,
     switchRoundCoinPairTask,
+    switchRoundTasksRunnerCoinPairTask,
     distributeSupportersTask,
     updateEmaTaskBucket0,
     updateEmaTaskBucket1,

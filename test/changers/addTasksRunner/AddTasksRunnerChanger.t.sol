@@ -138,7 +138,7 @@ contract AddTasksRunnerChangerForkTests is BaseFork {
         _executeAddTasksRunnerChanger();
 
         string memory json = vm.readFile(TASKS_DEPLOYED_ADDRESSES_PATH);
-        string[45] memory taskKeys = [
+        string[46] memory taskKeys = [
             "TaskUpdateEmaV1",
             "TaskDailyInratePaymentV1",
             "TaskEvalLiquidationV1",
@@ -146,6 +146,7 @@ contract AddTasksRunnerChangerForkTests is BaseFork {
             "TaskSettlementV1",
             "TaskMintStep",
             "TaskSwitchRoundCoinPair",
+            "TaskSwitchRoundTasksRunnerCoinPair",
             "TaskDistributeSupporters",
             "TaskExecuteQueueV3",
             "TaskUpdateEmaV3Bucket0",
