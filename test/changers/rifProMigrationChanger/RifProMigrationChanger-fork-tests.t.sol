@@ -10,9 +10,11 @@ import { MocMultiCollateralGuard } from "moc-main-latest/contracts/multiCollater
 import { MocQueue } from "moc-main-latest/contracts/queue/MocQueue.sol";
 import { MocQueueExecFees } from "moc-main-latest/contracts/queue/MocQueueExecFees.sol";
 import { MocRC20 } from "moc-main-latest/contracts/tokens/MocRC20.sol";
+import { UUPSUpgradeable } from "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
 import { MocRif } from "../../../contracts/MocRif.sol";
 import { RifPRoMigrationChanger } from "../../../contracts/changers/rifProMigrationChanger/RifPRoMigrationChanger.sol";
 import { TokenMigrator } from "../../../contracts/TokenMigrator.sol";
+import { MocRC20 as LocalMocRC20 } from "../../../contracts/token/USDRIF/MocRC20.sol";
 
 interface IGovernorOwner {
     function owner() external view returns (address);
@@ -248,6 +250,38 @@ contract RifProMigrationChangerForkTests is Test {
         vm.stopPrank();
     }
 
+    function test_UpgradeRifProTokenToV2() public {
+        _executeChanger();
+
+        // Deploy the V2 implementation with the new function
+        RifProTokenV2 v2Impl = new RifProTokenV2();
+
+        // Mock governor.isAuthorizedChanger(address(this)) => true
+        // so that _authorizeUpgrade accepts the test contract as an authorized changer
+        address governorAddr = address(newRifProToken.governor());
+        vm.mockCall(
+            governorAddr,
+            abi.encodeWithSignature("isAuthorizedChanger(address)", address(this)),
+            abi.encode(true)
+        );
+        UUPSUpgradeable(address(newRifProToken)).upgradeTo(address(v2Impl));
+        vm.clearMockedCalls();
+
+        // Verify OLD functionality: roles remain intact after the upgrade
+        assertTrue(newRifProToken.hasRole(DEFAULT_ADMIN_ROLE, address(rifBucket)), "bucket should keep admin role");
+        assertTrue(newRifProToken.hasRole(MINTER_ROLE, address(rifBucket)), "bucket should keep minter role");
+        assertTrue(newRifProToken.hasRole(BURNER_ROLE, address(rifBucket)), "bucket should keep burner role");
+
+        // Verify OLD functionality: mint still works after the upgrade
+        uint256 balBefore = newRifProToken.balanceOf(RIF_PRO_HOLDER);
+        vm.prank(address(rifBucket));
+        newRifProToken.mint(RIF_PRO_HOLDER, 1 ether);
+        assertEq(newRifProToken.balanceOf(RIF_PRO_HOLDER), balBefore + 1 ether, "mint should work after upgrade");
+
+        // Verify NEW functionality: version() is available on the upgraded proxy
+        assertEq(RifProTokenV2(address(newRifProToken)).version(), "v2", "proxy should expose new version() function");
+    }
+
     function test_MintTCAndRedeemTCCanBeQueuedAfterMigration() public {
         _executeChanger();
 
@@ -360,5 +394,16 @@ contract RifProMigrationChangerForkTests is Test {
 
     function _executeRifQueue() internal {
         _mocMultiCollateralGuard().execute();
+    }
+}
+
+/**
+ * @title RifProTokenV2
+ * @notice Extended version of LocalMocRC20 with a new `version()` function,
+ *         used to test UUPS upgrades of the RIFPro token proxy.
+ */
+contract RifProTokenV2 is LocalMocRC20 {
+    function version() external pure returns (string memory) {
+        return "v2";
     }
 }

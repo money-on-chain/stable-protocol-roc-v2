@@ -1,7 +1,7 @@
 lockfileVersion: '9.0'
 
 settings:
-  autoInstallPeers: false
+  autoInstallPeers: true
   excludeLinksFromLockfile: false
 
 importers:
@@ -10,7 +10,7 @@ importers:
     dependencies:
       solc:
         specifier: 0.8.24
-        version: 0.8.24(debug@4.4.3(supports-color@7.2.0))
+        version: 0.8.24
     devDependencies:
       '@commitlint/cli':
         specifier: 20.3.1
@@ -29,7 +29,7 @@ importers:
         version: main-sc-protocol-v2@git+ssh://git@github.com/money-on-chain/main-sc-protocol-v2.git#808fae8dba59c793d490b0b3668fbeb23c773c9b(hardhat@3.9.0)
       '@moc/oracles':
         specifier: git+ssh://git@github.com/money-on-chain/OMoC-Decentralized-Oracle.git#v3.0.10
-        version: '@moneyonchain/oracles@https://codeload.github.com/money-on-chain/OMoC-Decentralized-Oracle/tar.gz/98e4c681112378f67a701359eb7a6136ba6252c6(@moneyonchain/periphery@https://codeload.github.com/money-on-chain/MoC-Periphery/tar.gz/6be2d281a42cc17b8136184054dcb62f7c586a7b)(main-sc-protocol-v2@git+ssh://git@github.com/money-on-chain/main-sc-protocol-v2.git#808fae8dba59c793d490b0b3668fbeb23c773c9b(hardhat@3.9.0))(ts-test-helpers@https://codeload.github.com/money-on-chain/ts-test-helpers/tar.gz/6177adbe32646487c88dc9553b160c22d498e8e2(@nomicfoundation/hardhat-toolbox-viem@5.0.7(6290106f27664cbed5721001e427defd))(hardhat@3.9.0)(typescript@5.9.3)(zod@3.25.76))(typescript@5.9.3)(zod@3.25.76)'
+        version: '@moneyonchain/oracles@https://codeload.github.com/money-on-chain/OMoC-Decentralized-Oracle/tar.gz/98e4c681112378f67a701359eb7a6136ba6252c6(@moneyonchain/periphery@https://codeload.github.com/money-on-chain/MoC-Periphery/tar.gz/6be2d281a42cc17b8136184054dcb62f7c586a7b)(main-sc-protocol-v2@git+ssh://git@github.com/money-on-chain/main-sc-protocol-v2.git#808fae8dba59c793d490b0b3668fbeb23c773c9b(hardhat@3.9.0))(ts-test-helpers@https://codeload.github.com/money-on-chain/ts-test-helpers/tar.gz/6177adbe32646487c88dc9553b160c22d498e8e2(@nomicfoundation/hardhat-toolbox-viem@5.0.7(wkxxrp6f3h473w2c7jv2luj46m))(hardhat@3.9.0)(typescript@5.9.3)(zod@3.25.76))(typescript@5.9.3)(zod@3.25.76)'
       '@moc/periphery':
         specifier: git+ssh://git@github.com/money-on-chain/MoC-Periphery#v3.0.5
         version: '@moneyonchain/periphery@https://codeload.github.com/money-on-chain/MoC-Periphery/tar.gz/6be2d281a42cc17b8136184054dcb62f7c586a7b'
@@ -53,7 +53,7 @@ importers:
         version: 3.0.17(hardhat@3.9.0)
       '@nomicfoundation/hardhat-toolbox-viem':
         specifier: 5.0.7
-        version: 5.0.7(6290106f27664cbed5721001e427defd)
+        version: 5.0.7(wkxxrp6f3h473w2c7jv2luj46m)
       '@nomicfoundation/hardhat-verify':
         specifier: 3.0.21
         version: 3.0.21(hardhat@3.9.0)
@@ -80,16 +80,16 @@ importers:
         version: 4.9.3
       '@openzeppelin/defender-deploy-client-cli':
         specifier: 0.0.1-alpha.10
-        version: 0.0.1-alpha.10(debug@4.4.3(supports-color@7.2.0))(supports-color@7.2.0)
+        version: 0.0.1-alpha.10
       '@openzeppelin/foundry-upgrades':
         specifier: 0.4.0
-        version: 0.4.0(@openzeppelin/defender-deploy-client-cli@0.0.1-alpha.10(debug@4.4.3(supports-color@7.2.0))(supports-color@7.2.0))(@openzeppelin/upgrades-core@1.46.0(supports-color@7.2.0))
+        version: 0.4.0(@openzeppelin/defender-deploy-client-cli@0.0.1-alpha.10)(@openzeppelin/upgrades-core@1.46.0)
       '@openzeppelin/upgrades-core':
         specifier: 1.46.0
-        version: 1.46.0(supports-color@7.2.0)
+        version: 1.46.0
       '@solidstate/hardhat-contract-sizer':
         specifier: ^3.0.3
-        version: 3.0.3(@nomicfoundation/hardhat-utils@4.1.4)(debug@4.4.3(supports-color@7.2.0))(hardhat@3.9.0)(supports-color@7.2.0)
+        version: 3.0.3(@nomicfoundation/hardhat-utils@4.1.4)(hardhat@3.9.0)
       '@types/chai':
         specifier: 5.2.3
         version: 5.2.3
@@ -107,16 +107,16 @@ importers:
         version: 16.4.7
       eslint:
         specifier: 9.27.0
-        version: 9.27.0(jiti@2.6.1)(supports-color@7.2.0)
+        version: 9.27.0(jiti@2.6.1)
       eslint-config-prettier:
         specifier: 10.1.8
-        version: 10.1.8(eslint@9.27.0(jiti@2.6.1)(supports-color@7.2.0))
+        version: 10.1.8(eslint@9.27.0(jiti@2.6.1))
       eslint-plugin-no-only-tests:
         specifier: 3.3.0
         version: 3.3.0
       eslint-plugin-prettier:
         specifier: 5.5.5
-        version: 5.5.5(eslint-config-prettier@10.1.8(eslint@9.27.0(jiti@2.6.1)(supports-color@7.2.0)))(eslint@9.27.0(jiti@2.6.1)(supports-color@7.2.0))(prettier@3.8.1)
+        version: 5.5.5(eslint-config-prettier@10.1.8(eslint@9.27.0(jiti@2.6.1)))(eslint@9.27.0(jiti@2.6.1))(prettier@3.8.1)
       forge-std:
         specifier: github:foundry-rs/forge-std#v1.9.7
         version: https://codeload.github.com/foundry-rs/forge-std/tar.gz/77041d2ce690e692d6e03cc812b57d1ddaa4d505
@@ -146,13 +146,13 @@ importers:
         version: 9.5.0
       ts-test-helpers:
         specifier: git+ssh://git@github.com/money-on-chain/ts-test-helpers#v0.1.2
-        version: https://codeload.github.com/money-on-chain/ts-test-helpers/tar.gz/6177adbe32646487c88dc9553b160c22d498e8e2(@nomicfoundation/hardhat-toolbox-viem@5.0.7(6290106f27664cbed5721001e427defd))(hardhat@3.9.0)(typescript@5.9.3)(zod@3.25.76)
+        version: https://codeload.github.com/money-on-chain/ts-test-helpers/tar.gz/6177adbe32646487c88dc9553b160c22d498e8e2(@nomicfoundation/hardhat-toolbox-viem@5.0.7(wkxxrp6f3h473w2c7jv2luj46m))(hardhat@3.9.0)(typescript@5.9.3)(zod@3.25.76)
       typescript:
         specifier: 5.9.3
         version: 5.9.3
       typescript-eslint:
         specifier: 8.54.0
-        version: 8.54.0(eslint@9.27.0(jiti@2.6.1)(supports-color@7.2.0))(supports-color@7.2.0)(typescript@5.9.3)
+        version: 8.54.0(eslint@9.27.0(jiti@2.6.1))(typescript@5.9.3)
       viem:
         specifier: 2.53.1
         version: 2.53.1(typescript@5.9.3)(zod@3.25.76)
@@ -3525,17 +3525,17 @@ snapshots:
   '@esbuild/win32-x64@0.28.1':
     optional: true
 
-  '@eslint-community/eslint-utils@4.9.1(eslint@9.27.0(jiti@2.6.1)(supports-color@7.2.0))':
+  '@eslint-community/eslint-utils@4.9.1(eslint@9.27.0(jiti@2.6.1))':
     dependencies:
-      eslint: 9.27.0(jiti@2.6.1)(supports-color@7.2.0)
+      eslint: 9.27.0(jiti@2.6.1)
       eslint-visitor-keys: 3.4.3
 
   '@eslint-community/regexpp@4.12.2': {}
 
-  '@eslint/config-array@0.20.1(supports-color@7.2.0)':
+  '@eslint/config-array@0.20.1':
     dependencies:
       '@eslint/object-schema': 2.1.7
-      debug: 4.4.3(supports-color@7.2.0)
+      debug: 4.4.3
       minimatch: 3.1.5
     transitivePeerDependencies:
       - supports-color
@@ -3550,10 +3550,10 @@ snapshots:
     dependencies:
       '@types/json-schema': 7.0.15
 
-  '@eslint/eslintrc@3.3.5(supports-color@7.2.0)':
+  '@eslint/eslintrc@3.3.5':
     dependencies:
       ajv: 6.15.0
-      debug: 4.4.3(supports-color@7.2.0)
+      debug: 4.4.3
       espree: 10.4.0
       globals: 14.0.0
       ignore: 5.3.2
@@ -3728,9 +3728,9 @@ snapshots:
     dependencies:
       '@sinclair/typebox': 0.27.12
 
-  '@kwsites/file-exists@1.1.1(supports-color@7.2.0)':
+  '@kwsites/file-exists@1.1.1':
     dependencies:
-      debug: 4.4.3(supports-color@7.2.0)
+      debug: 4.4.3
     transitivePeerDependencies:
       - supports-color
 
@@ -3741,14 +3741,14 @@ snapshots:
       '@moc/periphery': '@moneyonchain/periphery@https://codeload.github.com/money-on-chain/MoC-Periphery/tar.gz/6be2d281a42cc17b8136184054dcb62f7c586a7b'
       '@openzeppelin/contracts-ethereum-package': 3.0.0
 
-  '@moneyonchain/oracles@https://codeload.github.com/money-on-chain/OMoC-Decentralized-Oracle/tar.gz/98e4c681112378f67a701359eb7a6136ba6252c6(@moneyonchain/periphery@https://codeload.github.com/money-on-chain/MoC-Periphery/tar.gz/6be2d281a42cc17b8136184054dcb62f7c586a7b)(main-sc-protocol-v2@git+ssh://git@github.com/money-on-chain/main-sc-protocol-v2.git#808fae8dba59c793d490b0b3668fbeb23c773c9b(hardhat@3.9.0))(ts-test-helpers@https://codeload.github.com/money-on-chain/ts-test-helpers/tar.gz/6177adbe32646487c88dc9553b160c22d498e8e2(@nomicfoundation/hardhat-toolbox-viem@5.0.7(6290106f27664cbed5721001e427defd))(hardhat@3.9.0)(typescript@5.9.3)(zod@3.25.76))(typescript@5.9.3)(zod@3.25.76)':
+  '@moneyonchain/oracles@https://codeload.github.com/money-on-chain/OMoC-Decentralized-Oracle/tar.gz/98e4c681112378f67a701359eb7a6136ba6252c6(@moneyonchain/periphery@https://codeload.github.com/money-on-chain/MoC-Periphery/tar.gz/6be2d281a42cc17b8136184054dcb62f7c586a7b)(main-sc-protocol-v2@git+ssh://git@github.com/money-on-chain/main-sc-protocol-v2.git#808fae8dba59c793d490b0b3668fbeb23c773c9b(hardhat@3.9.0))(ts-test-helpers@https://codeload.github.com/money-on-chain/ts-test-helpers/tar.gz/6177adbe32646487c88dc9553b160c22d498e8e2(@nomicfoundation/hardhat-toolbox-viem@5.0.7(wkxxrp6f3h473w2c7jv2luj46m))(hardhat@3.9.0)(typescript@5.9.3)(zod@3.25.76))(typescript@5.9.3)(zod@3.25.76)':
     dependencies:
       '@moc/moc-main': main-sc-protocol-v2@git+ssh://git@github.com/money-on-chain/main-sc-protocol-v2.git#808fae8dba59c793d490b0b3668fbeb23c773c9b(hardhat@3.9.0)
       '@moc/periphery': '@moneyonchain/periphery@https://codeload.github.com/money-on-chain/MoC-Periphery/tar.gz/6be2d281a42cc17b8136184054dcb62f7c586a7b'
       '@openzeppelin/contracts': 4.9.3
       '@openzeppelin/contracts-ethereum-package': 3.0.0
       '@openzeppelin/contracts-upgradeable': 4.9.3
-      ts-test-helpers: https://codeload.github.com/money-on-chain/ts-test-helpers/tar.gz/6177adbe32646487c88dc9553b160c22d498e8e2(@nomicfoundation/hardhat-toolbox-viem@5.0.7(6290106f27664cbed5721001e427defd))(hardhat@3.9.0)(typescript@5.9.3)(zod@3.25.76)
+      ts-test-helpers: https://codeload.github.com/money-on-chain/ts-test-helpers/tar.gz/6177adbe32646487c88dc9553b160c22d498e8e2(@nomicfoundation/hardhat-toolbox-viem@5.0.7(wkxxrp6f3h473w2c7jv2luj46m))(hardhat@3.9.0)(typescript@5.9.3)(zod@3.25.76)
       viem: 2.53.1(typescript@5.9.3)(zod@3.25.76)
     transitivePeerDependencies:
       - bufferutil
@@ -3873,7 +3873,7 @@ snapshots:
       tsx: 4.23.0
       zod: 3.25.76
 
-  '@nomicfoundation/hardhat-toolbox-viem@5.0.7(6290106f27664cbed5721001e427defd)':
+  '@nomicfoundation/hardhat-toolbox-viem@5.0.7(wkxxrp6f3h473w2c7jv2luj46m)':
     dependencies:
       '@nomicfoundation/hardhat-ignition': 3.1.8(@nomicfoundation/hardhat-verify@3.0.21(hardhat@3.9.0))(hardhat@3.9.0)
       '@nomicfoundation/hardhat-ignition-viem': 3.1.6(@nomicfoundation/hardhat-ignition@3.1.8(@nomicfoundation/hardhat-verify@3.0.21(hardhat@3.9.0))(hardhat@3.9.0))(@nomicfoundation/hardhat-verify@3.0.21(hardhat@3.9.0))(@nomicfoundation/hardhat-viem@3.0.9(hardhat@3.9.0)(viem@2.53.1(typescript@5.9.3)(zod@3.25.76)))(@nomicfoundation/ignition-core@3.1.8)(hardhat@3.9.0)(viem@2.53.1(typescript@5.9.3)(zod@3.25.76))
@@ -3994,11 +3994,11 @@ snapshots:
 
   '@openzeppelin/contracts@4.9.3': {}
 
-  '@openzeppelin/defender-deploy-client-cli@0.0.1-alpha.10(debug@4.4.3(supports-color@7.2.0))(supports-color@7.2.0)':
+  '@openzeppelin/defender-deploy-client-cli@0.0.1-alpha.10':
     dependencies:
-      '@openzeppelin/defender-sdk-base-client': 2.7.1(debug@4.4.3(supports-color@7.2.0))(supports-color@7.2.0)
-      '@openzeppelin/defender-sdk-deploy-client': 2.7.1(debug@4.4.3(supports-color@7.2.0))(supports-color@7.2.0)
-      '@openzeppelin/defender-sdk-network-client': 2.7.1(debug@4.4.3(supports-color@7.2.0))(supports-color@7.2.0)
+      '@openzeppelin/defender-sdk-base-client': 2.7.1
+      '@openzeppelin/defender-sdk-deploy-client': 2.7.1
+      '@openzeppelin/defender-sdk-network-client': 2.7.1
       dotenv: 16.4.7
       minimist: 1.2.8
     transitivePeerDependencies:
@@ -4006,50 +4006,50 @@ snapshots:
       - encoding
       - supports-color
 
-  '@openzeppelin/defender-sdk-base-client@2.7.1(debug@4.4.3(supports-color@7.2.0))(supports-color@7.2.0)':
+  '@openzeppelin/defender-sdk-base-client@2.7.1':
     dependencies:
       '@aws-sdk/client-lambda': 3.1091.0
       amazon-cognito-identity-js: 6.3.20
       async-retry: 1.3.3
-      axios: 1.18.1(debug@4.4.3(supports-color@7.2.0))(supports-color@7.2.0)
+      axios: 1.18.1
     transitivePeerDependencies:
       - debug
       - encoding
       - supports-color
 
-  '@openzeppelin/defender-sdk-deploy-client@2.7.1(debug@4.4.3(supports-color@7.2.0))(supports-color@7.2.0)':
+  '@openzeppelin/defender-sdk-deploy-client@2.7.1':
     dependencies:
-      '@openzeppelin/defender-sdk-base-client': 2.7.1(debug@4.4.3(supports-color@7.2.0))(supports-color@7.2.0)
-      axios: 1.18.1(debug@4.4.3(supports-color@7.2.0))(supports-color@7.2.0)
+      '@openzeppelin/defender-sdk-base-client': 2.7.1
+      axios: 1.18.1
       lodash: 4.18.1
     transitivePeerDependencies:
       - debug
       - encoding
       - supports-color
 
-  '@openzeppelin/defender-sdk-network-client@2.7.1(debug@4.4.3(supports-color@7.2.0))(supports-color@7.2.0)':
+  '@openzeppelin/defender-sdk-network-client@2.7.1':
     dependencies:
-      '@openzeppelin/defender-sdk-base-client': 2.7.1(debug@4.4.3(supports-color@7.2.0))(supports-color@7.2.0)
-      axios: 1.18.1(debug@4.4.3(supports-color@7.2.0))(supports-color@7.2.0)
+      '@openzeppelin/defender-sdk-base-client': 2.7.1
+      axios: 1.18.1
       lodash: 4.18.1
     transitivePeerDependencies:
       - debug
       - encoding
       - supports-color
 
-  '@openzeppelin/foundry-upgrades@0.4.0(@openzeppelin/defender-deploy-client-cli@0.0.1-alpha.10(debug@4.4.3(supports-color@7.2.0))(supports-color@7.2.0))(@openzeppelin/upgrades-core@1.46.0(supports-color@7.2.0))':
+  '@openzeppelin/foundry-upgrades@0.4.0(@openzeppelin/defender-deploy-client-cli@0.0.1-alpha.10)(@openzeppelin/upgrades-core@1.46.0)':
     dependencies:
-      '@openzeppelin/defender-deploy-client-cli': 0.0.1-alpha.10(debug@4.4.3(supports-color@7.2.0))(supports-color@7.2.0)
-      '@openzeppelin/upgrades-core': 1.46.0(supports-color@7.2.0)
+      '@openzeppelin/defender-deploy-client-cli': 0.0.1-alpha.10
+      '@openzeppelin/upgrades-core': 1.46.0
 
-  '@openzeppelin/upgrades-core@1.46.0(supports-color@7.2.0)':
+  '@openzeppelin/upgrades-core@1.46.0':
     dependencies:
       '@nomicfoundation/slang': 0.18.3
       bignumber.js: 9.3.1
       cbor: 10.0.12
       chalk: 4.1.2
       compare-versions: 6.1.1
-      debug: 4.4.3(supports-color@7.2.0)
+      debug: 4.4.3
       ethereumjs-util: 7.1.5
       minimatch: 10.2.5
       minimist: 1.2.8
@@ -4155,34 +4155,34 @@ snapshots:
 
   '@solidity-parser/parser@0.19.0': {}
 
-  '@solidstate/hardhat-contract-sizer@3.0.3(@nomicfoundation/hardhat-utils@4.1.4)(debug@4.4.3(supports-color@7.2.0))(hardhat@3.9.0)(supports-color@7.2.0)':
+  '@solidstate/hardhat-contract-sizer@3.0.3(@nomicfoundation/hardhat-utils@4.1.4)(hardhat@3.9.0)':
     dependencies:
       '@nomicfoundation/hardhat-utils': 4.1.4
-      '@solidstate/hardhat-git': 1.0.3(@nomicfoundation/hardhat-utils@4.1.4)(debug@4.4.3(supports-color@7.2.0))(hardhat@3.9.0)(supports-color@7.2.0)
-      '@solidstate/hardhat-solidstate-utils': 1.0.3(@nomicfoundation/hardhat-utils@4.1.4)(debug@4.4.3(supports-color@7.2.0))(hardhat@3.9.0)(supports-color@7.2.0)
+      '@solidstate/hardhat-git': 1.0.3(@nomicfoundation/hardhat-utils@4.1.4)(hardhat@3.9.0)
+      '@solidstate/hardhat-solidstate-utils': 1.0.3(@nomicfoundation/hardhat-utils@4.1.4)(hardhat@3.9.0)
       chalk: 5.6.2
       hardhat: 3.9.0
     transitivePeerDependencies:
       - debug
       - supports-color
 
-  '@solidstate/hardhat-git@1.0.3(@nomicfoundation/hardhat-utils@4.1.4)(debug@4.4.3(supports-color@7.2.0))(hardhat@3.9.0)(supports-color@7.2.0)':
+  '@solidstate/hardhat-git@1.0.3(@nomicfoundation/hardhat-utils@4.1.4)(hardhat@3.9.0)':
     dependencies:
       '@nomicfoundation/hardhat-utils': 4.1.4
-      '@solidstate/hardhat-solidstate-utils': 1.0.3(@nomicfoundation/hardhat-utils@4.1.4)(debug@4.4.3(supports-color@7.2.0))(hardhat@3.9.0)(supports-color@7.2.0)
+      '@solidstate/hardhat-solidstate-utils': 1.0.3(@nomicfoundation/hardhat-utils@4.1.4)(hardhat@3.9.0)
       chalk: 5.6.2
       env-paths: 4.0.0
       hardhat: 3.9.0
       package-manager-detector: 1.7.0
-      simple-git: 3.36.0(supports-color@7.2.0)
+      simple-git: 3.36.0
     transitivePeerDependencies:
       - debug
       - supports-color
 
-  '@solidstate/hardhat-solidstate-utils@1.0.3(@nomicfoundation/hardhat-utils@4.1.4)(debug@4.4.3(supports-color@7.2.0))(hardhat@3.9.0)(supports-color@7.2.0)':
+  '@solidstate/hardhat-solidstate-utils@1.0.3(@nomicfoundation/hardhat-utils@4.1.4)(hardhat@3.9.0)':
     dependencies:
       '@nomicfoundation/hardhat-utils': 4.1.4
-      axios: 1.18.1(debug@4.4.3(supports-color@7.2.0))(supports-color@7.2.0)
+      axios: 1.18.1
       chalk: 5.6.2
       cli-table3: 0.6.5
       env-paths: 4.0.0
@@ -4248,15 +4248,15 @@ snapshots:
     dependencies:
       '@types/node': 22.15.21
 
-  '@typescript-eslint/eslint-plugin@8.54.0(@typescript-eslint/parser@8.54.0(eslint@9.27.0(jiti@2.6.1)(supports-color@7.2.0))(supports-color@7.2.0)(typescript@5.9.3))(eslint@9.27.0(jiti@2.6.1)(supports-color@7.2.0))(supports-color@7.2.0)(typescript@5.9.3)':
+  '@typescript-eslint/eslint-plugin@8.54.0(@typescript-eslint/parser@8.54.0(eslint@9.27.0(jiti@2.6.1))(typescript@5.9.3))(eslint@9.27.0(jiti@2.6.1))(typescript@5.9.3)':
     dependencies:
       '@eslint-community/regexpp': 4.12.2
-      '@typescript-eslint/parser': 8.54.0(eslint@9.27.0(jiti@2.6.1)(supports-color@7.2.0))(supports-color@7.2.0)(typescript@5.9.3)
+      '@typescript-eslint/parser': 8.54.0(eslint@9.27.0(jiti@2.6.1))(typescript@5.9.3)
       '@typescript-eslint/scope-manager': 8.54.0
-      '@typescript-eslint/type-utils': 8.54.0(eslint@9.27.0(jiti@2.6.1)(supports-color@7.2.0))(supports-color@7.2.0)(typescript@5.9.3)
-      '@typescript-eslint/utils': 8.54.0(eslint@9.27.0(jiti@2.6.1)(supports-color@7.2.0))(supports-color@7.2.0)(typescript@5.9.3)
+      '@typescript-eslint/type-utils': 8.54.0(eslint@9.27.0(jiti@2.6.1))(typescript@5.9.3)
+      '@typescript-eslint/utils': 8.54.0(eslint@9.27.0(jiti@2.6.1))(typescript@5.9.3)
       '@typescript-eslint/visitor-keys': 8.54.0
-      eslint: 9.27.0(jiti@2.6.1)(supports-color@7.2.0)
+      eslint: 9.27.0(jiti@2.6.1)
       ignore: 7.0.6
       natural-compare: 1.4.0
       ts-api-utils: 2.5.0(typescript@5.9.3)
@@ -4264,23 +4264,23 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  '@typescript-eslint/parser@8.54.0(eslint@9.27.0(jiti@2.6.1)(supports-color@7.2.0))(supports-color@7.2.0)(typescript@5.9.3)':
+  '@typescript-eslint/parser@8.54.0(eslint@9.27.0(jiti@2.6.1))(typescript@5.9.3)':
     dependencies:
       '@typescript-eslint/scope-manager': 8.54.0
       '@typescript-eslint/types': 8.54.0
-      '@typescript-eslint/typescript-estree': 8.54.0(supports-color@7.2.0)(typescript@5.9.3)
+      '@typescript-eslint/typescript-estree': 8.54.0(typescript@5.9.3)
       '@typescript-eslint/visitor-keys': 8.54.0
-      debug: 4.4.3(supports-color@7.2.0)
-      eslint: 9.27.0(jiti@2.6.1)(supports-color@7.2.0)
+      debug: 4.4.3
+      eslint: 9.27.0(jiti@2.6.1)
       typescript: 5.9.3
     transitivePeerDependencies:
       - supports-color
 
-  '@typescript-eslint/project-service@8.54.0(supports-color@7.2.0)(typescript@5.9.3)':
+  '@typescript-eslint/project-service@8.54.0(typescript@5.9.3)':
     dependencies:
       '@typescript-eslint/tsconfig-utils': 8.54.0(typescript@5.9.3)
       '@typescript-eslint/types': 8.54.0
-      debug: 4.4.3(supports-color@7.2.0)
+      debug: 4.4.3
       typescript: 5.9.3
     transitivePeerDependencies:
       - supports-color
@@ -4294,13 +4294,13 @@ snapshots:
     dependencies:
       typescript: 5.9.3
 
-  '@typescript-eslint/type-utils@8.54.0(eslint@9.27.0(jiti@2.6.1)(supports-color@7.2.0))(supports-color@7.2.0)(typescript@5.9.3)':
+  '@typescript-eslint/type-utils@8.54.0(eslint@9.27.0(jiti@2.6.1))(typescript@5.9.3)':
     dependencies:
       '@typescript-eslint/types': 8.54.0
-      '@typescript-eslint/typescript-estree': 8.54.0(supports-color@7.2.0)(typescript@5.9.3)
-      '@typescript-eslint/utils': 8.54.0(eslint@9.27.0(jiti@2.6.1)(supports-color@7.2.0))(supports-color@7.2.0)(typescript@5.9.3)
-      debug: 4.4.3(supports-color@7.2.0)
-      eslint: 9.27.0(jiti@2.6.1)(supports-color@7.2.0)
+      '@typescript-eslint/typescript-estree': 8.54.0(typescript@5.9.3)
+      '@typescript-eslint/utils': 8.54.0(eslint@9.27.0(jiti@2.6.1))(typescript@5.9.3)
+      debug: 4.4.3
+      eslint: 9.27.0(jiti@2.6.1)
       ts-api-utils: 2.5.0(typescript@5.9.3)
       typescript: 5.9.3
     transitivePeerDependencies:
@@ -4308,13 +4308,13 @@ snapshots:
 
   '@typescript-eslint/types@8.54.0': {}
 
-  '@typescript-eslint/typescript-estree@8.54.0(supports-color@7.2.0)(typescript@5.9.3)':
+  '@typescript-eslint/typescript-estree@8.54.0(typescript@5.9.3)':
     dependencies:
-      '@typescript-eslint/project-service': 8.54.0(supports-color@7.2.0)(typescript@5.9.3)
+      '@typescript-eslint/project-service': 8.54.0(typescript@5.9.3)
       '@typescript-eslint/tsconfig-utils': 8.54.0(typescript@5.9.3)
       '@typescript-eslint/types': 8.54.0
       '@typescript-eslint/visitor-keys': 8.54.0
-      debug: 4.4.3(supports-color@7.2.0)
+      debug: 4.4.3
       minimatch: 9.0.9
       semver: 7.8.5
       tinyglobby: 0.2.17
@@ -4323,13 +4323,13 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  '@typescript-eslint/utils@8.54.0(eslint@9.27.0(jiti@2.6.1)(supports-color@7.2.0))(supports-color@7.2.0)(typescript@5.9.3)':
+  '@typescript-eslint/utils@8.54.0(eslint@9.27.0(jiti@2.6.1))(typescript@5.9.3)':
     dependencies:
-      '@eslint-community/eslint-utils': 4.9.1(eslint@9.27.0(jiti@2.6.1)(supports-color@7.2.0))
+      '@eslint-community/eslint-utils': 4.9.1(eslint@9.27.0(jiti@2.6.1))
       '@typescript-eslint/scope-manager': 8.54.0
       '@typescript-eslint/types': 8.54.0
-      '@typescript-eslint/typescript-estree': 8.54.0(supports-color@7.2.0)(typescript@5.9.3)
-      eslint: 9.27.0(jiti@2.6.1)(supports-color@7.2.0)
+      '@typescript-eslint/typescript-estree': 8.54.0(typescript@5.9.3)
+      eslint: 9.27.0(jiti@2.6.1)
       typescript: 5.9.3
     transitivePeerDependencies:
       - supports-color
@@ -4386,9 +4386,9 @@ snapshots:
 
   aes-js@4.0.0-beta.5: {}
 
-  agent-base@6.0.2(supports-color@7.2.0):
+  agent-base@6.0.2:
     dependencies:
-      debug: 4.4.3(supports-color@7.2.0)
+      debug: 4.4.3
     transitivePeerDependencies:
       - supports-color
 
@@ -4459,11 +4459,11 @@ snapshots:
     dependencies:
       possible-typed-array-names: 1.1.0
 
-  axios@1.18.1(debug@4.4.3(supports-color@7.2.0))(supports-color@7.2.0):
+  axios@1.18.1:
     dependencies:
-      follow-redirects: 1.16.0(debug@4.4.3(supports-color@7.2.0))
+      follow-redirects: 1.16.0
       form-data: 4.0.6
-      https-proxy-agent: 5.0.1(supports-color@7.2.0)
+      https-proxy-agent: 5.0.1
       proxy-from-env: 2.1.0
     transitivePeerDependencies:
       - debug
@@ -4861,11 +4861,9 @@ snapshots:
 
   dateformat@3.0.3: {}
 
-  debug@4.4.3(supports-color@7.2.0):
+  debug@4.4.3:
     dependencies:
       ms: 2.1.3
-    optionalDependencies:
-      supports-color: 7.2.0
 
   decamelize-keys@1.1.1:
     dependencies:
@@ -4996,20 +4994,20 @@ snapshots:
 
   escape-string-regexp@4.0.0: {}
 
-  eslint-config-prettier@10.1.8(eslint@9.27.0(jiti@2.6.1)(supports-color@7.2.0)):
+  eslint-config-prettier@10.1.8(eslint@9.27.0(jiti@2.6.1)):
     dependencies:
-      eslint: 9.27.0(jiti@2.6.1)(supports-color@7.2.0)
+      eslint: 9.27.0(jiti@2.6.1)
 
   eslint-plugin-no-only-tests@3.3.0: {}
 
-  eslint-plugin-prettier@5.5.5(eslint-config-prettier@10.1.8(eslint@9.27.0(jiti@2.6.1)(supports-color@7.2.0)))(eslint@9.27.0(jiti@2.6.1)(supports-color@7.2.0))(prettier@3.8.1):
+  eslint-plugin-prettier@5.5.5(eslint-config-prettier@10.1.8(eslint@9.27.0(jiti@2.6.1)))(eslint@9.27.0(jiti@2.6.1))(prettier@3.8.1):
     dependencies:
-      eslint: 9.27.0(jiti@2.6.1)(supports-color@7.2.0)
+      eslint: 9.27.0(jiti@2.6.1)
       prettier: 3.8.1
       prettier-linter-helpers: 1.0.1
       synckit: 0.11.13
     optionalDependencies:
-      eslint-config-prettier: 10.1.8(eslint@9.27.0(jiti@2.6.1)(supports-color@7.2.0))
+      eslint-config-prettier: 10.1.8(eslint@9.27.0(jiti@2.6.1))
 
   eslint-scope@8.4.0:
     dependencies:
@@ -5020,14 +5018,14 @@ snapshots:
 
   eslint-visitor-keys@4.2.1: {}
 
-  eslint@9.27.0(jiti@2.6.1)(supports-color@7.2.0):
+  eslint@9.27.0(jiti@2.6.1):
     dependencies:
-      '@eslint-community/eslint-utils': 4.9.1(eslint@9.27.0(jiti@2.6.1)(supports-color@7.2.0))
+      '@eslint-community/eslint-utils': 4.9.1(eslint@9.27.0(jiti@2.6.1))
       '@eslint-community/regexpp': 4.12.2
-      '@eslint/config-array': 0.20.1(supports-color@7.2.0)
+      '@eslint/config-array': 0.20.1
       '@eslint/config-helpers': 0.2.3
       '@eslint/core': 0.14.0
-      '@eslint/eslintrc': 3.3.5(supports-color@7.2.0)
+      '@eslint/eslintrc': 3.3.5
       '@eslint/js': 9.27.0
       '@eslint/plugin-kit': 0.3.5
       '@humanfs/node': 0.16.8
@@ -5038,7 +5036,7 @@ snapshots:
       ajv: 6.15.0
       chalk: 4.1.2
       cross-spawn: 7.0.6
-      debug: 4.4.3(supports-color@7.2.0)
+      debug: 4.4.3
       escape-string-regexp: 4.0.0
       eslint-scope: 8.4.0
       eslint-visitor-keys: 4.2.1
@@ -5188,9 +5186,7 @@ snapshots:
 
   flatted@3.4.2: {}
 
-  follow-redirects@1.16.0(debug@4.4.3(supports-color@7.2.0)):
-    optionalDependencies:
-      debug: 4.4.3(supports-color@7.2.0)
+  follow-redirects@1.16.0: {}
 
   for-each@0.3.5:
     dependencies:
@@ -5405,10 +5401,10 @@ snapshots:
       quick-lru: 5.1.1
       resolve-alpn: 1.2.1
 
-  https-proxy-agent@5.0.1(supports-color@7.2.0):
+  https-proxy-agent@5.0.1:
     dependencies:
-      agent-base: 6.0.2(supports-color@7.2.0)
-      debug: 4.4.3(supports-color@7.2.0)
+      agent-base: 6.0.2
+      debug: 4.4.3
     transitivePeerDependencies:
       - supports-color
 
@@ -6067,13 +6063,13 @@ snapshots:
 
   signal-exit@3.0.7: {}
 
-  simple-git@3.36.0(supports-color@7.2.0):
+  simple-git@3.36.0:
     dependencies:
-      '@kwsites/file-exists': 1.1.1(supports-color@7.2.0)
+      '@kwsites/file-exists': 1.1.1
       '@kwsites/promise-deferred': 1.1.1
       '@simple-git/args-pathspec': 1.0.3
       '@simple-git/argv-parser': 1.1.1
-      debug: 4.4.3(supports-color@7.2.0)
+      debug: 4.4.3
     transitivePeerDependencies:
       - supports-color
 
@@ -6085,11 +6081,11 @@ snapshots:
       astral-regex: 2.0.0
       is-fullwidth-code-point: 3.0.0
 
-  solc@0.8.24(debug@4.4.3(supports-color@7.2.0)):
+  solc@0.8.24:
     dependencies:
       command-exists: 1.2.9
       commander: 8.3.0
-      follow-redirects: 1.16.0(debug@4.4.3(supports-color@7.2.0))
+      follow-redirects: 1.16.0
       js-sha3: 0.8.0
       memorystream: 0.3.1
       semver: 5.7.2
@@ -6268,12 +6264,12 @@ snapshots:
     dependencies:
       typescript: 5.9.3
 
-  ts-test-helpers@https://codeload.github.com/money-on-chain/ts-test-helpers/tar.gz/6177adbe32646487c88dc9553b160c22d498e8e2(@nomicfoundation/hardhat-toolbox-viem@5.0.7(6290106f27664cbed5721001e427defd))(hardhat@3.9.0)(typescript@5.9.3)(zod@3.25.76):
+  ts-test-helpers@https://codeload.github.com/money-on-chain/ts-test-helpers/tar.gz/6177adbe32646487c88dc9553b160c22d498e8e2(@nomicfoundation/hardhat-toolbox-viem@5.0.7(wkxxrp6f3h473w2c7jv2luj46m))(hardhat@3.9.0)(typescript@5.9.3)(zod@3.25.76):
     dependencies:
       hardhat: 3.9.0
       viem: 2.53.1(typescript@5.9.3)(zod@3.25.76)
     optionalDependencies:
-      '@nomicfoundation/hardhat-toolbox-viem': 5.0.7(6290106f27664cbed5721001e427defd)
+      '@nomicfoundation/hardhat-toolbox-viem': 5.0.7(wkxxrp6f3h473w2c7jv2luj46m)
     transitivePeerDependencies:
       - bufferutil
       - typescript
@@ -6310,13 +6306,13 @@ snapshots:
 
   typedarray@0.0.6: {}
 
-  typescript-eslint@8.54.0(eslint@9.27.0(jiti@2.6.1)(supports-color@7.2.0))(supports-color@7.2.0)(typescript@5.9.3):
+  typescript-eslint@8.54.0(eslint@9.27.0(jiti@2.6.1))(typescript@5.9.3):
     dependencies:
-      '@typescript-eslint/eslint-plugin': 8.54.0(@typescript-eslint/parser@8.54.0(eslint@9.27.0(jiti@2.6.1)(supports-color@7.2.0))(supports-color@7.2.0)(typescript@5.9.3))(eslint@9.27.0(jiti@2.6.1)(supports-color@7.2.0))(supports-color@7.2.0)(typescript@5.9.3)
-      '@typescript-eslint/parser': 8.54.0(eslint@9.27.0(jiti@2.6.1)(supports-color@7.2.0))(supports-color@7.2.0)(typescript@5.9.3)
-      '@typescript-eslint/typescript-estree': 8.54.0(supports-color@7.2.0)(typescript@5.9.3)
-      '@typescript-eslint/utils': 8.54.0(eslint@9.27.0(jiti@2.6.1)(supports-color@7.2.0))(supports-color@7.2.0)(typescript@5.9.3)
-      eslint: 9.27.0(jiti@2.6.1)(supports-color@7.2.0)
+      '@typescript-eslint/eslint-plugin': 8.54.0(@typescript-eslint/parser@8.54.0(eslint@9.27.0(jiti@2.6.1))(typescript@5.9.3))(eslint@9.27.0(jiti@2.6.1))(typescript@5.9.3)
+      '@typescript-eslint/parser': 8.54.0(eslint@9.27.0(jiti@2.6.1))(typescript@5.9.3)
+      '@typescript-eslint/typescript-estree': 8.54.0(typescript@5.9.3)
+      '@typescript-eslint/utils': 8.54.0(eslint@9.27.0(jiti@2.6.1))(typescript@5.9.3)
+      eslint: 9.27.0(jiti@2.6.1)
       typescript: 5.9.3
     transitivePeerDependencies:
       - supports-color
