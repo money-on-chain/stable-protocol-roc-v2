@@ -136,6 +136,24 @@ contract RifProMigrationChangerForkTests is Test {
         governor.executeChange(IChangeContract(address(partiallyPermissionedChanger)));
     }
 
+    function test_ExecuteChangerRevertsIfRifQueueIsNotEmpty() public {
+        IERC20 rifToken = IERC20(rifBucket.acToken());
+        uint256 qACmax = 2 ether;
+        uint256 mintExecFee = _execFee(MocQueueExecFees.OperType.mintTC);
+
+        deal(address(rifToken), RIF_PRO_HOLDER, qACmax);
+
+        vm.startPrank(RIF_PRO_HOLDER);
+        rifToken.approve(address(rifBucket), qACmax);
+        rifBucket.mintTC{ value: mintExecFee }(1 ether, qACmax, RIF_PRO_HOLDER, address(0));
+        vm.stopPrank();
+
+        IGovernor governor = IGovernor(address(rifBucket.governor()));
+        vm.prank(governorOwner);
+        vm.expectRevert(RifPRoMigrationChanger.QueueNotEmpty.selector);
+        governor.executeChange(IChangeContract(address(changer)));
+    }
+
     function test_NewTokenGrantsBucketAllRequiredRoles() public {
         assertTrue(newRifProToken.hasRole(DEFAULT_ADMIN_ROLE, address(rifBucket)), "bucket should be token admin");
         assertTrue(newRifProToken.hasRole(MINTER_ROLE, address(rifBucket)), "bucket should be token minter");

@@ -9,15 +9,22 @@ interface IAccessControl {
     function hasRole(bytes32 role_, address account_) external view returns (bool);
 }
 
+interface IMocQueue {
+    function isEmpty() external view returns (bool);
+}
+
 /**
   @title RifPRoMigrationChanger
   @notice Migrates RIFPro token to the new one
   @dev Preconditions:
-       - The new RIFPro token must have the MINTER_ROLE, BURNER_ROLE and DEFAULT_ADMIN_ROLE assigned to the RIF bucket proxy address before executing the change.
-       - The RIF bucket must have valid prices in the same block as the change execution, so the new nTCcb and migration rate are correctly calculated.
-       - The RIF queue must be empty, a redeem TC operation enqueued may cause a bad calculation of the new nTTcb.
+       - The new RIFPro token must grant MINTER_ROLE, BURNER_ROLE, and DEFAULT_ADMIN_ROLE
+         to the RIF bucket proxy before this change is executed.
+       - The RIF bucket must have fresh valid prices in the execution block, so the new
+         nTCcb and migration rate are calculated from up-to-date bucket state.
+       - The RIF queue must be empty. Pending TC redeem operations can distort the new
+         nTCcb calculation.
        - The protocol should be paused during execution. Otherwise, an attacker could
- *        enqueue operations around the migration and manipulate the TC price.
+         enqueue operations around the migration and manipulate the TC price.
  */
 contract RifPRoMigrationChanger is IChangeContract {
     bytes32 public constant DEFAULT_ADMIN_ROLE = 0x00;
@@ -25,6 +32,7 @@ contract RifPRoMigrationChanger is IChangeContract {
     bytes32 public constant BURNER_ROLE = keccak256("BURNER_ROLE");
 
     error MissingTokenRole(bytes32 role_, address account_);
+    error QueueNotEmpty();
 
     MocRif public immutable rifBucketProxy;
     address public immutable newRifBucketImplementation;
@@ -55,6 +63,7 @@ contract RifPRoMigrationChanger is IChangeContract {
     }
     function _beforeUpgrade() internal view {
         address rifBucketAddress = address(rifBucketProxy);
+        if (!IMocQueue(rifBucketProxy.mocQueue()).isEmpty()) revert QueueNotEmpty();
         if (!IAccessControl(newRifProToken).hasRole(MINTER_ROLE, rifBucketAddress))
             revert MissingTokenRole(MINTER_ROLE, rifBucketAddress);
         if (!IAccessControl(newRifProToken).hasRole(BURNER_ROLE, rifBucketAddress))
