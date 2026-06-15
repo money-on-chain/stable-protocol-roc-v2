@@ -1,6 +1,6 @@
 {
   "name": "roc-sc-protocol-v2",
-  "version": "3.0.1",
+  "version": "3.0.2",
   "private": true,
   "homepage": "https://www.moneyonchain.com",
   "description": "Money on Chain main smart contract protocol RIF implementation",
@@ -9,7 +9,7 @@
   "dependencies": {
     "moc-main-latest": "git+ssh://git@github.com/money-on-chain/main-sc-protocol-v2#v3.0.0",
     "@moc/price-oracle-interfaces": "git+ssh://git@github.com/money-on-chain/price_oracle_interfaces.git#v0.0.2",
-    "@moc/oracles": "git+ssh://git@github.com/money-on-chain/OMoC-Decentralized-Oracle.git#v3.0.4",
+    "@moc/oracles": "git+ssh://git@github.com/money-on-chain/OMoC-Decentralized-Oracle.git#v3.0.6",
     "@moc/flow": "git+ssh://git@github.com/money-on-chain/MoC-Flow.git#v3.0.0",
     "solc": "0.8.24"
   },
@@ -63,7 +63,11 @@
   },
   "types": "types/index.d.ts",
   "files": [
-    "/contracts"
+    "/contracts",
+    "/addressBook.js",
+    "/addressBook.d.ts",
+    "/addressBook.json",
+    "/types"
   ],
   "keywords": [
     "blockchain",
@@ -109,5 +113,12 @@
     }
   },
   "type": "module",
-  "packageManager": "pnpm@10.13.1+sha512.37ebf1a5c7a30d5fabe0c5df44ee8da4c965ca0c5af3dbab28c3a1681b70a256218d05c81c9c0dcf767ef6b8551eb5b960042b9ed4300c59242336377e01cfad"
+  "packageManager": "pnpm@10.13.1+sha512.37ebf1a5c7a30d5fabe0c5df44ee8da4c965ca0c5af3dbab28c3a1681b70a256218d05c81c9c0dcf767ef6b8551eb5b960042b9ed4300c59242336377e01cfad",
+  "exports": {
+    "./addressBook": {
+      "types": "./addressBook.d.ts",
+      "default": "./addressBook.js"
+    },
+    "./package.json": "./package.json"
+  }
 }

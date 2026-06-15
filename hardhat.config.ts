@@ -174,6 +174,7 @@ const config: HardhatUserConfig = {
       "@moc/oracles/contracts/tasks/oracles/TaskSwitchRoundCoinPair.sol",
       "@moc/oracles/contracts/tasks/oracles/TaskDistributeSupporters.sol",
       "@moc/oracles/contracts/BasefeeProvider.sol",
+      "@moc/oracles/contracts/CoinPairPrice.sol",
       "@moc/flow/contracts/BufferToken.sol",
       "@moc/oracles/contracts/TasksRunner.sol",
 
@@ -305,7 +306,7 @@ const config: HardhatUserConfig = {
     solidity: {
       ffi: true,
       fsPermissions: {
-        readDirectory: ["./out", "./test", "./ignition/deployments"],
+        readDirectory: ["addressBook.json", "./out", "./test", "./ignition/deployments"],
       },
     },
   },

@@ -28,8 +28,8 @@ importers:
         specifier: git+ssh://git@github.com/money-on-chain/MoC-Flow.git#v3.0.0
         version: '@moneyonchain/flow@git+https://git@github.com:money-on-chain/MoC-Flow.git#af6d889ab50b642f7885bda42327efb10d2630a7'
       '@moc/oracles':
-        specifier: git+ssh://git@github.com/money-on-chain/OMoC-Decentralized-Oracle.git#v3.0.4
-        version: '@moneyonchain/oracles@https://codeload.github.com/money-on-chain/OMoC-Decentralized-Oracle/tar.gz/118577027046f35cccc5363dcfb8ab2782dcb542'
+        specifier: git+ssh://git@github.com/money-on-chain/OMoC-Decentralized-Oracle.git#v3.0.6
+        version: '@moneyonchain/oracles@https://codeload.github.com/money-on-chain/OMoC-Decentralized-Oracle/tar.gz/b4e9b0f9939d884d1e482a7a18e7bc9e6d67bea7'
       '@moc/price-oracle-interfaces':
         specifier: git+ssh://git@github.com/money-on-chain/price_oracle_interfaces.git#v0.0.2
         version: price-oracle-interfaces@https://codeload.github.com/money-on-chain/price_oracle_interfaces/tar.gz/b632f9e7248bc8b22e6dc2983486f69f0d1a23b9
@@ -694,9 +694,9 @@ packages:
     resolution: {commit: af6d889ab50b642f7885bda42327efb10d2630a7, repo: git@github.com:money-on-chain/MoC-Flow.git, type: git}
     version: 3.0.0
 
-  '@moneyonchain/oracles@https://codeload.github.com/money-on-chain/OMoC-Decentralized-Oracle/tar.gz/118577027046f35cccc5363dcfb8ab2782dcb542':
-    resolution: {tarball: https://codeload.github.com/money-on-chain/OMoC-Decentralized-Oracle/tar.gz/118577027046f35cccc5363dcfb8ab2782dcb542}
-    version: 3.0.0
+  '@moneyonchain/oracles@https://codeload.github.com/money-on-chain/OMoC-Decentralized-Oracle/tar.gz/b4e9b0f9939d884d1e482a7a18e7bc9e6d67bea7':
+    resolution: {tarball: https://codeload.github.com/money-on-chain/OMoC-Decentralized-Oracle/tar.gz/b4e9b0f9939d884d1e482a7a18e7bc9e6d67bea7}
+    version: 3.0.6
 
   '@moneyonchain/periphery@https://codeload.github.com/money-on-chain/MoC-Periphery/tar.gz/e7c4a6661d8cd17a40ec6ebd118be907b3accb05':
     resolution: {tarball: https://codeload.github.com/money-on-chain/MoC-Periphery/tar.gz/e7c4a6661d8cd17a40ec6ebd118be907b3accb05}
@@ -4463,7 +4463,7 @@ snapshots:
       - bluebird
       - supports-color
 
-  '@moneyonchain/oracles@https://codeload.github.com/money-on-chain/OMoC-Decentralized-Oracle/tar.gz/118577027046f35cccc5363dcfb8ab2782dcb542':
+  '@moneyonchain/oracles@https://codeload.github.com/money-on-chain/OMoC-Decentralized-Oracle/tar.gz/b4e9b0f9939d884d1e482a7a18e7bc9e6d67bea7':
     dependencies:
       '@moc/moc-main': main-sc-protocol-v2@git+https://git@github.com:money-on-chain/main-sc-protocol-v2.git#a5d9947ac588c3d9ec01581fa9250ec26a19bb4d
       '@moc/periphery': '@moneyonchain/periphery@https://codeload.github.com/money-on-chain/MoC-Periphery/tar.gz/e7c4a6661d8cd17a40ec6ebd118be907b3accb05'

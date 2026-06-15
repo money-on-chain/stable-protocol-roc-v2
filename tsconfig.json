@@ -13,7 +13,8 @@
     "sourceMap": true,
     "strict": true,
     "target": "ES2022",
-    "skipLibCheck": true
+    "skipLibCheck": true,
+    "allowJs": true
   },
   "exclude": [
     "node_modules"
@@ -31,6 +32,7 @@
     "ignition/**/*.ts",
     "config/**/*.ts",
     "eslint.config.js",
-    ".commitlintrc.js"
+    ".commitlintrc.js",
+    "addressBook.js"
   ]
 }

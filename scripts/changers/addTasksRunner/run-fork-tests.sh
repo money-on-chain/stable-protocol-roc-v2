@@ -5,7 +5,7 @@
 # This script:
 # 1. Starts a Hardhat node forking RSK mainnet (in-memory EDR)
 # 2. Deploys AddTasksRunner (includes AddTasksRunnerChanger)
-# 3. Exports merged deployed addresses
+# 3. Exports local AddTasksRunner deployment addresses
 # 4. Runs Solidity tests that fork from the running Hardhat node
 #
 # Usage:
@@ -21,7 +21,6 @@ set -e
 NETWORK="${1:-rskMainnet}"
 NODE_PORT=8545
 NODE_PID=""
-MC_DEPLOYMENT_ID="${MC_DEPLOYMENT_ID:-chain-30}"
 ADD_TASKS_DEPLOYMENT_ID="chain-test"
 DEPLOYED_ADDRESSES_FILE="test/changers/addTasksRunner/fixtures/deployed-addresses.json"
 FORK_BLOCK_NUMBER="${FORK_BLOCK_NUMBER:-}"
@@ -109,17 +108,6 @@ validate_add_tasks_params() {
     log_success "Using AddTasksRunner parameters: $add_tasks_params"
 }
 
-validate_mc_deployment_addresses() {
-    MC_FILE="ignition/deployments/$MC_DEPLOYMENT_ID/deployed_addresses.json"
-    if [ ! -f "$MC_FILE" ]; then
-        log_error "Missing MultiCollateral deployed addresses file: $MC_FILE"
-        log_error "Set MC_DEPLOYMENT_ID to an existing deployment containing MultiCollateral addresses."
-        exit 1
-    fi
-
-    log_success "Using MultiCollateral deployed addresses: $MC_FILE"
-}
-
 deploy_add_tasks_runner() {
     log_info "Deploying AddTasksRunner via Ignition..."
 
@@ -135,17 +123,11 @@ deploy_add_tasks_runner() {
 }
 
 export_addresses() {
-    log_info "Exporting merged deployed addresses..."
+    log_info "Exporting AddTasksRunner deployed addresses..."
 
     mkdir -p test/changers/addTasksRunner/fixtures
 
-    MC_FILE="ignition/deployments/$MC_DEPLOYMENT_ID/deployed_addresses.json"
     ADD_TASKS_FILE="ignition/deployments/$ADD_TASKS_DEPLOYMENT_ID/deployed_addresses.json"
-
-    if [ ! -f "$MC_FILE" ]; then
-        log_error "Could not find deployed_addresses.json in $MC_FILE"
-        exit 1
-    fi
 
     if [ ! -f "$ADD_TASKS_FILE" ]; then
         log_error "Could not find deployed_addresses.json in $ADD_TASKS_FILE"
@@ -154,23 +136,19 @@ export_addresses() {
 
     node -e "
         const fs = require('fs');
-        const mc = require('./$MC_FILE');
         const addTasks = require('./$ADD_TASKS_FILE');
 
-        const merged = { ...mc, ...addTasks };
-
         const simplified = {};
-        for (const [key, value] of Object.entries(merged)) {
+        for (const [key, value] of Object.entries(addTasks)) {
           const contractId = key.includes('#') ? key.split('#')[1] : key;
           simplified[contractId] = value;
         }
 
         simplified._network = '$NETWORK';
-        simplified._multiCollateralDeploymentDir = 'ignition/deployments/$MC_DEPLOYMENT_ID';
         simplified._addTasksRunnerDeploymentDir = 'ignition/deployments/$ADD_TASKS_DEPLOYMENT_ID';
 
         fs.writeFileSync('$DEPLOYED_ADDRESSES_FILE', JSON.stringify(simplified, null, 2));
-        console.log('Exported', Object.keys(simplified).length - 3, 'contract addresses');
+        console.log('Exported', Object.keys(simplified).length - 2, 'contract addresses');
     "
 
     log_success "Addresses exported to $DEPLOYED_ADDRESSES_FILE"
@@ -193,11 +171,9 @@ main() {
     log_info "=========================================="
     log_info "Fork Tests for AddTasksRunner"
     log_info "Network: $NETWORK"
-    log_info "MultiCollateral deployment id: $MC_DEPLOYMENT_ID"
     log_info "=========================================="
 
     check_requirements
-    validate_mc_deployment_addresses
     start_node
     validate_add_tasks_params
     deploy_add_tasks_runner

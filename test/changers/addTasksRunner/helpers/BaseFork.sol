@@ -12,10 +12,6 @@ import { IChangeContract } from "moc-main-latest/contracts/interfaces/IChangeCon
 import { IGovernor } from "moc-main-latest/contracts/interfaces/IGovernor.sol";
 
 contract BaseFork is IgnitionDeployments {
-    address constant GOVERNOR_OWNER = 0x65a5681bE95d212F0c90eAd40170D8277de81169;
-    address constant HOLDER_ADDRESS = 0xe4822F07C1d988A8f2F53D1817f7e8848897b67A;
-    address constant MOC_CORE_ADDRESS = 0xA27024Ed70035E46dba712609fc2Afa1c97aA36A;
-
     MocRif public rifBucket;
     MocQueue public rifQueue;
     MocMultiCollateralGuard public mocMultiCollateralGuard;
@@ -29,6 +25,7 @@ contract BaseFork is IgnitionDeployments {
     MocRC20 public docProToken;
 
     address public holder;
+    address public governorOwner;
 
     function _loadIgnitionContracts() internal {
         address addTasksChangerAddr = getDeployedAddress("AddTasksRunner_AddTasksRunnerChanger");
@@ -38,16 +35,16 @@ contract BaseFork is IgnitionDeployments {
         require(addTasksChangerAddr != address(0), "AddTasksRunnerChanger not deployed");
         addTasksRunnerChanger = AddTasksRunnerChanger(addTasksChangerAddr);
 
-        address queueAddr = getMultiCollateralDeployedAddress("MultiCollateral_MocQueueProxy");
-        require(queueAddr != address(0), "MocQueueProxy not deployed");
+        address queueAddr = getMainnetAddress("rifQueue");
+        require(queueAddr != address(0), "RifQueue not configured");
         rifQueue = MocQueue(payable(queueAddr));
 
-        address guardAddr = getMultiCollateralDeployedAddress("MultiCollateral_MocMultiCollateralGuardProxy");
-        require(guardAddr != address(0), "MocMultiCollateralGuardProxy not deployed");
+        address guardAddr = getMainnetAddress("mocMultiCollateralGuard");
+        require(guardAddr != address(0), "MocMultiCollateralGuard not configured");
         mocMultiCollateralGuard = MocMultiCollateralGuard(payable(guardAddr));
 
-        address docBucketAddr = getMultiCollateralDeployedAddress("DocBucket_DocBucketProxy");
-        require(docBucketAddr != address(0), "DocBucketProxy not deployed");
+        address docBucketAddr = getMainnetAddress("docBucket");
+        require(docBucketAddr != address(0), "DocBucket not configured");
         docBucket = MocCARC20(payable(docBucketAddr));
     }
 
@@ -58,7 +55,7 @@ contract BaseFork is IgnitionDeployments {
         _loadDeployedAddresses();
         _loadIgnitionContracts();
 
-        rifBucket = MocRif(payable(MOC_CORE_ADDRESS));
+        rifBucket = MocRif(payable(getMainnetAddress("mocCore")));
 
         rifToken = MocRC20(address(rifBucket.acToken()));
         rifProToken = MocRC20(address(rifBucket.tcToken()));
@@ -67,14 +64,15 @@ contract BaseFork is IgnitionDeployments {
         docToken = MocRC20(address(docBucket.acToken()));
         docProToken = MocRC20(address(docBucket.tcToken()));
 
-        holder = HOLDER_ADDRESS;
+        holder = getMainnetAddress("holder");
+        governorOwner = getMainnetAddress("governorOwner");
         vm.deal(holder, 100 ether);
-        vm.deal(GOVERNOR_OWNER, 100 ether);
+        vm.deal(governorOwner, 100 ether);
     }
 
     function _executeAddTasksRunnerChanger() internal {
         IGovernor governor = IGovernor(address(rifBucket.governor()));
-        vm.prank(GOVERNOR_OWNER);
+        vm.prank(governorOwner);
         governor.executeChange(IChangeContract(address(addTasksRunnerChanger)));
     }
 }

@@ -25,9 +25,11 @@ export default tseslint.config(
       ".commitlintrc.js",
       "eslint.config.js",
       "coverage.json",
+      "soljson-latest.js",
     ],
   },
   {
+    files: ["**/*.{ts,tsx,mts,cts}"],
     languageOptions: {
       parserOptions: {
         project: "./tsconfig.json",
@@ -40,6 +42,15 @@ export default tseslint.config(
       "@typescript-eslint/no-floating-promises": ["error", { ignoreIIFE: true, ignoreVoid: true }],
       "@typescript-eslint/no-inferrable-types": "off",
       "@typescript-eslint/no-unused-vars": ["error", { argsIgnorePattern: "^_", varsIgnorePattern: "^_" }],
+      "no-only-tests/no-only-tests": "error",
+    },
+  },
+  {
+    files: ["**/*.{js,mjs,cjs}"],
+    plugins: {
+      "no-only-tests": noOnlyTests,
+    },
+    rules: {
       "no-only-tests/no-only-tests": "error",
     },
   },
