@@ -1,6 +1,6 @@
 {
   "name": "roc-sc-protocol-v2",
-  "version": "3.0.2",
+  "version": "3.0.6",
   "private": true,
   "homepage": "https://www.moneyonchain.com",
   "description": "Money on Chain main smart contract protocol RIF implementation",

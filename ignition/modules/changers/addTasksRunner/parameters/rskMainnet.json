@@ -86,21 +86,33 @@
     "reverseAuctions.swapDocFeesToMocForRifOracle.priceProvider": "0x40b03AF84c40f8bE049F447a0D268447925F7b0C",
     "reverseAuctions.swapDocFeesToMocForRifOracle.slippage": "30000000000000000",
     "oracleFunding.mimLabsMultisig": "0x4905F643Db489d9561617638d31875b6bfF79077",
-    "oracleFundingBuffers.splitRifFeesToFoundationAndRifOracle.threshold": "0",
+    "oracleFundingBuffers.splitRifFeesToFoundationAndRifOracle.threshold": "1000000000000000000000",
     "oracleFundingBuffers.splitRifFeesToFoundationAndRifOracle.splits": ["70", "30"],
-    "oracleFundingBuffers.splitRifFeesToFoundationAndRifOracle.outputThresholds": ["0", "0"],
-    "oracleFundingBuffers.splitDocFeesToFoundationAndRifOracle.threshold": "0",
+    "oracleFundingBuffers.splitRifFeesToFoundationAndRifOracle.outputThresholds": [
+      "1000000000000000000000",
+      "1000000000000000000000"
+    ],
+    "oracleFundingBuffers.splitDocFeesToFoundationAndRifOracle.threshold": "100000000000000000000",
     "oracleFundingBuffers.splitDocFeesToFoundationAndRifOracle.splits": ["70", "30"],
-    "oracleFundingBuffers.splitDocFeesToFoundationAndRifOracle.outputThresholds": ["0", "0"],
-    "oracleFundingBuffers.splitMocFeesToFoundationAndRifOracle.threshold": "0",
+    "oracleFundingBuffers.splitDocFeesToFoundationAndRifOracle.outputThresholds": [
+      "100000000000000000000",
+      "100000000000000000000"
+    ],
+    "oracleFundingBuffers.splitMocFeesToFoundationAndRifOracle.threshold": "2000000000000000000000",
     "oracleFundingBuffers.splitMocFeesToFoundationAndRifOracle.splits": ["70", "30"],
-    "oracleFundingBuffers.splitMocFeesToFoundationAndRifOracle.outputThresholds": ["0", "0"],
-    "oracleFundingBuffers.tasksRunner.threshold": "0",
+    "oracleFundingBuffers.splitMocFeesToFoundationAndRifOracle.outputThresholds": [
+      "2000000000000000000000",
+      "2000000000000000000000"
+    ],
+    "oracleFundingBuffers.tasksRunner.threshold": "1000000000000000000000",
     "oracleFundingBuffers.tasksRunner.splits": ["90", "10"],
-    "oracleFundingBuffers.tasksRunner.outputThresholds": ["0", "0"],
-    "oracleFundingBuffers.splitPriceUpdateFeesToBtcOracleAndRifOracle.threshold": "0",
+    "oracleFundingBuffers.tasksRunner.outputThresholds": ["1000000000000000000000", "1000000000000000000000"],
+    "oracleFundingBuffers.splitPriceUpdateFeesToBtcOracleAndRifOracle.threshold": "1000000000000000000000",
     "oracleFundingBuffers.splitPriceUpdateFeesToBtcOracleAndRifOracle.splits": ["50", "50"],
-    "oracleFundingBuffers.splitPriceUpdateFeesToBtcOracleAndRifOracle.outputThresholds": ["0", "0"],
+    "oracleFundingBuffers.splitPriceUpdateFeesToBtcOracleAndRifOracle.outputThresholds": [
+      "1000000000000000000000",
+      "1000000000000000000000"
+    ],
     "queueExecutionCosts.rifBucket": [
       "141437",
       "310550",
@@ -126,10 +138,6 @@
       "164255",
       "255000"
     ],
-    "rocNodesBuffer.threshold": "0",
-    "rocNodesBuffer.outputs": ["0xf09006E812BE98c7B18c877Af5C126629acB6cAb"],
-    "rocNodesBuffer.splits": ["0"],
-    "rocNodesBuffer.outputThresholds": ["0"],
     "triggerOrderRevAuctions.revAuctionRIFtoMOC_rocRewardsBuffer": "0x323f6117A256E8f697Ac8d2816eb71e9B7134809",
     "triggerOrderRevAuctions.revAuctionMOCtoRIF_rifBucket": "0xd3D1aFc638cEF2C55D2Ee33e0C355972f11Be065",
     "triggerOrderRevAuctions.revAuctionDOCtoMOC_rocRewardsBuffer": "0x883e3433c236Abd3c301FFc9B59EA478C0C21c9a",
