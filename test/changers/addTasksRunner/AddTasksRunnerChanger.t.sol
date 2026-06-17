@@ -53,6 +53,7 @@ interface IBufferTokenView {
 
 interface IGovernedRegistryView {
     function addressArrayContains(bytes32 _key, address value) external view returns (bool);
+    function getAddress(bytes32 _key) external view returns (address);
 }
 
 interface IOracleManagerView {
@@ -85,6 +86,7 @@ contract AddTasksRunnerChangerForkTests is BaseFork {
     bytes32 private constant MOC_FLOW_REVERSE_AUCTIONS =
         0x0428ec087e0cce276a71d1caf1afe4da32a2d48b3ebe579040612b5bd262ff73;
     bytes32 private constant RIF_USD = 0x5249465553440000000000000000000000000000000000000000000000000000;
+    bytes32 private constant INFO_ADDR = 0xda9f12e01fc92de345bb741448d36ecb967052dd7aa1670439af833c9a3d78f1;
 
     address private mocRewardsBuffer;
     address private supporters;
@@ -260,6 +262,9 @@ contract AddTasksRunnerChangerForkTests is BaseFork {
         );
 
         ICoinPairPriceView rifOracleCoinPair = ICoinPairPriceView(addTasksRunnerChanger.rifOracleCoinPair());
+        address infoAddr = IGovernedRegistryView(address(addTasksRunnerChanger.governedRegistry())).getAddress(
+            INFO_ADDR
+        );
         assertTrue(
             rifOracleCoinPair.isPricePeekWhitelisted(address(rifBucket)),
             "RIF bucket should remain whitelisted on the new direct RIF/USD pair"
@@ -271,6 +276,10 @@ contract AddTasksRunnerChangerForkTests is BaseFork {
         assertTrue(
             rifOracleCoinPair.isPricePeekWhitelisted(addTasksRunnerChanger.mocToRifPriceProvider()),
             "replacement MOC/RIF provider should be whitelisted on the new direct RIF/USD pair"
+        );
+        assertTrue(
+            rifOracleCoinPair.isPricePeekWhitelisted(infoAddr),
+            "INFO_ADDR consumer should be whitelisted on the new direct RIF/USD pair"
         );
 
         vm.prank(address(rifBucket));

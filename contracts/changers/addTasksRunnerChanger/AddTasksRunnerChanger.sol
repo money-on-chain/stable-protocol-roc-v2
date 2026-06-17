@@ -35,6 +35,7 @@ interface IBufferLike {
 }
 
 interface IGovernedRegistry {
+    function getAddress(bytes32 _key) external view returns (address);
     function removeAddressArrayElement(bytes32 _key, address value) external;
 }
 
@@ -65,6 +66,7 @@ contract AddTasksRunnerChanger is IChangeContract {
     bytes32 private constant MOC_FLOW_BUFFERS = 0x4cb845794d5472a713e41e8e4ddc566dab8d695f1dc6c8edd43dad9d55112a22;
     bytes32 private constant MOC_FLOW_REVERSE_AUCTIONS =
         0x0428ec087e0cce276a71d1caf1afe4da32a2d48b3ebe579040612b5bd262ff73;
+    bytes32 private constant INFO_ADDR = 0xda9f12e01fc92de345bb741448d36ecb967052dd7aa1670439af833c9a3d78f1;
 
     // OracleManager storage slots used by delegateCallToChanger(abi.encode(bytes32,uint256)).
     uint256 private constant ORACLE_MANAGER_COIN_PAIR_MAP_SLOT = 104;
@@ -445,6 +447,7 @@ contract AddTasksRunnerChanger is IChangeContract {
      */
     function _ensureRifOracleWhitelist(address coinPair_) internal {
         ICoinPairPriceGovernance coinPair = ICoinPairPriceGovernance(coinPair_);
+        address infoAddr = governedRegistry.getAddress(INFO_ADDR);
 
         if (!coinPair.isPricePeekWhitelisted(address(rifBucket))) {
             coinPair.addPricePeekWhitelist(address(rifBucket));
@@ -454,6 +457,9 @@ contract AddTasksRunnerChanger is IChangeContract {
         }
         if (!coinPair.isPricePeekWhitelisted(mocToRifPriceProvider)) {
             coinPair.addPricePeekWhitelist(mocToRifPriceProvider);
+        }
+        if (infoAddr != address(0) && !coinPair.isPricePeekWhitelisted(infoAddr)) {
+            coinPair.addPricePeekWhitelist(infoAddr);
         }
     }
 
