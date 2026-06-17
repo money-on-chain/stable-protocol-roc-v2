@@ -99,6 +99,9 @@ contract AddTasksRunnerChanger is IChangeContract {
     IOracleManager public immutable oracleManager;
     address public immutable tasksRunner;
     bytes32 public immutable tasksRunnerCoinPair;
+    address public immutable taskExecuteQueueV3;
+    address public immutable taskUpdateEmaV3RifBucket;
+    address public immutable taskSettlementV3RifBucket;
     MocRif public immutable rifBucket;
     bytes32 public immutable rifUsdCoinPair;
     address public immutable rifOracleCoinPair;
@@ -149,6 +152,9 @@ contract AddTasksRunnerChanger is IChangeContract {
     @param oracleManager_ OracleManager where coin pairs will be registered
     @param tasksRunner_ TasksRunner contract to register as coin pair address
     @param tasksRunnerCoinPair_ Coin pair identifier to register for TasksRunner
+    @param taskExecuteQueueV3_ Deployed task that checks bucket prices before queue execution
+    @param taskUpdateEmaV3RifBucket_ Deployed RIF-bucket EMA task that checks direct TP prices
+    @param taskSettlementV3RifBucket_ Deployed RIF-bucket settlement task that checks direct TP prices
     @param rifBucket_ RIF bucket whose direct price provider is migrated to the new CoinPair
     @param rifUsdCoinPair_ Coin pair identifier used to register the direct RIF/USD CoinPair
     @param rifOracleCoinPair_ Newly deployed direct RIF/USD CoinPair contract created for the new oracle flow
@@ -198,6 +204,9 @@ contract AddTasksRunnerChanger is IChangeContract {
         IOracleManager oracleManager_,
         address tasksRunner_,
         bytes32 tasksRunnerCoinPair_,
+        address taskExecuteQueueV3_,
+        address taskUpdateEmaV3RifBucket_,
+        address taskSettlementV3RifBucket_,
         MocRif rifBucket_,
         bytes32 rifUsdCoinPair_,
         address rifOracleCoinPair_,
@@ -246,6 +255,9 @@ contract AddTasksRunnerChanger is IChangeContract {
         oracleManager = oracleManager_;
         tasksRunner = tasksRunner_;
         tasksRunnerCoinPair = tasksRunnerCoinPair_;
+        taskExecuteQueueV3 = taskExecuteQueueV3_;
+        taskUpdateEmaV3RifBucket = taskUpdateEmaV3RifBucket_;
+        taskSettlementV3RifBucket = taskSettlementV3RifBucket_;
         rifBucket = rifBucket_;
         rifUsdCoinPair = rifUsdCoinPair_;
         rifOracleCoinPair = rifOracleCoinPair_;
@@ -449,17 +461,18 @@ contract AddTasksRunnerChanger is IChangeContract {
         ICoinPairPriceGovernance coinPair = ICoinPairPriceGovernance(coinPair_);
         address infoAddr = governedRegistry.getAddress(INFO_ADDR);
 
-        if (!coinPair.isPricePeekWhitelisted(address(rifBucket))) {
-            coinPair.addPricePeekWhitelist(address(rifBucket));
-        }
-        if (!coinPair.isPricePeekWhitelisted(rifToRbtcPriceProvider)) {
-            coinPair.addPricePeekWhitelist(rifToRbtcPriceProvider);
-        }
-        if (!coinPair.isPricePeekWhitelisted(mocToRifPriceProvider)) {
-            coinPair.addPricePeekWhitelist(mocToRifPriceProvider);
-        }
-        if (infoAddr != address(0) && !coinPair.isPricePeekWhitelisted(infoAddr)) {
-            coinPair.addPricePeekWhitelist(infoAddr);
+        _whitelistIfNeeded(coinPair, address(rifBucket));
+        _whitelistIfNeeded(coinPair, rifToRbtcPriceProvider);
+        _whitelistIfNeeded(coinPair, mocToRifPriceProvider);
+        _whitelistIfNeeded(coinPair, taskExecuteQueueV3);
+        _whitelistIfNeeded(coinPair, taskUpdateEmaV3RifBucket);
+        _whitelistIfNeeded(coinPair, taskSettlementV3RifBucket);
+        _whitelistIfNeeded(coinPair, infoAddr);
+    }
+
+    function _whitelistIfNeeded(ICoinPairPriceGovernance coinPair_, address account_) internal {
+        if (account_ != address(0) && !coinPair_.isPricePeekWhitelisted(account_)) {
+            coinPair_.addPricePeekWhitelist(account_);
         }
     }
 

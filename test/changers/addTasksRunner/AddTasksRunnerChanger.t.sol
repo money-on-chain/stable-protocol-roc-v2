@@ -265,6 +265,10 @@ contract AddTasksRunnerChangerForkTests is BaseFork {
         address infoAddr = IGovernedRegistryView(address(addTasksRunnerChanger.governedRegistry())).getAddress(
             INFO_ADDR
         );
+        string memory json = vm.readFile(TASKS_DEPLOYED_ADDRESSES_PATH);
+        address taskExecuteQueueV3 = vm.parseJsonAddress(json, ".TaskExecuteQueueV3");
+        address taskUpdateEmaV3RifBucket = vm.parseJsonAddress(json, ".TaskUpdateEmaV3RifBucket");
+        address taskSettlementV3RifBucket = vm.parseJsonAddress(json, ".TaskSettlementV3RifBucket");
         assertTrue(
             rifOracleCoinPair.isPricePeekWhitelisted(address(rifBucket)),
             "RIF bucket should remain whitelisted on the new direct RIF/USD pair"
@@ -276,6 +280,18 @@ contract AddTasksRunnerChangerForkTests is BaseFork {
         assertTrue(
             rifOracleCoinPair.isPricePeekWhitelisted(addTasksRunnerChanger.mocToRifPriceProvider()),
             "replacement MOC/RIF provider should be whitelisted on the new direct RIF/USD pair"
+        );
+        assertTrue(
+            rifOracleCoinPair.isPricePeekWhitelisted(taskExecuteQueueV3),
+            "TaskExecuteQueueV3 should be whitelisted on the new direct RIF/USD pair"
+        );
+        assertTrue(
+            rifOracleCoinPair.isPricePeekWhitelisted(taskUpdateEmaV3RifBucket),
+            "TaskUpdateEmaV3RifBucket should be whitelisted on the new direct RIF/USD pair"
+        );
+        assertTrue(
+            rifOracleCoinPair.isPricePeekWhitelisted(taskSettlementV3RifBucket),
+            "TaskSettlementV3RifBucket should be whitelisted on the new direct RIF/USD pair"
         );
         assertTrue(
             rifOracleCoinPair.isPricePeekWhitelisted(infoAddr),
