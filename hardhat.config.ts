@@ -10,7 +10,6 @@ import hardhatMocha from "@nomicfoundation/hardhat-mocha";
 import hardhatNetworkHelpers from "@nomicfoundation/hardhat-network-helpers";
 import hardhatTypechain from "@nomicfoundation/hardhat-typechain";
 import hardhatVerify from "@nomicfoundation/hardhat-verify";
-import hardhatContractSizer from "@solidstate/hardhat-contract-sizer";
 
 // ESM equivalent of __dirname
 const __filename = fileURLToPath(import.meta.url);
@@ -122,7 +121,6 @@ const config: HardhatUserConfig = {
     hardhatNetworkHelpers,
     hardhatTypechain,
     hardhatVerify,
-    hardhatContractSizer,
   ],
 
   solidity: {
@@ -156,7 +154,6 @@ const config: HardhatUserConfig = {
       "@moc/price-oracle-interfaces/contracts/PriceProviderDiv.sol",
       "@moc/oracles/contracts/tasks/v3/TaskExecuteQueueV3.sol",
       "@moc/oracles/contracts/tasks/v1/TaskUpdateEmaV1.sol",
-      "@moc/oracles/contracts/tasks/v1/TaskDailyInratePaymentV1.sol",
       "@moc/oracles/contracts/tasks/v1/TaskEvalLiquidationV1.sol",
       "@moc/oracles/contracts/tasks/v1/TaskInterestPaymentV1.sol",
       "@moc/oracles/contracts/tasks/v1/TaskSettlementV1.sol",
@@ -164,7 +161,6 @@ const config: HardhatUserConfig = {
       "@moc/oracles/contracts/tasks/v3/TaskExecuteLiquidationV3.sol",
       "@moc/oracles/contracts/tasks/v3/TaskExecuteMicroLiquidationV3.sol",
       "@moc/oracles/contracts/tasks/v3/TaskInterestPaymentV3.sol",
-      "@moc/oracles/contracts/tasks/v3/TaskSettlementV3.sol",
       "@moc/oracles/contracts/tasks/v3/TaskRefreshACBalanceV3.sol",
       "@moc/oracles/contracts/tasks/mocFlow/commissionSplitter/TaskSplit.sol",
       "@moc/oracles/contracts/tasks/mocFlow/reverseAuction/TaskTriggerOrder.sol",
@@ -174,11 +170,13 @@ const config: HardhatUserConfig = {
       "@moc/oracles/contracts/tasks/oracles/TaskSwitchRoundCoinPair.sol",
       "@moc/oracles/contracts/tasks/oracles/TaskDistributeSupporters.sol",
       "@moc/oracles/contracts/BasefeeProvider.sol",
-      "@moc/oracles/contracts/CoinPairPrice.sol",
       "@moc/flow/contracts/BufferToken.sol",
       "@moc/oracles/contracts/TasksRunner.sol",
+      "@moc/oracles/contracts/OracleManager.sol",
+      "@moc/oracles/contracts/CoinPairPrice.sol",
 
       "@openzeppelin/contracts/proxy/ERC1967/ERC1967Proxy.sol",
+      "@openzeppelin/contracts/proxy/transparent/TransparentUpgradeableProxy.sol",
     ],
   },
   contractSizer: {
@@ -306,7 +304,7 @@ const config: HardhatUserConfig = {
     solidity: {
       ffi: true,
       fsPermissions: {
-        readDirectory: ["addressBook.json", "./out", "./test", "./ignition/deployments"],
+        readDirectory: ["./out", "./test", "./ignition", "./addressBook.json"],
       },
     },
   },

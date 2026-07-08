@@ -17,7 +17,11 @@ abstract contract IgnitionDeployments is Test {
         bytes memory jsonBytes = bytes(json);
         require(jsonBytes.length > 0, "Deployed addresses file is empty");
 
-        _tryParseAddress(json, "AddTasksRunner_AddTasksRunnerChanger");
+        // PreTasksRunner deployment keys
+        _tryParseAddress(json, "PreTasksRunnerChanger");
+        _tryParseAddress(json, "TasksRunnerProxy");
+
+        // AddTasksRunner deployment keys
         _tryParseAddress(json, "AddTasksRunnerChanger");
 
         addressesLoaded = true;

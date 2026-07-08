@@ -12,10 +12,8 @@ import { MocRC20 } from "moc-main-latest/contracts/tokens/MocRC20.sol";
 import { CommissionSplitterBase } from "moc-main-latest/contracts/auxiliary/CommissionSplitterBase.sol";
 import { MocRif } from "../../MocRif.sol";
 
-interface IOracleManager {
-    function registerCoinPair(bytes32 coinPair, address addr) external;
-    function getContractAddress(bytes32 coinPair) external view returns (address);
-    function delegateCallToChanger(bytes calldata data) external returns (bytes memory);
+interface ITasksRunner {
+    function addTask(address task) external;
 }
 
 interface ICoinPairPriceGovernance {
@@ -54,9 +52,9 @@ interface IMocMultiCollateralGuardPriceUpdates {
  *      5. Set rebalance execution fee recipient for RIF and DOC buckets
  *         (RevAuction RIFtoMOC and DOCtoMOC -> TasksRunner)
  *      6. Set price updates fee recipient (RevAuction RBTCtoMOC -> SplitPriceUpdateFeesToBtcOracleAndRifOracle)
- *      7. Replace the RIF bucket direct price provider with the new RIF/USD CoinPair
- *      8. Register the new RIF/USD CoinPair in OracleManager
- *      9. Register TasksRunner in the OracleManager as a CoinPair
+ *      7. Replace the RIF bucket direct price provider with the already-deployed RIF/USD CoinPair
+ *      8. Whitelist consumers on the already-deployed RIF/USD CoinPair
+ *      9. Add tasks to the already-deployed TasksRunner
  *      10. Set newly deployed reverse auctions output to TasksRunner
  *      11. Rewire commission splitters and buffers that fund Foundation / oracle infra
  *      12. Rewire legacy RIF-based reverse auctions to the replacement providers
@@ -67,10 +65,6 @@ contract AddTasksRunnerChanger is IChangeContract {
     bytes32 private constant MOC_FLOW_REVERSE_AUCTIONS =
         0x0428ec087e0cce276a71d1caf1afe4da32a2d48b3ebe579040612b5bd262ff73;
     bytes32 private constant INFO_ADDR = 0xda9f12e01fc92de345bb741448d36ecb967052dd7aa1670439af833c9a3d78f1;
-
-    // OracleManager storage slots used by delegateCallToChanger(abi.encode(bytes32,uint256)).
-    uint256 private constant ORACLE_MANAGER_COIN_PAIR_MAP_SLOT = 104;
-    uint256 private constant ORACLE_MANAGER_COIN_PAIR_LIST_SLOT = 105;
 
     MocMultiCollateralGuard public immutable mocMultiCollateralGuard;
     address public immutable mocMultiCollateralGuardImplementation;
@@ -96,20 +90,14 @@ contract AddTasksRunnerChanger is IChangeContract {
     address public immutable bproRewardsBuffer;
     address public immutable mocRewardsBuffer;
     IGovernedRegistry public immutable governedRegistry;
-    IOracleManager public immutable oracleManager;
     address public immutable tasksRunner;
-    bytes32 public immutable tasksRunnerCoinPair;
     address public immutable taskExecuteQueueV3;
     address public immutable taskUpdateEmaV3RifBucket;
-    address public immutable taskSettlementV3RifBucket;
     MocRif public immutable rifBucket;
-    bytes32 public immutable rifUsdCoinPair;
     address public immutable rifOracleCoinPair;
     address public immutable rifToRbtcPriceProvider;
     address public immutable rifToMocPriceProvider;
     address public immutable mocToRifPriceProvider;
-    address public immutable swapRifFeesToMocForRifOracle;
-    address public immutable swapDocFeesToMocForRifOracle;
     CommissionSplitterBase public immutable rifCommissionSplitterV2;
     CommissionSplitterBase public immutable rifCommissionSplitterV3;
     CommissionSplitterBase public immutable docCommissionSplitterV2;
@@ -120,8 +108,10 @@ contract AddTasksRunnerChanger is IChangeContract {
     address public immutable splitPriceUpdateFeesToBtcOracleAndRifOracle;
     address public immutable btcUsdCoinPair;
     uint256 public immutable mocRewardsBufferBtcUsdOutputIndex;
+    uint256 public immutable rifBucketUsdrifTargetEma;
     uint256[] private rifBucketExecutionCosts;
     uint256[] private docBucketExecutionCosts;
+    address[] private tasks;
 
     /**
     @notice Constructor
@@ -149,20 +139,15 @@ contract AddTasksRunnerChanger is IChangeContract {
     @param bproRewardsBuffer_ Address of BproRewardsBuffer (registered in flow buffers)
     @param mocRewardsBuffer_ Address of MocRewardsBuffer (registered in flow buffers)
     @param governedRegistry_ Governed registry where old flow addresses are removed
-    @param oracleManager_ OracleManager where coin pairs will be registered
-    @param tasksRunner_ TasksRunner contract to register as coin pair address
-    @param tasksRunnerCoinPair_ Coin pair identifier to register for TasksRunner
+    @param tasksRunner_ Already-deployed TasksRunner contract to add tasks to
+    @param tasks_ List of task addresses to add to the already-deployed TasksRunner
     @param taskExecuteQueueV3_ Deployed task that checks bucket prices before queue execution
     @param taskUpdateEmaV3RifBucket_ Deployed RIF-bucket EMA task that checks direct TP prices
-    @param taskSettlementV3RifBucket_ Deployed RIF-bucket settlement task that checks direct TP prices
-    @param rifBucket_ RIF bucket whose direct price provider is migrated to the new CoinPair
-    @param rifUsdCoinPair_ Coin pair identifier used to register the direct RIF/USD CoinPair
-    @param rifOracleCoinPair_ Newly deployed direct RIF/USD CoinPair contract created for the new oracle flow
+    @param rifBucket_ RIF bucket whose direct price provider is set to the already-deployed RIF/USD CoinPair
+    @param rifOracleCoinPair_ Already-deployed direct RIF/USD CoinPair contract
     @param rifToRbtcPriceProvider_ Replacement RIF/BTC provider using the new direct RIF/USD CoinPair
     @param rifToMocPriceProvider_ Replacement RIF/MOC provider using the new direct RIF/USD CoinPair
     @param mocToRifPriceProvider_ Replacement MOC/RIF provider using the new direct RIF/USD CoinPair
-    @param swapRifFeesToMocForRifOracle_ New RIF->MOC reverse auction created to route RIF fees into the new RIF/USD oracle
-    @param swapDocFeesToMocForRifOracle_ New DOC->MOC reverse auction created to route DOC fees into the new RIF/USD oracle
     @param rifCommissionSplitterV2_ Live RIF commission splitter V2 whose Foundation branches are rewired in-place
     @param rifCommissionSplitterV3_ Live RIF commission splitter V3 whose Foundation branches are rewired in-place
     @param docCommissionSplitterV2_ Live DOC commission splitter V2 whose Foundation branches are rewired in-place
@@ -175,6 +160,7 @@ contract AddTasksRunnerChanger is IChangeContract {
     @param mocRewardsBufferBtcUsdOutputIndex_ Static output index of the BTC/USD branch on mocRewardsBuffer
     @param rifBucketExecutionCosts_ Updated queue execution-cost payload for the RIF bucket queue, including priceUpdatesCost
     @param docBucketExecutionCosts_ Updated queue execution-cost payload for the DOC bucket queue, including priceUpdatesCost
+    @param rifBucketUsdrifTargetEma_ New target coverage EMA ratio (tpCtarg) to set on the usdRIF pegged token in the RIF bucket
   */
     constructor(
         MocMultiCollateralGuard mocMultiCollateralGuard_,
@@ -201,20 +187,15 @@ contract AddTasksRunnerChanger is IChangeContract {
         address bproRewardsBuffer_,
         address mocRewardsBuffer_,
         IGovernedRegistry governedRegistry_,
-        IOracleManager oracleManager_,
         address tasksRunner_,
-        bytes32 tasksRunnerCoinPair_,
+        address[] memory tasks_,
         address taskExecuteQueueV3_,
         address taskUpdateEmaV3RifBucket_,
-        address taskSettlementV3RifBucket_,
         MocRif rifBucket_,
-        bytes32 rifUsdCoinPair_,
         address rifOracleCoinPair_,
         address rifToRbtcPriceProvider_,
         address rifToMocPriceProvider_,
         address mocToRifPriceProvider_,
-        address swapRifFeesToMocForRifOracle_,
-        address swapDocFeesToMocForRifOracle_,
         CommissionSplitterBase rifCommissionSplitterV2_,
         CommissionSplitterBase rifCommissionSplitterV3_,
         CommissionSplitterBase docCommissionSplitterV2_,
@@ -226,7 +207,8 @@ contract AddTasksRunnerChanger is IChangeContract {
         address btcUsdCoinPair_,
         uint256 mocRewardsBufferBtcUsdOutputIndex_,
         uint256[] memory rifBucketExecutionCosts_,
-        uint256[] memory docBucketExecutionCosts_
+        uint256[] memory docBucketExecutionCosts_,
+        uint256 rifBucketUsdrifTargetEma_
     ) {
         mocMultiCollateralGuard = mocMultiCollateralGuard_;
         mocMultiCollateralGuardImplementation = mocMultiCollateralGuardImplementation_;
@@ -252,20 +234,15 @@ contract AddTasksRunnerChanger is IChangeContract {
         bproRewardsBuffer = bproRewardsBuffer_;
         mocRewardsBuffer = mocRewardsBuffer_;
         governedRegistry = governedRegistry_;
-        oracleManager = oracleManager_;
         tasksRunner = tasksRunner_;
-        tasksRunnerCoinPair = tasksRunnerCoinPair_;
+        tasks = tasks_;
         taskExecuteQueueV3 = taskExecuteQueueV3_;
         taskUpdateEmaV3RifBucket = taskUpdateEmaV3RifBucket_;
-        taskSettlementV3RifBucket = taskSettlementV3RifBucket_;
         rifBucket = rifBucket_;
-        rifUsdCoinPair = rifUsdCoinPair_;
         rifOracleCoinPair = rifOracleCoinPair_;
         rifToRbtcPriceProvider = rifToRbtcPriceProvider_;
         rifToMocPriceProvider = rifToMocPriceProvider_;
         mocToRifPriceProvider = mocToRifPriceProvider_;
-        swapRifFeesToMocForRifOracle = swapRifFeesToMocForRifOracle_;
-        swapDocFeesToMocForRifOracle = swapDocFeesToMocForRifOracle_;
         rifCommissionSplitterV2 = rifCommissionSplitterV2_;
         rifCommissionSplitterV3 = rifCommissionSplitterV3_;
         docCommissionSplitterV2 = docCommissionSplitterV2_;
@@ -278,6 +255,7 @@ contract AddTasksRunnerChanger is IChangeContract {
         mocRewardsBufferBtcUsdOutputIndex = mocRewardsBufferBtcUsdOutputIndex_;
         rifBucketExecutionCosts = rifBucketExecutionCosts_;
         docBucketExecutionCosts = docBucketExecutionCosts_;
+        rifBucketUsdrifTargetEma = rifBucketUsdrifTargetEma_;
     }
 
     /**
@@ -332,12 +310,13 @@ contract AddTasksRunnerChanger is IChangeContract {
             revAuctionRBTCtoMOC_rocNodes
         );
 
-        // 8) Replace the RIF bucket direct price provider with the new RIF/USD CoinPair
-        //    and register the new RIF/USD coin pair in OracleManager
-        _migrateRifUsdCoinPair();
+        // 8) Set the RIF bucket direct price provider to the already-deployed RIF/USD CoinPair
+        //    and whitelist its consumers
+        _ensureRifOracleWhitelist(rifOracleCoinPair);
+        _editRifBucketPriceProvider(rifOracleCoinPair);
 
-        // 9) Register TasksRunner as CoinPair in OracleManager
-        oracleManager.registerCoinPair(tasksRunnerCoinPair, tasksRunner);
+        // 9) Add tasks to the already-deployed TasksRunner
+        _addTasksToTasksRunner();
 
         // 10) Set newly deployed reverse auctions output to TasksRunner
         IReverseAuction(revAuctionRBTCtoMOC_tasksRunner).setOutputAccount(tasksRunner);
@@ -350,7 +329,6 @@ contract AddTasksRunnerChanger is IChangeContract {
         // 12) Rewire legacy RIF-based reverse auctions to the replacement providers
         IReverseAuction(revAuctionRIFtoMOC_rocRewardsBuffer).setPriceProvider(rifToMocPriceProvider);
         IReverseAuction(revAuctionMOCtoRIF_rifBucket).setPriceProvider(mocToRifPriceProvider);
-        IReverseAuction(swapRifFeesToMocForRifOracle).setPriceProvider(rifToMocPriceProvider);
 
         // 13) Remove reverse auctions and buffers from governed registry
         governedRegistry.removeAddressArrayElement(MOC_FLOW_REVERSE_AUCTIONS, revAuctionRIFtoMOC_rocRewardsBuffer);
@@ -364,6 +342,16 @@ contract AddTasksRunnerChanger is IChangeContract {
         governedRegistry.removeAddressArrayElement(MOC_FLOW_BUFFERS, bitProRewardsBuffer);
         governedRegistry.removeAddressArrayElement(MOC_FLOW_BUFFERS, bproRewardsBuffer);
         governedRegistry.removeAddressArrayElement(MOC_FLOW_BUFFERS, mocRewardsBuffer);
+    }
+
+    /**
+     * @notice Adds all deployed tasks to the already-deployed TasksRunner.
+     */
+    function _addTasksToTasksRunner() internal {
+        ITasksRunner runner = ITasksRunner(tasksRunner);
+        for (uint256 i = 0; i < tasks.length; i++) {
+            runner.addTask(tasks[i]);
+        }
     }
 
     /**
@@ -422,39 +410,6 @@ contract AddTasksRunnerChanger is IChangeContract {
     }
 
     /**
-     * @notice OracleManager delegatecall hook used to unregister an already-registered coin pair.
-     * @dev The function name is fixed by Governed.delegateCallToChanger, which performs
-     *      abi.encodeWithSignature("impersonate(bytes)", data). This runs in OracleManager
-     *      storage through delegatecall, so it must only succeed when address(this) is OracleManager.
-     */
-    function impersonate(bytes calldata data) external {
-        require(address(this) == address(oracleManager), "oracleManager only");
-        _handleOracleManagerUnregisterHook(data);
-    }
-
-    /**
-     * @notice Decodes the OracleManager unregister payload and removes the current coin pair registration.
-     */
-    function _handleOracleManagerUnregisterHook(bytes calldata data) internal {
-        (bytes32 coinPair, uint256 hint) = abi.decode(data, (bytes32, uint256));
-        _unregisterCoinPair(coinPair, hint);
-    }
-
-    /**
-     * @notice Replaces the registered RIF/USD coin pair and edits the RIF bucket to consume it directly.
-     */
-    function _migrateRifUsdCoinPair() internal {
-        address currentCoinPair = oracleManager.getContractAddress(rifUsdCoinPair);
-        if (currentCoinPair != address(0)) {
-            oracleManager.delegateCallToChanger(abi.encode(rifUsdCoinPair, uint256(0)));
-        }
-
-        oracleManager.registerCoinPair(rifUsdCoinPair, rifOracleCoinPair);
-        _ensureRifOracleWhitelist(rifOracleCoinPair);
-        _editRifBucketPriceProvider(rifOracleCoinPair);
-    }
-
-    /**
      * @notice Ensures the new direct RIF/USD coin pair explicitly whitelists every direct consumer.
      */
     function _ensureRifOracleWhitelist(address coinPair_) internal {
@@ -466,7 +421,6 @@ contract AddTasksRunnerChanger is IChangeContract {
         _whitelistIfNeeded(coinPair, mocToRifPriceProvider);
         _whitelistIfNeeded(coinPair, taskExecuteQueueV3);
         _whitelistIfNeeded(coinPair, taskUpdateEmaV3RifBucket);
-        _whitelistIfNeeded(coinPair, taskSettlementV3RifBucket);
         _whitelistIfNeeded(coinPair, infoAddr);
     }
 
@@ -485,7 +439,7 @@ contract AddTasksRunnerChanger is IChangeContract {
 
         PeggedTokenParams memory peggedTokenParams = PeggedTokenParams({
             priceProviderAddress: priceProvider_,
-            tpCtarg: rifBucket.tpCtarg(0),
+            tpCtarg: rifBucketUsdrifTargetEma,
             tpMintFee: rifBucket.tpMintFees(address(usdRifAddress)),
             tpRedeemFee: rifBucket.tpRedeemFees(address(usdRifAddress)),
             tpEma: 0,
@@ -526,56 +480,5 @@ contract AddTasksRunnerChanger is IChangeContract {
         require(output == currentOutput_, "unexpected buffer output");
         buffer.removeOutput(outputIndex_);
         buffer.addOutput(payable(nextOutput_), split, threshold);
-    }
-
-    /**
-     * @notice Mirrors OracleManagerPairChangeRemove/Update unregister logic inside this changer.
-     * @dev Storage slots are derived from the legacy OracleManager layout because unregistering is only
-     * available through delegateCallToChanger on the governed OracleManager itself.
-     */
-    function _unregisterCoinPair(bytes32 coinPair, uint256 hint) internal {
-        bytes32 mappingSlot = keccak256(abi.encode(coinPair, ORACLE_MANAGER_COIN_PAIR_MAP_SLOT));
-        address currentAddress;
-        assembly {
-            currentAddress := sload(mappingSlot)
-        }
-        require(currentAddress != address(0), "Pair is already unregistered");
-
-        uint256 coinPairCount;
-        assembly {
-            coinPairCount := sload(ORACLE_MANAGER_COIN_PAIR_LIST_SLOT)
-        }
-        require(hint < coinPairCount, "Illegal index");
-
-        uint256 idx = coinPairCount;
-        bytes32 arrayBaseSlot = keccak256(abi.encode(ORACLE_MANAGER_COIN_PAIR_LIST_SLOT));
-        for (uint256 i = hint; i < coinPairCount; i++) {
-            bytes32 item;
-            assembly {
-                item := sload(add(arrayBaseSlot, i))
-            }
-            if (item == coinPair) {
-                idx = i;
-                break;
-            }
-        }
-        require(idx < coinPairCount, "Coin pair not found");
-
-        assembly {
-            sstore(mappingSlot, 0)
-        }
-
-        if (idx != coinPairCount - 1) {
-            bytes32 lastItem;
-            assembly {
-                lastItem := sload(add(arrayBaseSlot, sub(coinPairCount, 1)))
-                sstore(add(arrayBaseSlot, idx), lastItem)
-            }
-        }
-
-        assembly {
-            sstore(add(arrayBaseSlot, sub(coinPairCount, 1)), 0)
-            sstore(ORACLE_MANAGER_COIN_PAIR_LIST_SLOT, sub(coinPairCount, 1))
-        }
     }
 }

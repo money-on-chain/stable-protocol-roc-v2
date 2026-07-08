@@ -1,0 +1,19 @@
+{
+  "PreTasksRunnerModule": {
+    "oracleManagerProxy": "0x493eefbB8F0a22f85708c0C890E7B531E61A7018",
+    "upgradeDelegator": "0xa12a9A492eFEBf4E43B174A57886286dA5057B8D",
+    "proxyAdmin": "0xeF26DDA31FEe5737d7a115eA0bAa2d352210B641",
+    "pauser": "0x5bCdf8A2E61BD238AEe43b99962Ee8BfBda1Beca",
+    "governor": "0x1F4Df62ef6E08A5D4D72F3F8B1E71d86A67e85c7",
+    "mocTokenAddress": "0x19F64674D8A5B4E652319F5e239eFd3bc969a1fE",
+    "registry": "0xB14b2Dd6CAcc3a3e29B9E1cF86E07D99b3e3e9DA",
+    "minOraclesPerRound": 0,
+    "maxOraclesPerRound": 10,
+    "maxSubscribedOraclesPerRound": 30,
+    "roundLockPeriod": 300,
+    "maxMissedSigRounds": 10,
+    "maxTasksPerBatch": 5,
+    "tokenToCoinbasePriceProvider": "0x0000000000000000000000000000000000000000",
+    "sharesCapMultiplier": "3000000000000000000"
+  }
+}

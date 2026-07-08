@@ -6,15 +6,18 @@ import { MocRif } from "../../../../contracts/MocRif.sol";
 import { MocQueue } from "moc-main-latest/contracts/queue/MocQueue.sol";
 import { MocMultiCollateralGuard } from "moc-main-latest/contracts/multiCollateral/MocMultiCollateralGuard.sol";
 import { AddTasksRunnerChanger } from "../../../../contracts/changers/addTasksRunnerChanger/AddTasksRunnerChanger.sol";
+import { PreTasksRunnerChanger } from "../../../../contracts/changers/preTasksRunnerChanger/PreTasksRunnerChanger.sol";
 import { MocRC20 } from "moc-main-latest/contracts/tokens/MocRC20.sol";
 import { MocCARC20 } from "moc-main-latest/contracts/collateral/rc20/MocCARC20.sol";
 import { IChangeContract } from "moc-main-latest/contracts/interfaces/IChangeContract.sol";
 import { IGovernor } from "moc-main-latest/contracts/interfaces/IGovernor.sol";
+import { OracleTestHelper, IOracleCheats } from "../../../helpers/OracleTestHelper.sol";
 
-contract BaseFork is IgnitionDeployments {
+contract BaseFork is IgnitionDeployments, OracleTestHelper {
     MocRif public rifBucket;
     MocQueue public rifQueue;
     MocMultiCollateralGuard public mocMultiCollateralGuard;
+    PreTasksRunnerChanger public preTasksRunnerChanger;
     AddTasksRunnerChanger public addTasksRunnerChanger;
     MocCARC20 public docBucket;
 
@@ -28,10 +31,13 @@ contract BaseFork is IgnitionDeployments {
     address public governorOwner;
 
     function _loadIgnitionContracts() internal {
-        address addTasksChangerAddr = getDeployedAddress("AddTasksRunner_AddTasksRunnerChanger");
-        if (addTasksChangerAddr == address(0)) {
-            addTasksChangerAddr = getDeployedAddress("AddTasksRunnerChanger");
-        }
+        // Load PreTasksRunnerChanger
+        address preTasksChangerAddr = getDeployedAddress("PreTasksRunnerChanger");
+        require(preTasksChangerAddr != address(0), "PreTasksRunnerChanger not deployed");
+        preTasksRunnerChanger = PreTasksRunnerChanger(preTasksChangerAddr);
+
+        // Load AddTasksRunnerChanger
+        address addTasksChangerAddr = getDeployedAddress("AddTasksRunnerChanger");
         require(addTasksChangerAddr != address(0), "AddTasksRunnerChanger not deployed");
         addTasksRunnerChanger = AddTasksRunnerChanger(addTasksChangerAddr);
 
@@ -68,6 +74,12 @@ contract BaseFork is IgnitionDeployments {
         governorOwner = getMainnetAddress("governorOwner");
         vm.deal(holder, 100 ether);
         vm.deal(governorOwner, 100 ether);
+    }
+
+    function _executePreTasksRunnerChanger() internal {
+        IGovernor governor = IGovernor(address(rifBucket.governor()));
+        vm.prank(governorOwner);
+        governor.executeChange(IChangeContract(address(preTasksRunnerChanger)));
     }
 
     function _executeAddTasksRunnerChanger() internal {

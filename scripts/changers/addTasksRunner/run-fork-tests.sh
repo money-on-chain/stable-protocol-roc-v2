@@ -4,9 +4,11 @@
 #
 # This script:
 # 1. Starts a Hardhat node forking RSK mainnet (in-memory EDR)
-# 2. Deploys AddTasksRunner (includes AddTasksRunnerChanger)
-# 3. Exports local AddTasksRunner deployment addresses
-# 4. Runs Solidity tests that fork from the running Hardhat node
+# 2. Deploys PreTasksRunner (TasksRunner proxy + PreTasksRunnerChanger)
+# 3. Deploys AddTasksRunner (includes AddTasksRunnerChanger), injecting the
+#    TasksRunner proxy address and RIF/USD CoinPair address produced by step 2
+# 4. Exports local deployment addresses (both modules) into a single fixture
+# 5. Runs Solidity tests that fork from the running Hardhat node
 #
 # Usage:
 #   ./scripts/changers/addTasksRunner/run-fork-tests.sh [network]
@@ -21,10 +23,11 @@ set -e
 NETWORK="${1:-rskMainnet}"
 NODE_PORT=8545
 NODE_PID=""
+PRE_TASKS_DEPLOYMENT_ID="chain-pre-test"
 ADD_TASKS_DEPLOYMENT_ID="chain-test"
 DEPLOYED_ADDRESSES_FILE="test/changers/addTasksRunner/fixtures/deployed-addresses.json"
 FORK_BLOCK_NUMBER="${FORK_BLOCK_NUMBER:-}"
-FORK_BLOCK_NUMBER="8886244"
+FORK_BLOCK_NUMBER="9024485"
 FORK_RPC_URL="${FORK_RPC_URL:-${RSK_MAINNET_RPC_URL:-https://public-node.rsk.co}}"
 
 # Colors for output
@@ -98,6 +101,16 @@ start_node() {
     exit 1
 }
 
+validate_pre_tasks_params() {
+    local pre_tasks_params="ignition/modules/changers/preTasksRunner/parameters/$NETWORK.json"
+    if [ ! -f "$pre_tasks_params" ]; then
+        log_error "Missing PreTasksRunner parameters file: $pre_tasks_params"
+        exit 1
+    fi
+
+    log_success "Using PreTasksRunner parameters: $pre_tasks_params"
+}
+
 validate_add_tasks_params() {
     local add_tasks_params="ignition/modules/changers/addTasksRunner/parameters/$NETWORK.json"
     if [ ! -f "$add_tasks_params" ]; then
@@ -108,14 +121,81 @@ validate_add_tasks_params() {
     log_success "Using AddTasksRunner parameters: $add_tasks_params"
 }
 
+deploy_pre_tasks_runner() {
+    log_info "Deploying PreTasksRunner via Ignition..."
+
+    rm -rf "ignition/deployments/$PRE_TASKS_DEPLOYMENT_ID"
+
+    echo "y" | npx hardhat ignition deploy \
+        ignition/modules/changers/preTasksRunner/preTasksRunner.ts \
+        --parameters "ignition/modules/changers/preTasksRunner/parameters/$NETWORK.json" \
+        --network localhost \
+        --deployment-id "$PRE_TASKS_DEPLOYMENT_ID"
+
+    log_success "PreTasksRunner deployed"
+}
+
 deploy_add_tasks_runner() {
     log_info "Deploying AddTasksRunner via Ignition..."
+
+    local pre_tasks_file="ignition/deployments/$PRE_TASKS_DEPLOYMENT_ID/deployed_addresses.json"
+    if [ ! -f "$pre_tasks_file" ]; then
+        log_error "Could not find PreTasksRunner deployed_addresses.json at $pre_tasks_file"
+        exit 1
+    fi
+
+    local oracle_manager_proxy
+    oracle_manager_proxy=$(node -e "
+        const p = require('./ignition/modules/changers/preTasksRunner/parameters/$NETWORK.json');
+        console.log(p.PreTasksRunnerModule.oracleManagerProxy);
+    ")
+    log_info "OracleManager proxy: $oracle_manager_proxy"
+
+    # Resolve the TasksRunner proxy address from the PreTasksRunner deployment
+    local tasks_runner_proxy
+    tasks_runner_proxy=$(node -e "
+        const fs = require('fs');
+        const addresses = JSON.parse(fs.readFileSync('$pre_tasks_file', 'utf8'));
+        // Ignition keys are like 'PreTasksRunnerModule#TasksRunnerProxy'
+        const key = Object.keys(addresses).find(k => k.endsWith('#TasksRunnerProxy') || k === 'TasksRunnerProxy');
+        if (!key) { console.error('TasksRunnerProxy not found in', Object.keys(addresses)); process.exit(1); }
+        console.log(addresses[key]);
+    ")
+    log_info "TasksRunner proxy address: $tasks_runner_proxy"
+
+    # Resolve the RIF/USD CoinPair address from the on-chain OracleManager
+    local rif_usd_coin_pair
+    rif_usd_coin_pair=$(node -e "
+        const { ethers } = require('ethers');
+        async function main() {
+            const provider = new ethers.JsonRpcProvider('http://127.0.0.1:$NODE_PORT');
+            const abi = ['function getContractAddress(bytes32 coinPair) view returns (address)'];
+            const om = new ethers.Contract('$oracle_manager_proxy', abi, provider);
+            // ethers.encodeBytes32String('RIFUSD')
+            const RIFUSD = ethers.encodeBytes32String('RIFUSD');
+            const addr = await om.getContractAddress(RIFUSD);
+            console.log(addr);
+        }
+        main().catch(e => { console.error(e); process.exit(1); });
+    ")
+    log_info "RIF/USD CoinPair address: $rif_usd_coin_pair"
+
+    # Build a merged parameters file with the real tasksRunner and rifUsdCoinPair addresses
+    local merged_params_file="/tmp/addTasksRunner-merged-params.json"
+    node -e "
+        const fs = require('fs');
+        const params = JSON.parse(fs.readFileSync('ignition/modules/changers/addTasksRunner/parameters/$NETWORK.json', 'utf8'));
+        params['AddTasksRunner']['tasksRunner'] = '$tasks_runner_proxy';
+        params['AddTasksRunner']['rifUsdCoinPair'] = '$rif_usd_coin_pair';
+        fs.writeFileSync('$merged_params_file', JSON.stringify(params, null, 2));
+        console.log('Merged parameters written to $merged_params_file');
+    "
 
     rm -rf "ignition/deployments/$ADD_TASKS_DEPLOYMENT_ID"
 
     echo "y" | npx hardhat ignition deploy \
         ignition/modules/changers/addTasksRunner/AddTasksRunner.ts \
-        --parameters "ignition/modules/changers/addTasksRunner/parameters/$NETWORK.json" \
+        --parameters "$merged_params_file" \
         --network localhost \
         --deployment-id "$ADD_TASKS_DEPLOYMENT_ID"
 
@@ -123,32 +203,46 @@ deploy_add_tasks_runner() {
 }
 
 export_addresses() {
-    log_info "Exporting AddTasksRunner deployed addresses..."
+    log_info "Exporting deployed addresses..."
 
     mkdir -p test/changers/addTasksRunner/fixtures
 
-    ADD_TASKS_FILE="ignition/deployments/$ADD_TASKS_DEPLOYMENT_ID/deployed_addresses.json"
+    local pre_tasks_file="ignition/deployments/$PRE_TASKS_DEPLOYMENT_ID/deployed_addresses.json"
+    local add_tasks_file="ignition/deployments/$ADD_TASKS_DEPLOYMENT_ID/deployed_addresses.json"
 
-    if [ ! -f "$ADD_TASKS_FILE" ]; then
-        log_error "Could not find deployed_addresses.json in $ADD_TASKS_FILE"
+    if [ ! -f "$pre_tasks_file" ]; then
+        log_error "Could not find deployed_addresses.json in $pre_tasks_file"
+        exit 1
+    fi
+
+    if [ ! -f "$add_tasks_file" ]; then
+        log_error "Could not find deployed_addresses.json in $add_tasks_file"
         exit 1
     fi
 
     node -e "
         const fs = require('fs');
-        const addTasks = require('./$ADD_TASKS_FILE');
+        const preTasks = require('./$pre_tasks_file');
+        const addTasks = require('./$add_tasks_file');
 
         const simplified = {};
+
+        // Flatten both deployments — strip the 'ModuleName#' prefix from keys
+        for (const [key, value] of Object.entries(preTasks)) {
+          const contractId = key.includes('#') ? key.split('#')[1] : key;
+          simplified[contractId] = value;
+        }
         for (const [key, value] of Object.entries(addTasks)) {
           const contractId = key.includes('#') ? key.split('#')[1] : key;
           simplified[contractId] = value;
         }
 
         simplified._network = '$NETWORK';
+        simplified._preTasksRunnerDeploymentDir = 'ignition/deployments/$PRE_TASKS_DEPLOYMENT_ID';
         simplified._addTasksRunnerDeploymentDir = 'ignition/deployments/$ADD_TASKS_DEPLOYMENT_ID';
 
         fs.writeFileSync('$DEPLOYED_ADDRESSES_FILE', JSON.stringify(simplified, null, 2));
-        console.log('Exported', Object.keys(simplified).length - 2, 'contract addresses');
+        console.log('Exported', Object.keys(simplified).length - 3, 'contract addresses');
     "
 
     log_success "Addresses exported to $DEPLOYED_ADDRESSES_FILE"
@@ -164,6 +258,7 @@ run_forge_tests() {
 
     log_success "Tests completed"
 
+    rm -rf "ignition/deployments/$PRE_TASKS_DEPLOYMENT_ID"
     rm -rf "ignition/deployments/$ADD_TASKS_DEPLOYMENT_ID"
 }
 
@@ -175,7 +270,9 @@ main() {
 
     check_requirements
     start_node
+    validate_pre_tasks_params
     validate_add_tasks_params
+    deploy_pre_tasks_runner
     deploy_add_tasks_runner
     export_addresses
     run_forge_tests
