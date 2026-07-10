@@ -63,6 +63,7 @@
   "types": "types/index.d.ts",
   "files": [
     "/contracts",
+    "/ignition",
     "/addressBook.js",
     "/addressBook.d.ts",
     "/addressBook.json",
