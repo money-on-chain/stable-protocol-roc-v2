@@ -73,6 +73,11 @@
     "./ignition/modules/changers/preTasksRunner/parameters/*": "./ignition/modules/changers/preTasksRunner/parameters/*",
     "./ignition/deployments/*": "./ignition/deployments/*",
     "./ignition/*": "./dist/ignition/*",
+    "./config/solidity": {
+      "types": "./dist/config/solidity.d.ts",
+      "import": "./dist/config/solidity.js",
+      "default": "./dist/config/solidity.js"
+    },
     "./types": "./types",
     "./types/*": "./types/*"
   },
