@@ -26,9 +26,12 @@ NODE_PID=""
 PRE_TASKS_DEPLOYMENT_ID="chain-pre-test"
 ADD_TASKS_DEPLOYMENT_ID="chain-test"
 DEPLOYED_ADDRESSES_FILE="test/changers/addTasksRunner/fixtures/deployed-addresses.json"
-FORK_BLOCK_NUMBER="${FORK_BLOCK_NUMBER:-}"
-FORK_BLOCK_NUMBER="9024485"
-FORK_RPC_URL="${FORK_RPC_URL:-${RSK_MAINNET_RPC_URL:-https://public-node.rsk.co}}"
+
+# These are exported so that hardhat has them as ENV vars, used in hardhat.config.ts
+# for configuring the 'node' network.
+export FORK_BLOCK_NUMBER="${FORK_BLOCK_NUMBER:-"9024485"}"
+export FORK_RPC_URL="${FORK_RPC_URL:-${RSK_MAINNET_RPC_URL:-https://public-node.rsk.co}}"
+export FORK_CHAIN_ID=30
 
 # Colors for output
 RED='\033[0;31m'
@@ -66,8 +69,8 @@ trap cleanup EXIT INT TERM
 check_requirements() {
     log_info "Checking requirements..."
 
-    if ! command -v npx &> /dev/null; then
-        log_error "npx is not installed. Please install Node.js"
+    if ! command -v pnpm &> /dev/null; then
+        log_error "pnpm is not installed. Please install pnpm"
         exit 1
     fi
 
@@ -81,7 +84,7 @@ start_node() {
     lsof -ti:$NODE_PORT | xargs kill -9 2>/dev/null || true
 
     log_info "Using fork block number: $FORK_BLOCK_NUMBER"
-    npx hardhat node --fork "$FORK_RPC_URL" --fork-block-number "$FORK_BLOCK_NUMBER" --chain-id 30 --port $NODE_PORT &> /tmp/hardhat-node.log &
+    pnpm hardhat node --port $NODE_PORT -vvvv &> /tmp/hardhat-node.log &
 
     NODE_PID=$!
 
@@ -126,7 +129,7 @@ deploy_pre_tasks_runner() {
 
     rm -rf "ignition/deployments/$PRE_TASKS_DEPLOYMENT_ID"
 
-    echo "y" | npx hardhat ignition deploy \
+    echo "y" | pnpm hardhat ignition deploy \
         ignition/modules/changers/preTasksRunner/preTasksRunner.ts \
         --parameters "ignition/modules/changers/preTasksRunner/parameters/$NETWORK.json" \
         --network localhost \
@@ -165,19 +168,34 @@ deploy_add_tasks_runner() {
 
     # Resolve the RIF/USD CoinPair address from the on-chain OracleManager
     local rif_usd_coin_pair
+
     rif_usd_coin_pair=$(node -e "
-        const { ethers } = require('ethers');
+        const { createPublicClient, http, stringToHex } = require('viem');
         async function main() {
-            const provider = new ethers.JsonRpcProvider('http://127.0.0.1:$NODE_PORT');
-            const abi = ['function getContractAddress(bytes32 coinPair) view returns (address)'];
-            const om = new ethers.Contract('$oracle_manager_proxy', abi, provider);
-            // ethers.encodeBytes32String('RIFUSD')
-            const RIFUSD = ethers.encodeBytes32String('RIFUSD');
-            const addr = await om.getContractAddress(RIFUSD);
+            const client = createPublicClient({
+                transport: http('http://127.0.0.1:$NODE_PORT'),
+            });
+
+            const addr = await client.readContract({
+                address: '$oracle_manager_proxy',
+                abi: [{
+                    name: 'getContractAddress',
+                    type: 'function',
+                    stateMutability: 'view',
+                    inputs: [{ name: 'coinPair', type: 'bytes32' }],
+                    outputs: [{ type: 'address' }],
+                }],
+                functionName: 'getContractAddress',
+                args: [stringToHex('RIFUSD', { size: 32 })],
+            });
+
             console.log(addr);
         }
-        main().catch(e => { console.error(e); process.exit(1); });
+
+        main().catch((e) => { console.error(e); process.exit(1); });
     ")
+
+
     log_info "RIF/USD CoinPair address: $rif_usd_coin_pair"
 
     # Build a merged parameters file with the real tasksRunner and rifUsdCoinPair addresses
@@ -193,7 +211,7 @@ deploy_add_tasks_runner() {
 
     rm -rf "ignition/deployments/$ADD_TASKS_DEPLOYMENT_ID"
 
-    echo "y" | npx hardhat ignition deploy \
+    echo "y" | pnpm hardhat ignition deploy \
         ignition/modules/changers/addTasksRunner/AddTasksRunner.ts \
         --parameters "$merged_params_file" \
         --network localhost \
@@ -253,8 +271,8 @@ export_addresses() {
 run_forge_tests() {
     log_info "Running fork tests..."
 
-    npx hardhat build
-    FORK_URL="http://127.0.0.1:$NODE_PORT" npx hardhat test solidity test/changers/addTasksRunner/AddTasksRunnerChanger.t.sol -vvv
+    pnpm hardhat build
+    FORK_URL="http://127.0.0.1:$NODE_PORT" pnpm hardhat test solidity test/changers/addTasksRunner/AddTasksRunnerChanger.t.sol -vvv
 
     log_success "Tests completed"
 

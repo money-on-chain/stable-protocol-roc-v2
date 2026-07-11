@@ -351,10 +351,10 @@ const AddTasksRunnerModule = buildModule("AddTasksRunner", m => {
   }: {
     name: string;
     token: unknown;
-    threshold: bigint;
-    outputs: readonly unknown[];
-    splits: readonly bigint[];
-    outputThresholds: readonly bigint[];
+    threshold: unknown;
+    outputs: unknown;
+    splits: unknown;
+    outputThresholds: unknown;
   }) => {
     const proxy = m.contract("TransparentUpgradeableProxy", [bufferTokenImpl, core.proxyAdmin, "0x"], {
       id: `${name}Proxy`,
@@ -363,9 +363,14 @@ const AddTasksRunnerModule = buildModule("AddTasksRunner", m => {
       id: name,
     });
 
-    m.call(buffer, "initialize", [core.governor, token, threshold, outputs, splits, outputThresholds], {
-      id: `Initialize${name}`,
-    });
+    m.call(
+      buffer,
+      "initialize",
+      [core.governor, token, threshold, outputs, splits, outputThresholds] as Parameters<typeof m.call>[2],
+      {
+        id: `Initialize${name}`,
+      },
+    );
 
     const flushTask = m.contract("@moc/oracles/contracts/tasks/mocFlow/buffer/TaskFlush.sol:TaskFlush", [buffer], {
       id: `TaskFlush${name}`,

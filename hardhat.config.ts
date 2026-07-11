@@ -1,15 +1,10 @@
-import { HardhatUserConfig } from "hardhat/config";
+import { defineConfig } from "hardhat/config";
 import type { HttpNetworkAccountsUserConfig } from "hardhat/types/config";
 import { resolve, dirname } from "path";
 import { fileURLToPath } from "url";
 import { config as dotenvConfig } from "dotenv";
-import hardhatEthers from "@nomicfoundation/hardhat-ethers";
-import hardhatIgnition from "@nomicfoundation/hardhat-ignition";
-import hardhatIgnitionEthers from "@nomicfoundation/hardhat-ignition-ethers";
-import hardhatMocha from "@nomicfoundation/hardhat-mocha";
-import hardhatNetworkHelpers from "@nomicfoundation/hardhat-network-helpers";
-import hardhatTypechain from "@nomicfoundation/hardhat-typechain";
-import hardhatVerify from "@nomicfoundation/hardhat-verify";
+import hardhatToolboxViem from "@nomicfoundation/hardhat-toolbox-viem";
+import hardhatContractSizer from "@solidstate/hardhat-contract-sizer";
 
 // ESM equivalent of __dirname
 const __filename = fileURLToPath(import.meta.url);
@@ -112,16 +107,8 @@ const compilers = [
   },
 ];
 
-const config: HardhatUserConfig = {
-  plugins: [
-    hardhatEthers,
-    hardhatIgnition,
-    hardhatIgnitionEthers,
-    hardhatMocha,
-    hardhatNetworkHelpers,
-    hardhatTypechain,
-    hardhatVerify,
-  ],
+export default defineConfig({
+  plugins: [hardhatToolboxViem, hardhatContractSizer],
 
   solidity: {
     profiles: {
@@ -188,9 +175,6 @@ const config: HardhatUserConfig = {
     // Rootstock explorer is still experimental
     // as it needs extra parameters obtained from the website
     // to interact with the nextjs app.
-    rootstockExplorer: {
-      enabled: false,
-    },
     blockscout: {
       enabled: true,
     },
@@ -212,11 +196,6 @@ const config: HardhatUserConfig = {
           url: "https://rootstock.blockscout.com",
           apiUrl: "https://rootstock.blockscout.com/api",
         },
-        rootstockExplorer: {
-          name: "Rootstock.io",
-          url: "https://explorer.rootstock.io",
-          apiUrl: "https://explorer.rootstock.io",
-        },
       },
     },
     [chainIds.rskTestnet]: {
@@ -231,11 +210,6 @@ const config: HardhatUserConfig = {
           url: "https://rootstock-testnet.blockscout.com",
           apiUrl: "https://rootstock-testnet.blockscout.com/api",
         },
-        rootstockExplorer: {
-          name: "Rootstock.io Testnet",
-          url: "https://explorer.testnet.rootstock.io",
-          apiUrl: "https://explorer.testnet.rootstock.io",
-        },
       },
     },
   },
@@ -247,6 +221,22 @@ const config: HardhatUserConfig = {
         mnemonic: mnemonic!,
         accountsBalance: 1000000000n,
       },
+    },
+    // This is the network used when running 'hardhat node'.
+    // cli arguments are broken in 'hardhat node' so we use ENV vars
+    // directly in this network.
+    node: {
+      type: "edr-simulated",
+      chainId: Number(process.env["FORK_CHAIN_ID"]) || undefined,
+      forking: {
+        url: (process.env["FORK_RPC_URL"] as string) || mainnet_rpc_url,
+        blockNumber: Number(process.env["FORK_BLOCK_NUMBER"]) || undefined,
+      },
+      accounts: {
+        mnemonic: mnemonic!,
+        accountsBalance: 10000000000000000000000n,
+      },
+      gas: 30000000,
     },
     rskAlphaTestnet: {
       type: "http",
@@ -291,7 +281,6 @@ const config: HardhatUserConfig = {
     timeBeforeBumpingFees: 120000,
     maxFeeBumps: 10,
     requiredConfirmations: 1,
-    maxUnconfirmedTxs: 1,
   },
   paths: {
     artifacts: "./artifacts",
@@ -308,10 +297,4 @@ const config: HardhatUserConfig = {
       },
     },
   },
-
-  typechain: {
-    outDir: "./typechain",
-  },
-};
-
-export default config;
+});
