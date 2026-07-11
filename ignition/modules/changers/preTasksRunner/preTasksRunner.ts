@@ -1,9 +1,10 @@
 import { buildModule } from "@nomicfoundation/hardhat-ignition/modules";
+import type { IgnitionModule } from "@nomicfoundation/ignition-core";
 
 // ethers.encodeBytes32String("TASKSRUNNER")
 const TASKS_RUNNER_NAME = "0x5441534b5352554e4e4552000000000000000000000000000000000000000000";
 
-export default buildModule("PreTasksRunnerModule", m => {
+const PreTasksRunnerModule: IgnitionModule = buildModule("PreTasksRunnerModule", m => {
   const oracleManagerProxy = m.getParameter("oracleManagerProxy");
   const upgradeDelegator = m.getParameter("upgradeDelegator");
   const proxyAdmin = m.getParameter("proxyAdmin");
@@ -91,3 +92,5 @@ export default buildModule("PreTasksRunnerModule", m => {
     changer,
   };
 });
+
+export default PreTasksRunnerModule;

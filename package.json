@@ -18,6 +18,7 @@
     "@commitlint/config-conventional": "20.3.1",
     "@eslint/js": "9.27.0",
     "@nomicfoundation/hardhat-ignition": "^3.1.8",
+    "@nomicfoundation/ignition-core": "3.1.8",
     "@nomicfoundation/hardhat-toolbox-viem": "5.0.7",
     "@openzeppelin-v4.8.0/contracts": "npm:@openzeppelin/contracts@4.8.0",
     "@openzeppelin-v4.8.0/contracts-upgradeable": "npm:@openzeppelin/contracts-upgradeable@4.8.0",
@@ -50,14 +51,39 @@
     "dependencies": "hardhat-solhint and hardhat-prettier includes old versions, that's why specific dependencies are added",
     "hardhat": "Migrated to Hardhat 3.x - ESM-first, declarative config"
   },
-  "types": "types/index.d.ts",
+  "main": "./dist/addressBook.js",
+  "types": "./dist/addressBook.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/addressBook.d.ts",
+      "import": "./dist/addressBook.js",
+      "default": "./dist/addressBook.js"
+    },
+    "./addressBook": {
+      "types": "./dist/addressBook.d.ts",
+      "import": "./dist/addressBook.js",
+      "default": "./dist/addressBook.js"
+    },
+    "./addressBook.json": "./addressBook.json",
+    "./contracts": "./contracts",
+    "./contracts/*": "./contracts/*",
+    "./ignition": "./dist/ignition",
+    "./ignition/modules/changers/addTasksRunner/parameters/*": "./ignition/modules/changers/addTasksRunner/parameters/*",
+    "./ignition/modules/changers/fixInfinityAndDOCRName/parameters/*": "./ignition/modules/changers/fixInfinityAndDOCRName/parameters/*",
+    "./ignition/modules/changers/preTasksRunner/parameters/*": "./ignition/modules/changers/preTasksRunner/parameters/*",
+    "./ignition/deployments/*": "./ignition/deployments/*",
+    "./ignition/*": "./dist/ignition/*",
+    "./types": "./types",
+    "./types/*": "./types/*"
+  },
   "files": [
-    "/contracts",
-    "/ignition",
-    "/addressBook.js",
-    "/addressBook.d.ts",
-    "/addressBook.json",
-    "/types"
+    "dist",
+    "contracts",
+    "ignition",
+    "addressBook.js",
+    "addressBook.d.ts",
+    "addressBook.json",
+    "types"
   ],
   "keywords": [
     "blockchain",

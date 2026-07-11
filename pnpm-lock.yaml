@@ -36,6 +36,9 @@ importers:
       '@nomicfoundation/hardhat-ignition':
         specifier: ^3.1.8
         version: 3.1.8(@nomicfoundation/hardhat-verify@3.0.21(hardhat@3.9.0))(hardhat@3.9.0)
+      '@nomicfoundation/ignition-core':
+        specifier: 3.1.8
+        version: 3.1.8
       '@nomicfoundation/hardhat-toolbox-viem':
         specifier: 5.0.7
         version: 5.0.7(6290106f27664cbed5721001e427defd)

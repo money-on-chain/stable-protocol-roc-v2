@@ -1,4 +1,5 @@
 import { buildModule } from "@nomicfoundation/hardhat-ignition/modules";
+import type { IgnitionModule } from "@nomicfoundation/ignition-core";
 
 /**
  * Hardhat Ignition module for AddTasksRunner changer deployment.
@@ -12,7 +13,7 @@ import { buildModule } from "@nomicfoundation/hardhat-ignition/modules";
  * 4) Deploys AddTasksRunnerChanger configured to apply protocol wiring/upgrade steps,
  *    passing all deployed tasks to be added to the already-deployed TasksRunner
  */
-const AddTasksRunnerModule = buildModule("AddTasksRunner", m => {
+const AddTasksRunnerModule: IgnitionModule = buildModule("AddTasksRunner", m => {
   const ZERO_ADDRESS = "0x0000000000000000000000000000000000000000";
   const getParameter = <T extends string | bigint | boolean | string[] | bigint[]>(parameterName: string) =>
     m.getParameter<T>(parameterName);
