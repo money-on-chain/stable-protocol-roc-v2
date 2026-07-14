@@ -1,6 +1,6 @@
 {
   "name": "roc-sc-protocol-v2",
-  "version": "3.0.6",
+  "version": "3.0.7",
   "private": true,
   "homepage": "https://www.moneyonchain.com",
   "description": "Money on Chain main smart contract protocol RIF implementation",
@@ -81,23 +81,8 @@
     "./types": "./types",
     "./types/*": "./types/*"
   },
-  "files": [
-    "dist",
-    "contracts",
-    "ignition",
-    "addressBook.js",
-    "addressBook.d.ts",
-    "addressBook.json",
-    "types"
-  ],
-  "keywords": [
-    "blockchain",
-    "ethereum",
-    "hardhat",
-    "smart-contracts",
-    "solidity",
-    "rsk"
-  ],
+  "files": ["dist", "contracts", "ignition", "addressBook.js", "addressBook.d.ts", "addressBook.json", "types"],
+  "keywords": ["blockchain", "ethereum", "hardhat", "smart-contracts", "solidity", "rsk"],
   "scripts": {
     "prepare": "husky install",
     "clean": "hardhat clean && rm -rf dist cache out artifacts",
