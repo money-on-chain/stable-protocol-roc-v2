@@ -9,17 +9,17 @@ importers:
   .:
     dependencies:
       '@moc/flow':
-        specifier: git+ssh://git@github.com/money-on-chain/MoC-Flow.git#v3.0.0
-        version: '@moneyonchain/flow@git+https://git@github.com:money-on-chain/MoC-Flow.git#af6d889ab50b642f7885bda42327efb10d2630a7'
+        specifier: git+ssh://git@github.com/money-on-chain/MoC-Flow.git#v3.0.1
+        version: '@moneyonchain/flow@git+https://git@github.com:money-on-chain/MoC-Flow.git#287beb97fc53f9b492b78814e9198b2b6edb729d'
       '@moc/oracles':
         specifier: git+ssh://git@github.com/money-on-chain/OMoC-Decentralized-Oracle.git#v3.0.8
         version: '@moneyonchain/oracles@https://codeload.github.com/money-on-chain/OMoC-Decentralized-Oracle/tar.gz/b32ec09a6a325b1198518d38e61c3342f54d6772(typescript@5.9.3)'
       '@moc/price-oracle-interfaces':
-        specifier: git+ssh://git@github.com/money-on-chain/price_oracle_interfaces.git#v0.0.2
-        version: price-oracle-interfaces@https://codeload.github.com/money-on-chain/price_oracle_interfaces/tar.gz/b632f9e7248bc8b22e6dc2983486f69f0d1a23b9
+        specifier: git+ssh://git@github.com/money-on-chain/price_oracle_interfaces.git#v0.1.0
+        version: price-oracle-interfaces@https://codeload.github.com/money-on-chain/price_oracle_interfaces/tar.gz/1d40834055f9d12ac3b3ce98bce82199336eb7d9
       moc-main-latest:
-        specifier: git+ssh://git@github.com/money-on-chain/main-sc-protocol-v2#v3.0.0
-        version: main-sc-protocol-v2@git+https://git@github.com:money-on-chain/main-sc-protocol-v2.git#a5d9947ac588c3d9ec01581fa9250ec26a19bb4d(typescript@5.9.3)
+        specifier: git+ssh://git@github.com/money-on-chain/main-sc-protocol-v2#v3.0.8
+        version: main-sc-protocol-v2@git+https://git@github.com:money-on-chain/main-sc-protocol-v2.git#703923fb31b3375eb21152358ea67178da18694e(typescript@5.9.3)
       solc:
         specifier: 0.8.24
         version: 0.8.24
@@ -36,12 +36,12 @@ importers:
       '@nomicfoundation/hardhat-ignition':
         specifier: ^3.1.8
         version: 3.1.8(@nomicfoundation/hardhat-verify@3.0.21(hardhat@3.9.0))(hardhat@3.9.0)
-      '@nomicfoundation/ignition-core':
-        specifier: 3.1.8
-        version: 3.1.8
       '@nomicfoundation/hardhat-toolbox-viem':
         specifier: 5.0.7
         version: 5.0.7(6290106f27664cbed5721001e427defd)
+      '@nomicfoundation/ignition-core':
+        specifier: 3.1.8
+        version: 3.1.8
       '@openzeppelin-v4.8.0/contracts':
         specifier: npm:@openzeppelin/contracts@4.8.0
         version: '@openzeppelin/contracts@4.8.0'
@@ -648,13 +648,17 @@ packages:
   '@kwsites/promise-deferred@1.1.1':
     resolution: {integrity: sha512-GaHYm+c0O9MjZRu0ongGBRbinu8gVAMd2UZjji6jVmqKtZluZnptXGWhz1E8j8D2HJ3f/yMxKAUC0b+57wncIw==}
 
-  '@moneyonchain/flow@git+https://git@github.com:money-on-chain/MoC-Flow.git#af6d889ab50b642f7885bda42327efb10d2630a7':
-    resolution: {commit: af6d889ab50b642f7885bda42327efb10d2630a7, repo: git@github.com:money-on-chain/MoC-Flow.git, type: git}
-    version: 3.0.0
+  '@moneyonchain/flow@git+https://git@github.com:money-on-chain/MoC-Flow.git#287beb97fc53f9b492b78814e9198b2b6edb729d':
+    resolution: {commit: 287beb97fc53f9b492b78814e9198b2b6edb729d, repo: git@github.com:money-on-chain/MoC-Flow.git, type: git}
+    version: 3.0.1
 
   '@moneyonchain/oracles@https://codeload.github.com/money-on-chain/OMoC-Decentralized-Oracle/tar.gz/b32ec09a6a325b1198518d38e61c3342f54d6772':
     resolution: {tarball: https://codeload.github.com/money-on-chain/OMoC-Decentralized-Oracle/tar.gz/b32ec09a6a325b1198518d38e61c3342f54d6772}
     version: 3.0.6
+
+  '@moneyonchain/periphery@https://codeload.github.com/money-on-chain/MoC-Periphery/tar.gz/bbc139cf30de686a4910ae307e97744f799057df':
+    resolution: {tarball: https://codeload.github.com/money-on-chain/MoC-Periphery/tar.gz/bbc139cf30de686a4910ae307e97744f799057df}
+    version: 3.0.4
 
   '@moneyonchain/periphery@https://codeload.github.com/money-on-chain/MoC-Periphery/tar.gz/e7c4a6661d8cd17a40ec6ebd118be907b3accb05':
     resolution: {tarball: https://codeload.github.com/money-on-chain/MoC-Periphery/tar.gz/e7c4a6661d8cd17a40ec6ebd118be907b3accb05}
@@ -2628,6 +2632,10 @@ packages:
   lru_map@0.3.3:
     resolution: {integrity: sha512-Pn9cox5CsMYngeDbmChANltQl+5pi6XmTrraMSzhPmMBbmgcxmqWry0U3PGapCU1yB4/LqCcom7qhHZiF/jGfQ==}
 
+  main-sc-protocol-v2@git+https://git@github.com:money-on-chain/main-sc-protocol-v2.git#703923fb31b3375eb21152358ea67178da18694e:
+    resolution: {commit: 703923fb31b3375eb21152358ea67178da18694e, repo: git@github.com:money-on-chain/main-sc-protocol-v2.git, type: git}
+    version: 3.0.8
+
   main-sc-protocol-v2@git+https://git@github.com:money-on-chain/main-sc-protocol-v2.git#a5d9947ac588c3d9ec01581fa9250ec26a19bb4d:
     resolution: {commit: a5d9947ac588c3d9ec01581fa9250ec26a19bb4d, repo: git@github.com:money-on-chain/main-sc-protocol-v2.git, type: git}
     version: 3.0.0
@@ -3022,9 +3030,9 @@ packages:
     resolution: {integrity: sha512-Pdlw/oPxN+aXdmM9R00JVC9WVFoCLTKJvDVLgmJ+qAffBMxsV85l/Lu7sNx4zSzPyoL2euImuEwHhOXdEgNFZQ==}
     engines: {node: ^14.15.0 || ^16.10.0 || >=18.0.0}
 
-  price-oracle-interfaces@https://codeload.github.com/money-on-chain/price_oracle_interfaces/tar.gz/b632f9e7248bc8b22e6dc2983486f69f0d1a23b9:
-    resolution: {tarball: https://codeload.github.com/money-on-chain/price_oracle_interfaces/tar.gz/b632f9e7248bc8b22e6dc2983486f69f0d1a23b9}
-    version: 0.0.2
+  price-oracle-interfaces@https://codeload.github.com/money-on-chain/price_oracle_interfaces/tar.gz/1d40834055f9d12ac3b3ce98bce82199336eb7d9:
+    resolution: {tarball: https://codeload.github.com/money-on-chain/price_oracle_interfaces/tar.gz/1d40834055f9d12ac3b3ce98bce82199336eb7d9}
+    version: 0.1.0
 
   process-nextick-args@2.0.1:
     resolution: {integrity: sha512-3ouUOpQhtgrbOa17J7+uxOTpITYWaGP7/AhoR3+A+/1e9skrzelGi/dXzEYyvbxubEF6Wn2ypscTKiKJFFn1ag==}
@@ -3315,6 +3323,11 @@ packages:
   solc@0.8.26:
     resolution: {integrity: sha512-yiPQNVf5rBFHwN6SIf3TUUvVAFKcQqmSUFeq+fb6pNRCo0ZCgpYOZDi3BVoezCPIAcKrVYd/qXlBLUP9wVrZ9g==}
     engines: {node: '>=10.0.0'}
+    hasBin: true
+
+  solc@0.8.35:
+    resolution: {integrity: sha512-OaP/4zyoKRo2CjqZDxbtkeRlEo6MxP4FLCxntw1Agf9OSoecmwYKoFBSB34UcSKBFBucrTh3Mb0nRoJou62ibw==}
+    engines: {node: '>=12.0.0'}
     hasBin: true
 
   solhint-plugin-prettier@0.1.0:
@@ -4493,12 +4506,13 @@ snapshots:
 
   '@kwsites/promise-deferred@1.1.1': {}
 
-  '@moneyonchain/flow@git+https://git@github.com:money-on-chain/MoC-Flow.git#af6d889ab50b642f7885bda42327efb10d2630a7':
+  '@moneyonchain/flow@git+https://git@github.com:money-on-chain/MoC-Flow.git#287beb97fc53f9b492b78814e9198b2b6edb729d':
     dependencies:
-      '@moc/periphery': '@moneyonchain/periphery@https://codeload.github.com/money-on-chain/MoC-Periphery/tar.gz/e7c4a6661d8cd17a40ec6ebd118be907b3accb05'
+      '@moc/periphery': '@moneyonchain/periphery@https://codeload.github.com/money-on-chain/MoC-Periphery/tar.gz/bbc139cf30de686a4910ae307e97744f799057df'
       node-gyp: 9.4.1
     transitivePeerDependencies:
       - bluebird
+      - debug
       - supports-color
 
   '@moneyonchain/oracles@https://codeload.github.com/money-on-chain/OMoC-Decentralized-Oracle/tar.gz/b32ec09a6a325b1198518d38e61c3342f54d6772(typescript@5.9.3)':
@@ -4513,6 +4527,13 @@ snapshots:
       - ts-node
       - typescript
       - utf-8-validate
+
+  '@moneyonchain/periphery@https://codeload.github.com/money-on-chain/MoC-Periphery/tar.gz/bbc139cf30de686a4910ae307e97744f799057df':
+    dependencies:
+      '@openzeppelin/contracts-ethereum-package': 3.0.0
+      solc: 0.8.35
+    transitivePeerDependencies:
+      - debug
 
   '@moneyonchain/periphery@https://codeload.github.com/money-on-chain/MoC-Periphery/tar.gz/e7c4a6661d8cd17a40ec6ebd118be907b3accb05':
     dependencies:
@@ -6839,6 +6860,20 @@ snapshots:
 
   lru_map@0.3.3: {}
 
+  main-sc-protocol-v2@git+https://git@github.com:money-on-chain/main-sc-protocol-v2.git#703923fb31b3375eb21152358ea67178da18694e(typescript@5.9.3):
+    dependencies:
+      hardhat: 2.26.3(typescript@5.9.3)
+      hardhat-deploy: 0.14.0
+      hardhat-storage-layout: 0.1.7(hardhat@2.26.3(typescript@5.9.3))
+      solc: 0.8.24
+    transitivePeerDependencies:
+      - bufferutil
+      - debug
+      - supports-color
+      - ts-node
+      - typescript
+      - utf-8-validate
+
   main-sc-protocol-v2@git+https://git@github.com:money-on-chain/main-sc-protocol-v2.git#a5d9947ac588c3d9ec01581fa9250ec26a19bb4d(typescript@5.9.3):
     dependencies:
       hardhat: 2.26.3(typescript@5.9.3)
@@ -7266,7 +7301,7 @@ snapshots:
       ansi-styles: 5.2.0
       react-is: 18.3.1
 
-  price-oracle-interfaces@https://codeload.github.com/money-on-chain/price_oracle_interfaces/tar.gz/b632f9e7248bc8b22e6dc2983486f69f0d1a23b9: {}
+  price-oracle-interfaces@https://codeload.github.com/money-on-chain/price_oracle_interfaces/tar.gz/1d40834055f9d12ac3b3ce98bce82199336eb7d9: {}
 
   process-nextick-args@2.0.1: {}
 
@@ -7574,6 +7609,18 @@ snapshots:
       - debug
 
   solc@0.8.26(debug@4.4.3):
+    dependencies:
+      command-exists: 1.2.9
+      commander: 8.3.0
+      follow-redirects: 1.16.0(debug@4.4.3)
+      js-sha3: 0.8.0
+      memorystream: 0.3.1
+      semver: 5.7.2
+      tmp: 0.0.33
+    transitivePeerDependencies:
+      - debug
+
+  solc@0.8.35:
     dependencies:
       command-exists: 1.2.9
       commander: 8.3.0
