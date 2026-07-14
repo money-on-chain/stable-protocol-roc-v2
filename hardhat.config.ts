@@ -1,15 +1,9 @@
-import { HardhatUserConfig } from "hardhat/config";
+import { defineConfig } from "hardhat/config";
 import type { HttpNetworkAccountsUserConfig } from "hardhat/types/config";
 import { resolve, dirname } from "path";
 import { fileURLToPath } from "url";
 import { config as dotenvConfig } from "dotenv";
-import hardhatEthers from "@nomicfoundation/hardhat-ethers";
-import hardhatIgnition from "@nomicfoundation/hardhat-ignition";
-import hardhatIgnitionEthers from "@nomicfoundation/hardhat-ignition-ethers";
-import hardhatMocha from "@nomicfoundation/hardhat-mocha";
-import hardhatNetworkHelpers from "@nomicfoundation/hardhat-network-helpers";
-import hardhatTypechain from "@nomicfoundation/hardhat-typechain";
-import hardhatVerify from "@nomicfoundation/hardhat-verify";
+import hardhatToolboxViem from "@nomicfoundation/hardhat-toolbox-viem";
 import hardhatContractSizer from "@solidstate/hardhat-contract-sizer";
 
 // ESM equivalent of __dirname
@@ -39,91 +33,11 @@ const accounts: HttpNetworkAccountsUserConfig = pk ? [pk] : { mnemonic: mnemonic
 const testnet_rpc_url = process.env["RSK_TESTNET_RPC_URL"] || "https://public-node.testnet.rsk.co";
 const mainnet_rpc_url = process.env["RSK_MAINNET_RPC_URL"] || "https://public-node.rsk.co";
 
-const compilers = [
-  {
-    version: "0.5.8",
-    settings: { optimizer: { enabled: true, runs: 200 } },
-  },
-  {
-    version: "0.6.12",
-    settings: { optimizer: { enabled: true, runs: 200 } },
-  },
-  {
-    version: "0.7.6",
-    settings: { optimizer: { enabled: true, runs: 200 } },
-  },
-  {
-    version: "0.8.16",
-    settings: {
-      optimizer: {
-        enabled: true,
-        runs: 200,
-      },
-      evmVersion: "london",
-      outputSelection: {
-        "*": {
-          "*": ["storageLayout"],
-        },
-      },
-    },
-  },
-  {
-    version: "0.8.20",
-    settings: {
-      optimizer: {
-        enabled: true,
-        runs: 200,
-        details: {
-          yulDetails: {
-            optimizerSteps:
-              "dhfoDgvulfnTUtnIf[xa[r]EscLMcCTUtTOntnfDIulLculVcul[j]Tpeulxa[rul]xa[r]cLgvifCTUca[r]LSsTOtfDnca[r]Iulc]jmul[jul]VcTOculjmul",
-          },
-        },
-      },
-      viaIR: true,
-      evmVersion: "london",
-      outputSelection: {
-        "*": {
-          "*": ["storageLayout"],
-        },
-      },
-    },
-  },
-  {
-    version: "0.8.24",
-    settings: {
-      optimizer: {
-        enabled: true,
-        runs: 200,
-        details: {
-          yulDetails: {
-            optimizerSteps:
-              "dhfoDgvulfnTUtnIf[xa[r]EscLMcCTUtTOntnfDIulLculVcul[j]Tpeulxa[rul]xa[r]cLgvifCTUca[r]LSsTOtfDnca[r]Iulc]jmul[jul]VcTOculjmul",
-          },
-        },
-      },
-      viaIR: true,
-      evmVersion: "london",
-      outputSelection: {
-        "*": {
-          "*": ["storageLayout"],
-        },
-      },
-    },
-  },
-];
+export { compilers, npmFilesToBuild } from "./config/solidity.js";
+import { compilers, npmFilesToBuild } from "./config/solidity.js";
 
-const config: HardhatUserConfig = {
-  plugins: [
-    hardhatEthers,
-    hardhatIgnition,
-    hardhatIgnitionEthers,
-    hardhatMocha,
-    hardhatNetworkHelpers,
-    hardhatTypechain,
-    hardhatVerify,
-    hardhatContractSizer,
-  ],
+export default defineConfig({
+  plugins: [hardhatToolboxViem, hardhatContractSizer],
 
   solidity: {
     profiles: {
@@ -135,50 +49,7 @@ const config: HardhatUserConfig = {
         compilers,
       },
     },
-    npmFilesToBuild: [
-      "moc-main-latest/contracts/collateral/rc20/MocCARC20.sol",
-      "moc-main-latest/contracts/core/MocCoreExpansion.sol",
-      "moc-main-latest/contracts/tokens/MocRC20.sol",
-      "moc-main-latest/contracts/queue/MocQueue.sol",
-      "moc-main-latest/contracts/multiCollateral/MocMultiCollateralGuard.sol",
-      "moc-main-latest/contracts/mocks/PriceProviderMock.sol",
-      "moc-main-latest/contracts/auxiliary/CommissionSplitterRC20.sol",
-      "moc-main-latest/contracts/governance/InterimGovernor.sol",
-
-      "moc-main-latest/contracts/auxiliary/MocReverseAuction.sol",
-      "moc-main-latest/contracts/multiCollateral/swapper/MocSwapperV3.sol",
-      "moc-main-latest/contracts/multiCollateral/swapper/MocSwapperV3MultiHop.sol",
-
-      "@moc/price-oracle-interfaces/contracts/PriceProviderInverse.sol",
-      "@moc/price-oracle-interfaces/contracts/PriceProviderDummy.sol",
-      "@moc/price-oracle-interfaces/contracts/PriceProviderDocRbtc.sol",
-      "@moc/price-oracle-interfaces/contracts/PriceProviderDocUsd.sol",
-      "@moc/price-oracle-interfaces/contracts/PriceProviderDiv.sol",
-      "@moc/oracles/contracts/tasks/v3/TaskExecuteQueueV3.sol",
-      "@moc/oracles/contracts/tasks/v1/TaskUpdateEmaV1.sol",
-      "@moc/oracles/contracts/tasks/v1/TaskDailyInratePaymentV1.sol",
-      "@moc/oracles/contracts/tasks/v1/TaskEvalLiquidationV1.sol",
-      "@moc/oracles/contracts/tasks/v1/TaskInterestPaymentV1.sol",
-      "@moc/oracles/contracts/tasks/v1/TaskSettlementV1.sol",
-      "@moc/oracles/contracts/tasks/v3/TaskUpdateEmaV3.sol",
-      "@moc/oracles/contracts/tasks/v3/TaskExecuteLiquidationV3.sol",
-      "@moc/oracles/contracts/tasks/v3/TaskExecuteMicroLiquidationV3.sol",
-      "@moc/oracles/contracts/tasks/v3/TaskInterestPaymentV3.sol",
-      "@moc/oracles/contracts/tasks/v3/TaskSettlementV3.sol",
-      "@moc/oracles/contracts/tasks/v3/TaskRefreshACBalanceV3.sol",
-      "@moc/oracles/contracts/tasks/mocFlow/commissionSplitter/TaskSplit.sol",
-      "@moc/oracles/contracts/tasks/mocFlow/reverseAuction/TaskTriggerOrder.sol",
-      "@moc/oracles/contracts/tasks/mocFlow/buffer/TaskFlush.sol",
-      "@moc/oracles/contracts/tasks/mocFlow/buffer/TaskLiquidate.sol",
-      "@moc/oracles/contracts/tasks/mocFlow/coiner/TaskMintStep.sol",
-      "@moc/oracles/contracts/tasks/oracles/TaskSwitchRoundCoinPair.sol",
-      "@moc/oracles/contracts/tasks/oracles/TaskDistributeSupporters.sol",
-      "@moc/oracles/contracts/BasefeeProvider.sol",
-      "@moc/flow/contracts/BufferToken.sol",
-      "@moc/oracles/contracts/TasksRunner.sol",
-
-      "@openzeppelin/contracts/proxy/ERC1967/ERC1967Proxy.sol",
-    ],
+    npmFilesToBuild,
   },
   contractSizer: {
     runOnCompile: true,
@@ -189,9 +60,6 @@ const config: HardhatUserConfig = {
     // Rootstock explorer is still experimental
     // as it needs extra parameters obtained from the website
     // to interact with the nextjs app.
-    rootstockExplorer: {
-      enabled: false,
-    },
     blockscout: {
       enabled: true,
     },
@@ -213,11 +81,6 @@ const config: HardhatUserConfig = {
           url: "https://rootstock.blockscout.com",
           apiUrl: "https://rootstock.blockscout.com/api",
         },
-        rootstockExplorer: {
-          name: "Rootstock.io",
-          url: "https://explorer.rootstock.io",
-          apiUrl: "https://explorer.rootstock.io",
-        },
       },
     },
     [chainIds.rskTestnet]: {
@@ -232,11 +95,6 @@ const config: HardhatUserConfig = {
           url: "https://rootstock-testnet.blockscout.com",
           apiUrl: "https://rootstock-testnet.blockscout.com/api",
         },
-        rootstockExplorer: {
-          name: "Rootstock.io Testnet",
-          url: "https://explorer.testnet.rootstock.io",
-          apiUrl: "https://explorer.testnet.rootstock.io",
-        },
       },
     },
   },
@@ -248,6 +106,22 @@ const config: HardhatUserConfig = {
         mnemonic: mnemonic!,
         accountsBalance: 1000000000n,
       },
+    },
+    // This is the network used when running 'hardhat node'.
+    // cli arguments are broken in 'hardhat node' so we use ENV vars
+    // directly in this network.
+    node: {
+      type: "edr-simulated",
+      chainId: Number(process.env["FORK_CHAIN_ID"]) || undefined,
+      forking: {
+        url: (process.env["FORK_RPC_URL"] as string) || mainnet_rpc_url,
+        blockNumber: Number(process.env["FORK_BLOCK_NUMBER"]) || undefined,
+      },
+      accounts: {
+        mnemonic: mnemonic!,
+        accountsBalance: 10000000000000000000000n,
+      },
+      gas: 30000000,
     },
     rskAlphaTestnet: {
       type: "http",
@@ -292,7 +166,6 @@ const config: HardhatUserConfig = {
     timeBeforeBumpingFees: 120000,
     maxFeeBumps: 10,
     requiredConfirmations: 1,
-    maxUnconfirmedTxs: 1,
   },
   paths: {
     artifacts: "./artifacts",
@@ -305,14 +178,8 @@ const config: HardhatUserConfig = {
     solidity: {
       ffi: true,
       fsPermissions: {
-        readDirectory: ["./out", "./test", "./ignition/deployments"],
+        readDirectory: ["./out", "./test", "./ignition", "./addressBook.json"],
       },
     },
   },
-
-  typechain: {
-    outDir: "./typechain",
-  },
-};
-
-export default config;
+});

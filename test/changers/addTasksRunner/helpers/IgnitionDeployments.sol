@@ -5,10 +5,9 @@ import { Test } from "forge-std/Test.sol";
 
 abstract contract IgnitionDeployments is Test {
     string constant DEPLOYED_ADDRESSES_PATH = "test/changers/addTasksRunner/fixtures/deployed-addresses.json";
-    string constant MC_DEPLOYED_ADDRESSES_PATH = "ignition/deployments/chain-30/deployed_addresses.json";
+    string constant ADDRESS_BOOK_PATH = "addressBook.json";
 
     mapping(string => address) public deployedAddresses;
-    mapping(string => address) public multiCollateralDeployedAddresses;
     bool public addressesLoaded;
 
     function _loadDeployedAddresses() internal {
@@ -18,27 +17,12 @@ abstract contract IgnitionDeployments is Test {
         bytes memory jsonBytes = bytes(json);
         require(jsonBytes.length > 0, "Deployed addresses file is empty");
 
-        _tryParseAddress(json, "MultiCollateral_MultiCollateralUpgradeChanger");
-        _tryParseAddress(json, "MultiCollateral_MocQueueProxy");
-        _tryParseAddress(json, "MultiCollateral_MocMultiCollateralGuardProxy");
-        _tryParseAddress(json, "DocBucket_DocBucketProxy");
-        _tryParseAddress(json, "FeeFlow_ReverseAuctionDOCtoMOC");
-        _tryParseAddress(json, "FeeFlow_ReverseAuctionMOCtoDOC");
-        _tryParseAddress(json, "FeeFlow_RocrRewardsBuffer");
-        _tryParseAddress(json, "MultiCollateral_RifPriceProvider");
-        _tryParseAddress(json, "MultiCollateral_RifToRbtcPriceProvider");
-        _tryParseAddress(json, "Swappers_RifToDocMaxAmountProvider");
+        // PreTasksRunner deployment keys
+        _tryParseAddress(json, "PreTasksRunnerChanger");
+        _tryParseAddress(json, "TasksRunnerProxy");
 
-        _tryParseAddress(json, "AddTasksRunner_AddTasksRunnerChanger");
+        // AddTasksRunner deployment keys
         _tryParseAddress(json, "AddTasksRunnerChanger");
-
-        string memory mcJson = vm.readFile(MC_DEPLOYED_ADDRESSES_PATH);
-        bytes memory mcJsonBytes = bytes(mcJson);
-        require(mcJsonBytes.length > 0, "MultiCollateral deployed addresses file is empty");
-
-        _tryParseMultiCollateralAddress(mcJson, "MultiCollateral_MocQueueProxy");
-        _tryParseMultiCollateralAddress(mcJson, "MultiCollateral_MocMultiCollateralGuardProxy");
-        _tryParseMultiCollateralAddress(mcJson, "DocBucket_DocBucketProxy");
 
         addressesLoaded = true;
     }
@@ -56,16 +40,16 @@ abstract contract IgnitionDeployments is Test {
         return deployedAddresses[contractId];
     }
 
-    function _tryParseMultiCollateralAddress(string memory mcJson, string memory key) internal {
-        string memory selector = string.concat(".FullMultiCollateralUpgrade#", key);
-        try vm.parseJsonAddress(mcJson, selector) returns (address addr) {
-            if (addr != address(0)) {
-                multiCollateralDeployedAddresses[key] = addr;
-            }
-        } catch {}
+    function getMainnetAddress(string memory key) public view returns (address) {
+        return _getAddressBookAddress("mainnet", key);
     }
 
-    function getMultiCollateralDeployedAddress(string memory contractId) public view returns (address) {
-        return multiCollateralDeployedAddresses[contractId];
+    function getTestnetAddress(string memory key) public view returns (address) {
+        return _getAddressBookAddress("testnet", key);
+    }
+
+    function _getAddressBookAddress(string memory network, string memory key) internal view returns (address) {
+        string memory json = vm.readFile(ADDRESS_BOOK_PATH);
+        return vm.parseJsonAddress(json, string.concat(".", network, ".", key));
     }
 }

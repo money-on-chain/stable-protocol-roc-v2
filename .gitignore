@@ -6,7 +6,6 @@ artifacts/
 build/
 cache/
 coverage/
-dist/
 lib/
 node_modules/
 typechain/
@@ -17,7 +16,8 @@ crytic-export/
 .openzeppelin/
 out/
 ignition/deployments/chain-test
-test/changers/addTasksRunner/fixtures/deployed-addresses.json
+ignition/deployments/chain-pre-test
+test/changers/addTasksRunner/fixtures
 # files
 *.env
 *.log

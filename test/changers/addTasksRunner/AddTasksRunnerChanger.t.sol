@@ -2,10 +2,30 @@
 pragma solidity 0.8.24;
 
 import { BaseFork } from "./helpers/BaseFork.sol";
+import { IMocV2 } from "moc-main-latest/contracts/interfaces/IMocV2.sol";
+import { MocRC20 } from "moc-main-latest/contracts/tokens/MocRC20.sol";
 import { Vm } from "forge-std/Vm.sol";
+import { IOracleCheats } from "../../helpers/OracleTestHelper.sol";
 
 interface IReverseAuctionView {
     function outputAccount() external view returns (address);
+    function priceProvider() external view returns (address);
+}
+
+interface IPriceProviderDivView {
+    function _priceProvider() external view returns (address);
+    function _priceProviderDivisor() external view returns (address);
+    function peek() external view returns (bytes32, bool);
+}
+
+interface IPriceProviderInverseView {
+    function _priceProvider() external view returns (address);
+    function peek() external view returns (bytes32, bool);
+}
+
+interface ICoinPairPriceView {
+    function peek() external view returns (bytes32, bool);
+    function isPricePeekWhitelisted(address _account) external view returns (bool);
 }
 
 interface ITasksRunnerView {
@@ -13,6 +33,7 @@ interface ITasksRunnerView {
     function containsTask(address _task) external view returns (bool);
     function getLastPublicationBlock() external view returns (uint256);
     function getTasksAvailableAsFlags() external view returns (uint256);
+    function getName() external view returns (bytes32);
     function getOracleRoundInfo(
         address oracleOwner
     ) external view returns (uint256 points, bool selectedInCurrentRound);
@@ -35,10 +56,51 @@ interface IBufferTokenView {
 
 interface IGovernedRegistryView {
     function addressArrayContains(bytes32 _key, address value) external view returns (bool);
+    function getAddress(bytes32 _key) external view returns (address);
 }
 
 interface IOracleManagerView {
     function getStakingContract() external view returns (address);
+    function getContractAddress(bytes32 coinPair) external view returns (address);
+    function getOracleAddress(address oracleOwnerAddr) external view returns (address oracleAddr);
+}
+
+interface ICoinPairPriceFull {
+    function getCoinPair() external view returns (bytes32);
+    function getPriceInfo() external view returns (uint256 price, bool isValid, uint256 lastPubBlock);
+    function getRoundInfo()
+        external
+        view
+        returns (
+            uint256 round,
+            uint256 startBlock,
+            uint256 lockPeriodTimestamp,
+            uint256 totalPoints,
+            address[] memory selectedOwners,
+            address[] memory selectedOracles
+        );
+    function getLastPublicationBlock() external view returns (uint256);
+    function switchRound() external;
+    function publishPrice(
+        uint256 version,
+        bytes32 coinpair,
+        uint256 price,
+        address votedOracle,
+        uint256 blockNumber,
+        uint8[] calldata sigV,
+        bytes32[] calldata sigR,
+        bytes32[] calldata sigS
+    ) external;
+}
+
+interface IStakingFull {
+    function setOracleAddress(address oracleAddr) external;
+    function subscribeToCoinPair(bytes32 coinPair) external;
+}
+
+interface IQueueExecFeesView {
+    function priceUpdatesCost() external view returns (uint256);
+    function getExecFee(uint8 opType) external view returns (uint256);
 }
 
 interface IStakingOracleOps {
@@ -46,32 +108,66 @@ interface IStakingOracleOps {
     function subscribeToCoinPair(bytes32 coinPair) external;
 }
 
+interface ICommissionSplitterView {
+    function acTokenAddressRecipient1() external view returns (address);
+    function acTokenAddressRecipient2() external view returns (address);
+    function feeTokenAddressRecipient1() external view returns (address);
+    function feeTokenAddressRecipient2() external view returns (address);
+    function acTokenPctToRecipient1() external view returns (uint256);
+    function feeTokenPctToRecipient1() external view returns (uint256);
+}
+
 contract AddTasksRunnerChangerForkTests is BaseFork {
     string private constant TASKS_DEPLOYED_ADDRESSES_PATH =
         "test/changers/addTasksRunner/fixtures/deployed-addresses.json";
-    address private constant MOC_REWARDS_BUFFER = 0xf09006E812BE98c7B18c877Af5C126629acB6cAb;
     bytes32 private constant MOC_FLOW_BUFFERS = 0x4cb845794d5472a713e41e8e4ddc566dab8d695f1dc6c8edd43dad9d55112a22;
     bytes32 private constant MOC_FLOW_REVERSE_AUCTIONS =
         0x0428ec087e0cce276a71d1caf1afe4da32a2d48b3ebe579040612b5bd262ff73;
-    address private constant ORACLE_OWNER_1 = 0x4e9e0e64ff95f9a629D1F756119fA636F30BbACD;
-    address private constant ORACLE_OWNER_2 = 0xd6fdad4e02477A05A492F1AC51cfE0883C470022;
-    address private constant ORACLE_OWNER_3 = 0xC9acAf0Ab55cADC285F109E20d9Ba5cCa81d02D6;
+    bytes32 private constant RIF_USD = 0x5249465553440000000000000000000000000000000000000000000000000000;
+    bytes32 private constant INFO_ADDR = 0xda9f12e01fc92de345bb741448d36ecb967052dd7aa1670439af833c9a3d78f1;
+
+    address private mocRewardsBuffer;
+    address private supporters;
+    address private btcUsdCoinPair;
+    address private foundation;
+    address private rifCommissionSplitterV2;
+    address private rifCommissionSplitterV3;
+    address private docCommissionSplitterV2;
+    address private oracleOwner1;
+    address private oracleOwner2;
+    address private oracleOwner3;
+    uint256 private rifBucketTp0Price;
 
     function setUp() public override {
         super.setUp();
+        mocRewardsBuffer = getMainnetAddress("mocRewardsBuffer");
+        supporters = getMainnetAddress("supporters");
+        btcUsdCoinPair = getMainnetAddress("btcUsdCoinPair");
+        foundation = getMainnetAddress("foundation");
+        rifCommissionSplitterV2 = getMainnetAddress("rifCommissionSplitterV2");
+        rifCommissionSplitterV3 = getMainnetAddress("rifCommissionSplitterV3");
+        docCommissionSplitterV2 = getMainnetAddress("docCommissionSplitterV2");
+        oracleOwner1 = getMainnetAddress("oracleOwner1");
+        oracleOwner2 = getMainnetAddress("oracleOwner2");
+        oracleOwner3 = getMainnetAddress("oracleOwner3");
+
+        (, address rifBucketTp0PriceProvider) = IMocV2(address(rifBucket)).pegContainer(0);
+        (bytes32 price, bool isValid) = ICoinPairPriceView(rifBucketTp0PriceProvider).peek();
+        require(isValid, "RIF bucket TP0 price is not valid");
+        rifBucketTp0Price = uint256(price);
+
+        // PreTasksRunnerChanger must execute before AddTasksRunnerChanger so the
+        // TasksRunner proxy is registered in the OracleManager and the oracle
+        // infrastructure is ready for the add-tasks wiring.
+        _executePreTasksRunnerChanger();
     }
 
     function test_ExecuteAddTasksRunnerChanger() public {
-        vm.expectCall(
-            address(addTasksRunnerChanger.oracleManager()),
-            abi.encodeWithSignature(
-                "registerCoinPair(bytes32,address)",
-                addTasksRunnerChanger.tasksRunnerCoinPair(),
-                addTasksRunnerChanger.tasksRunner()
-            )
-        );
-
         _executeAddTasksRunnerChanger();
+
+        string memory json = vm.readFile(TASKS_DEPLOYED_ADDRESSES_PATH);
+        address swapRifFeesToMocForRifOracle = vm.parseJsonAddress(json, ".SwapRifFeesToMocForRifOracle");
+        address swapDocFeesToMocForRifOracle = vm.parseJsonAddress(json, ".SwapDocFeesToMocForRifOracle");
 
         assertEq(
             mocMultiCollateralGuard.coinbaseExecFeeRecipient(),
@@ -88,13 +184,13 @@ contract AddTasksRunnerChangerForkTests is BaseFork {
         assertEq(
             mocMultiCollateralGuard.rebalanceExecFeeRecipient(mocMultiCollateralGuard.buckets(0)),
             addTasksRunnerChanger.revAuctionRIFtoMOC_tasksRunner(),
-            "bucket0 rebalance recipient should be set by AddTasksRunnerChanger"
+            "RIF bucket rebalance recipient should be set by AddTasksRunnerChanger"
         );
 
         assertEq(
             mocMultiCollateralGuard.rebalanceExecFeeRecipient(mocMultiCollateralGuard.buckets(1)),
             addTasksRunnerChanger.revAuctionDOCtoMOC_tasksRunner(),
-            "bucket1 rebalance recipient should be set by AddTasksRunnerChanger"
+            "DOC bucket rebalance recipient should be set by AddTasksRunnerChanger"
         );
 
         assertEq(
@@ -113,13 +209,38 @@ contract AddTasksRunnerChangerForkTests is BaseFork {
             "DOC->MOC tasks-runner auction output should point to tasksRunner"
         );
         assertEq(
+            IReverseAuctionView(addTasksRunnerChanger.revAuctionRBTCtoMOC_rocNodes()).outputAccount(),
+            addTasksRunnerChanger.splitPriceUpdateFeesToBtcOracleAndRifOracle(),
+            "RBTC->MOC queue-fee auction output should point to the shared queue price-updates buffer"
+        );
+        assertEq(
+            IReverseAuctionView(swapRifFeesToMocForRifOracle).outputAccount(),
+            addTasksRunnerChanger.rifOracleCoinPair(),
+            "RIF->MOC fee-routing auction output should point to the RIF/USD coin pair"
+        );
+        assertEq(
+            IReverseAuctionView(swapDocFeesToMocForRifOracle).outputAccount(),
+            addTasksRunnerChanger.rifOracleCoinPair(),
+            "DOC->MOC fee-routing auction output should point to the RIF/USD coin pair"
+        );
+        assertEq(
+            IQueueExecFeesView(address(rifQueue)).priceUpdatesCost(),
+            255000,
+            "RIF queue priceUpdatesCost should be set to fund two oracle prices"
+        );
+        assertEq(
+            IQueueExecFeesView(address(docBucket.mocQueue())).priceUpdatesCost(),
+            255000,
+            "DOC queue priceUpdatesCost should be set to fund two oracle prices"
+        );
+        assertEq(
             IReverseAuctionView(addTasksRunnerChanger.revAuctionRIFtoMOC_rocRewardsBuffer()).outputAccount(),
-            MOC_REWARDS_BUFFER,
+            mocRewardsBuffer,
             "RIF->MOC legacy auction output should point to mocRewardsBuffer"
         );
         assertEq(
             IReverseAuctionView(addTasksRunnerChanger.revAuctionDOCtoMOC_rocRewardsBuffer()).outputAccount(),
-            MOC_REWARDS_BUFFER,
+            mocRewardsBuffer,
             "DOC->MOC legacy auction output should point to mocRewardsBuffer"
         );
         assertEq(
@@ -134,13 +255,165 @@ contract AddTasksRunnerChangerForkTests is BaseFork {
         );
     }
 
+    function test_RifUsdMigration() public {
+        (, address currentBucketPriceProvider) = IMocV2(address(rifBucket)).pegContainer(0);
+        address currentAcCoinbasePriceProvider = address(mocMultiCollateralGuard.acCoinbasePriceProvider(rifBucket));
+
+        _executeAddTasksRunnerChanger();
+
+        (, address migratedBucketPriceProvider) = IMocV2(address(rifBucket)).pegContainer(0);
+        address migratedAcCoinbasePriceProvider = address(mocMultiCollateralGuard.acCoinbasePriceProvider(rifBucket));
+
+        assertEq(currentBucketPriceProvider, getMainnetAddress("rifUsdLegacyPriceProvider"));
+        assertEq(currentAcCoinbasePriceProvider, getMainnetAddress("rifToRbtcPriceProvider"));
+        assertEq(migratedBucketPriceProvider, addTasksRunnerChanger.rifOracleCoinPair());
+        assertEq(migratedAcCoinbasePriceProvider, addTasksRunnerChanger.rifToRbtcPriceProvider());
+
+        assertEq(
+            IPriceProviderDivView(addTasksRunnerChanger.rifToRbtcPriceProvider())._priceProvider(),
+            addTasksRunnerChanger.rifOracleCoinPair(),
+            "RIF/BTC replacement should read from the new direct RIF/USD pair"
+        );
+        assertEq(
+            IPriceProviderDivView(addTasksRunnerChanger.mocToRifPriceProvider())._priceProviderDivisor(),
+            addTasksRunnerChanger.rifOracleCoinPair(),
+            "MOC/RIF replacement should divide by the new direct RIF/USD pair"
+        );
+        assertEq(
+            IPriceProviderInverseView(addTasksRunnerChanger.rifToMocPriceProvider())._priceProvider(),
+            addTasksRunnerChanger.mocToRifPriceProvider(),
+            "RIF/MOC replacement should invert the new MOC/RIF provider"
+        );
+        assertEq(
+            IReverseAuctionView(addTasksRunnerChanger.revAuctionRIFtoMOC_rocRewardsBuffer()).priceProvider(),
+            addTasksRunnerChanger.rifToMocPriceProvider(),
+            "legacy RIF->MOC auction should be rewired to the replacement provider"
+        );
+        assertEq(
+            IReverseAuctionView(addTasksRunnerChanger.revAuctionMOCtoRIF_rifBucket()).priceProvider(),
+            addTasksRunnerChanger.mocToRifPriceProvider(),
+            "legacy MOC->RIF auction should be rewired to the replacement provider"
+        );
+        string memory json = vm.readFile(TASKS_DEPLOYED_ADDRESSES_PATH);
+        address swapRifFeesToMocForRifOracle = vm.parseJsonAddress(json, ".SwapRifFeesToMocForRifOracle");
+        assertEq(
+            IReverseAuctionView(swapRifFeesToMocForRifOracle).priceProvider(),
+            addTasksRunnerChanger.rifToMocPriceProvider(),
+            "new RIF->MOC fee-routing auction should use the replacement RIF/MOC provider"
+        );
+
+        ICoinPairPriceView rifOracleCoinPair = ICoinPairPriceView(addTasksRunnerChanger.rifOracleCoinPair());
+        address infoAddr = IGovernedRegistryView(address(addTasksRunnerChanger.governedRegistry())).getAddress(
+            INFO_ADDR
+        );
+        {
+            string memory tasksJson = vm.readFile(TASKS_DEPLOYED_ADDRESSES_PATH);
+            address taskExecuteQueueV3 = vm.parseJsonAddress(tasksJson, ".TaskExecuteQueueV3");
+            address taskUpdateEmaV3RifBucket = vm.parseJsonAddress(tasksJson, ".TaskUpdateEmaV3RifBucket");
+            assertTrue(
+                rifOracleCoinPair.isPricePeekWhitelisted(taskExecuteQueueV3),
+                "TaskExecuteQueueV3 should be whitelisted on the new direct RIF/USD pair"
+            );
+            assertTrue(
+                rifOracleCoinPair.isPricePeekWhitelisted(taskUpdateEmaV3RifBucket),
+                "TaskUpdateEmaV3RifBucket should be whitelisted on the new direct RIF/USD pair"
+            );
+        }
+        assertTrue(
+            rifOracleCoinPair.isPricePeekWhitelisted(address(rifBucket)),
+            "RIF bucket should remain whitelisted on the new direct RIF/USD pair"
+        );
+        assertTrue(
+            rifOracleCoinPair.isPricePeekWhitelisted(addTasksRunnerChanger.rifToRbtcPriceProvider()),
+            "replacement RIF/BTC provider should be whitelisted on the new direct RIF/USD pair"
+        );
+        assertTrue(
+            rifOracleCoinPair.isPricePeekWhitelisted(addTasksRunnerChanger.mocToRifPriceProvider()),
+            "replacement MOC/RIF provider should be whitelisted on the new direct RIF/USD pair"
+        );
+        assertTrue(
+            rifOracleCoinPair.isPricePeekWhitelisted(infoAddr),
+            "INFO_ADDR consumer should be whitelisted on the new direct RIF/USD pair"
+        );
+
+        // Publish a real price on the new RIF/USD coin pair so it becomes valid.
+        _publishPriceOnRifOracle();
+
+        vm.prank(address(rifBucket));
+        (bytes32 directPrice, bool directValid) = rifOracleCoinPair.peek();
+        assertGt(uint256(directPrice), 0, "new direct RIF/USD pair should return a price to the bucket");
+        assertTrue(directValid, "new direct RIF/USD pair should be valid for the bucket");
+
+        (bytes32 rifToBtcPrice, ) = IPriceProviderDivView(addTasksRunnerChanger.rifToRbtcPriceProvider()).peek();
+        assertGt(uint256(rifToBtcPrice), 0, "replacement RIF/BTC provider should remain readable");
+
+        (bytes32 rifToMocPrice, ) = IPriceProviderInverseView(addTasksRunnerChanger.rifToMocPriceProvider()).peek();
+        assertGt(uint256(rifToMocPrice), 0, "replacement RIF/MOC provider should remain readable");
+    }
+
+    function test_CommissionSplittersAreRewired() public {
+        _executeAddTasksRunnerChanger();
+
+        ICommissionSplitterView rifSplitterV2 = ICommissionSplitterView(rifCommissionSplitterV2);
+        ICommissionSplitterView rifSplitterV3 = ICommissionSplitterView(rifCommissionSplitterV3);
+        ICommissionSplitterView docSplitterV2 = ICommissionSplitterView(docCommissionSplitterV2);
+
+        assertEq(
+            rifSplitterV3.acTokenAddressRecipient2(),
+            addTasksRunnerChanger.splitRifFeesToFoundationAndRifOracle(),
+            "rifCommissionSplitterV3 Foundation RIF leg should be rewired to the new RIF buffer"
+        );
+        assertEq(rifSplitterV3.acTokenPctToRecipient1(), 0.5e18, "rifCommissionSplitterV3 RIF split should stay 50/50");
+
+        assertEq(
+            rifSplitterV2.acTokenAddressRecipient1(),
+            addTasksRunnerChanger.splitRifFeesToFoundationAndRifOracle(),
+            "rifCommissionSplitterV2 Foundation RIF leg should be rewired to the new RIF buffer"
+        );
+        assertEq(
+            rifSplitterV2.feeTokenAddressRecipient1(),
+            addTasksRunnerChanger.splitMocFeesToFoundationAndRifOracle(),
+            "rifCommissionSplitterV2 Foundation MOC leg should be rewired to the new MOC buffer"
+        );
+        assertEq(
+            rifSplitterV2.acTokenPctToRecipient1(),
+            666666666666666666,
+            "rifCommissionSplitterV2 RIF split pct should be preserved"
+        );
+        assertEq(
+            rifSplitterV2.feeTokenPctToRecipient1(),
+            0.5e18,
+            "rifCommissionSplitterV2 MOC split should stay 50/50"
+        );
+
+        assertEq(
+            docSplitterV2.acTokenAddressRecipient1(),
+            addTasksRunnerChanger.splitDocFeesToFoundationAndRifOracle(),
+            "docCommissionSplitterV2 Foundation DOC leg should be rewired to the new DOC buffer"
+        );
+        assertEq(
+            docSplitterV2.feeTokenAddressRecipient1(),
+            addTasksRunnerChanger.splitMocFeesToFoundationAndRifOracle(),
+            "docCommissionSplitterV2 Foundation MOC leg should be rewired to the new MOC buffer"
+        );
+        assertEq(
+            docSplitterV2.acTokenPctToRecipient1(),
+            666666666666666666,
+            "docCommissionSplitterV2 DOC split pct should be preserved"
+        );
+        assertEq(
+            docSplitterV2.feeTokenPctToRecipient1(),
+            0.5e18,
+            "docCommissionSplitterV2 MOC split should stay 50/50"
+        );
+    }
+
     function test_TasksRunnerContainsAllExpectedTasks() public {
         _executeAddTasksRunnerChanger();
 
         string memory json = vm.readFile(TASKS_DEPLOYED_ADDRESSES_PATH);
-        string[46] memory taskKeys = [
+        string[56] memory taskKeys = [
             "TaskUpdateEmaV1",
-            "TaskDailyInratePaymentV1",
             "TaskEvalLiquidationV1",
             "TaskInterestPaymentV1",
             "TaskSettlementV1",
@@ -149,18 +422,16 @@ contract AddTasksRunnerChangerForkTests is BaseFork {
             "TaskSwitchRoundTasksRunnerCoinPair",
             "TaskDistributeSupporters",
             "TaskExecuteQueueV3",
-            "TaskUpdateEmaV3Bucket0",
-            "TaskUpdateEmaV3Bucket1",
-            "TaskExecuteLiquidationV3Bucket0",
-            "TaskExecuteLiquidationV3Bucket1",
-            "TaskExecuteMicroLiquidationV3Bucket0",
-            "TaskExecuteMicroLiquidationV3Bucket1",
-            "TaskInterestPaymentV3Bucket0",
-            "TaskInterestPaymentV3Bucket1",
-            "TaskSettlementV3Bucket0",
-            "TaskSettlementV3Bucket1",
-            "TaskRefreshACBalanceV3Bucket0",
-            "TaskRefreshACBalanceV3Bucket1",
+            "TaskUpdateEmaV3RifBucket",
+            "TaskUpdateEmaV3DocBucket",
+            "TaskExecuteLiquidationV3RifBucket",
+            "TaskExecuteLiquidationV3DocBucket",
+            "TaskExecuteMicroLiquidationV3RifBucket",
+            "TaskExecuteMicroLiquidationV3DocBucket",
+            "TaskInterestPaymentV3RifBucket",
+            "TaskInterestPaymentV3DocBucket",
+            "TaskRefreshACBalanceV3RifBucket",
+            "TaskRefreshACBalanceV3DocBucket",
             "TaskSplitRifCommissionSplitterV2",
             "TaskSplitRifCommissionSplitterV3",
             "TaskSplitDocCommissionSplitterV2",
@@ -170,6 +441,8 @@ contract AddTasksRunnerChangerForkTests is BaseFork {
             "TaskTriggerOrderRevAuctionRIFtoMOC_tasksRunner",
             "TaskTriggerOrderRevAuctionDOCtoMOC_tasksRunner",
             "TaskTriggerOrderRevAuctionRBTCtoMOC_rocNodes",
+            "TaskTriggerOrderSwapRifFeesToMocForRifOracle",
+            "TaskTriggerOrderSwapDocFeesToMocForRifOracle",
             "TaskTriggerOrderRevAuctionRIFtoMOC_rocRewardsBuffer",
             "TaskTriggerOrderRevAuctionMOCtoRIF_rifBucket",
             "TaskTriggerOrderRevAuctionDOCtoMOC_rocRewardsBuffer",
@@ -181,10 +454,21 @@ contract AddTasksRunnerChangerForkTests is BaseFork {
             "TaskFlushRocrRewardsBuffer",
             "TaskLiquidateRocrRewardsBuffer",
             "TaskFlushBitProRewardsBuffer",
+            "TaskLiquidateBitProRewardsBuffer",
             "TaskFlushBproRewardsBuffer",
             "TaskLiquidateBproRewardsBuffer",
             "TaskFlushMocRewardsBuffer",
-            "TaskLiquidateMocRewardsBuffer"
+            "TaskLiquidateMocRewardsBuffer",
+            "TaskFlushSplitRifFeesToFoundationAndRifOracle",
+            "TaskLiquidateSplitRifFeesToFoundationAndRifOracle",
+            "TaskFlushSplitDocFeesToFoundationAndRifOracle",
+            "TaskLiquidateSplitDocFeesToFoundationAndRifOracle",
+            "TaskFlushSplitMocFeesToFoundationAndRifOracle",
+            "TaskLiquidateSplitMocFeesToFoundationAndRifOracle",
+            "TaskFlushSplitMocRewardsToBtcOracleAndTasksRunner",
+            "TaskLiquidateSplitMocRewardsToBtcOracleAndTasksRunner",
+            "TaskFlushSplitPriceUpdateFeesToBtcOracleAndRifOracle",
+            "TaskLiquidateSplitPriceUpdateFeesToBtcOracleAndRifOracle"
         ];
 
         ITasksRunnerView tasksRunner = ITasksRunnerView(addTasksRunnerChanger.tasksRunner());
@@ -200,9 +484,13 @@ contract AddTasksRunnerChangerForkTests is BaseFork {
     function test_BuffersOutputsAreSet() public {
         _executeAddTasksRunnerChanger();
 
+        string memory json = vm.readFile(TASKS_DEPLOYED_ADDRESSES_PATH);
+        address swapRifFeesToMocForRifOracle = vm.parseJsonAddress(json, ".SwapRifFeesToMocForRifOracle");
+        address swapDocFeesToMocForRifOracle = vm.parseJsonAddress(json, ".SwapDocFeesToMocForRifOracle");
+
         IBufferTokenView rocrBuffer = IBufferTokenView(addTasksRunnerChanger.rocrRewardsBuffer());
         (address rocrOutput0, , , ) = rocrBuffer.getOutput(0);
-        assertEq(rocrOutput0, MOC_REWARDS_BUFFER, "RocrRewardsBuffer output 0 should be mocRewardsBuffer");
+        assertEq(rocrOutput0, mocRewardsBuffer, "RocrRewardsBuffer output 0 should be mocRewardsBuffer");
         (address rocrOutput1, , , ) = rocrBuffer.getOutput(1);
         assertEq(
             rocrOutput1,
@@ -212,7 +500,7 @@ contract AddTasksRunnerChangerForkTests is BaseFork {
 
         IBufferTokenView rifProBuffer = IBufferTokenView(addTasksRunnerChanger.rifProRewardsBuffer_rocRewardsBuffer());
         (address rifProOutput0, , , ) = rifProBuffer.getOutput(0);
-        assertEq(rifProOutput0, MOC_REWARDS_BUFFER, "RifProRewardsBuffer output 0 should be mocRewardsBuffer");
+        assertEq(rifProOutput0, mocRewardsBuffer, "RifProRewardsBuffer output 0 should be mocRewardsBuffer");
         (address rifProOutput1, , , ) = rifProBuffer.getOutput(1);
         assertEq(
             rifProOutput1,
@@ -220,15 +508,79 @@ contract AddTasksRunnerChangerForkTests is BaseFork {
             "RifProRewardsBuffer output 1 should be revAuctionMOCtoRIF_rifBucket"
         );
 
-        string memory json = vm.readFile(TASKS_DEPLOYED_ADDRESSES_PATH);
-        address expectedRocNodesBuffer = vm.parseJsonAddress(json, ".RocNodesBuffer");
-        address rocNodesBuffer = IReverseAuctionView(addTasksRunnerChanger.revAuctionRBTCtoMOC_rocNodes())
-            .outputAccount();
-        assertEq(rocNodesBuffer, expectedRocNodesBuffer, "RBTC->MOC rocNodes auction output should be RocNodesBuffer");
+        IBufferTokenView mocRewardsBufferView = IBufferTokenView(mocRewardsBuffer);
+        (address mocRewardsOutput0, , , ) = mocRewardsBufferView.getOutput(0);
+        assertEq(mocRewardsOutput0, supporters, "MocRewardsBuffer output 0 should stay Supporters");
+        (address mocRewardsOutput1, , , ) = mocRewardsBufferView.getOutput(1);
+        assertEq(
+            mocRewardsOutput1,
+            addTasksRunnerChanger.splitMocRewardsToBtcOracleAndTasksRunner(),
+            "MocRewardsBuffer output 1 should be rewired to the new child buffer"
+        );
 
-        IBufferTokenView rocNodesBufferView = IBufferTokenView(rocNodesBuffer);
-        (address rocNodesOutput0, , , ) = rocNodesBufferView.getOutput(0);
-        assertEq(rocNodesOutput0, MOC_REWARDS_BUFFER, "RocNodesBuffer output 0 should be mocRewardsBuffer");
+        IBufferTokenView splitMocRewardsToBtcOracleAndTasksRunner = IBufferTokenView(
+            addTasksRunnerChanger.splitMocRewardsToBtcOracleAndTasksRunner()
+        );
+        (address splitMocRewardsOutput0, , , ) = splitMocRewardsToBtcOracleAndTasksRunner.getOutput(0);
+        assertEq(splitMocRewardsOutput0, btcUsdCoinPair, "child buffer output 0 should stay BTC/USD");
+        (address splitMocRewardsOutput1, , , ) = splitMocRewardsToBtcOracleAndTasksRunner.getOutput(1);
+        assertEq(
+            splitMocRewardsOutput1,
+            addTasksRunnerChanger.tasksRunner(),
+            "child buffer output 1 should be the new TasksRunner"
+        );
+
+        IBufferTokenView splitPriceUpdateFeesToBtcOracleAndRifOracle = IBufferTokenView(
+            addTasksRunnerChanger.splitPriceUpdateFeesToBtcOracleAndRifOracle()
+        );
+        (address splitPriceUpdateFeesOutput0, , , ) = splitPriceUpdateFeesToBtcOracleAndRifOracle.getOutput(0);
+        assertEq(
+            splitPriceUpdateFeesOutput0,
+            btcUsdCoinPair,
+            "SplitPriceUpdateFeesToBtcOracleAndRifOracle output 0 should be BTC/USD"
+        );
+        (address splitPriceUpdateFeesOutput1, , , ) = splitPriceUpdateFeesToBtcOracleAndRifOracle.getOutput(1);
+        assertEq(
+            splitPriceUpdateFeesOutput1,
+            addTasksRunnerChanger.rifOracleCoinPair(),
+            "SplitPriceUpdateFeesToBtcOracleAndRifOracle output 1 should be the new RIF/USD coin pair"
+        );
+
+        IBufferTokenView splitRifFeesToFoundationAndRifOracle = IBufferTokenView(
+            addTasksRunnerChanger.splitRifFeesToFoundationAndRifOracle()
+        );
+        (address splitRifFeesOutput0, , , ) = splitRifFeesToFoundationAndRifOracle.getOutput(0);
+        assertEq(splitRifFeesOutput0, foundation, "RIF fee-routing buffer output 0 should be Foundation");
+        (address splitRifFeesOutput1, , , ) = splitRifFeesToFoundationAndRifOracle.getOutput(1);
+        assertEq(
+            splitRifFeesOutput1,
+            swapRifFeesToMocForRifOracle,
+            "RIF fee-routing buffer output 1 should be the new RIF->MOC auction"
+        );
+
+        IBufferTokenView splitDocFeesToFoundationAndRifOracle = IBufferTokenView(
+            addTasksRunnerChanger.splitDocFeesToFoundationAndRifOracle()
+        );
+        (address splitDocFeesOutput0, , , ) = splitDocFeesToFoundationAndRifOracle.getOutput(0);
+        assertEq(splitDocFeesOutput0, foundation, "DOC fee-routing buffer output 0 should be Foundation");
+        (address splitDocFeesOutput1, , , ) = splitDocFeesToFoundationAndRifOracle.getOutput(1);
+        assertEq(
+            splitDocFeesOutput1,
+            swapDocFeesToMocForRifOracle,
+            "DOC fee-routing buffer output 1 should be the new DOC->MOC auction"
+        );
+
+        IBufferTokenView splitMocFeesToFoundationAndRifOracle = IBufferTokenView(
+            addTasksRunnerChanger.splitMocFeesToFoundationAndRifOracle()
+        );
+        (address splitMocFeesOutput0, , , ) = splitMocFeesToFoundationAndRifOracle.getOutput(0);
+        assertEq(splitMocFeesOutput0, foundation, "MOC fee-routing buffer output 0 should be Foundation");
+        (address splitMocFeesOutput1, , , ) = splitMocFeesToFoundationAndRifOracle.getOutput(1);
+        assertEq(
+            splitMocFeesOutput1,
+            addTasksRunnerChanger.rifOracleCoinPair(),
+            "MOC fee-routing buffer output 1 should be the new RIF/USD coin pair"
+        );
     }
 
     function test_RegistryEntriesAreRemoved() public {
@@ -304,7 +656,7 @@ contract AddTasksRunnerChangerForkTests is BaseFork {
         _executeAddTasksRunnerChanger();
 
         ITasksRunnerView tasksRunner = ITasksRunnerView(addTasksRunnerChanger.tasksRunner());
-        address staking = IOracleManagerView(address(addTasksRunnerChanger.oracleManager())).getStakingContract();
+        address staking = IOracleManagerView(preTasksRunnerChanger.oracleManagerProxy()).getStakingContract();
 
         uint256 pk1 = 0xA11CE01;
         uint256 pk2 = 0xA11CE02;
@@ -313,23 +665,23 @@ contract AddTasksRunnerChangerForkTests is BaseFork {
         address oracle2 = vm.addr(pk2);
         address oracle3 = vm.addr(pk3);
 
-        vm.deal(ORACLE_OWNER_1, 1 ether);
-        vm.deal(ORACLE_OWNER_2, 1 ether);
-        vm.deal(ORACLE_OWNER_3, 1 ether);
+        vm.deal(oracleOwner1, 1 ether);
+        vm.deal(oracleOwner2, 1 ether);
+        vm.deal(oracleOwner3, 1 ether);
 
-        vm.prank(ORACLE_OWNER_1);
+        vm.prank(oracleOwner1);
         IStakingOracleOps(staking).setOracleAddress(oracle1);
-        vm.prank(ORACLE_OWNER_2);
+        vm.prank(oracleOwner2);
         IStakingOracleOps(staking).setOracleAddress(oracle2);
-        vm.prank(ORACLE_OWNER_3);
+        vm.prank(oracleOwner3);
         IStakingOracleOps(staking).setOracleAddress(oracle3);
 
-        bytes32 coinPair = addTasksRunnerChanger.tasksRunnerCoinPair();
-        vm.prank(ORACLE_OWNER_1);
+        bytes32 coinPair = tasksRunner.getName();
+        vm.prank(oracleOwner1);
         IStakingOracleOps(staking).subscribeToCoinPair(coinPair);
-        vm.prank(ORACLE_OWNER_2);
+        vm.prank(oracleOwner2);
         IStakingOracleOps(staking).subscribeToCoinPair(coinPair);
-        vm.prank(ORACLE_OWNER_3);
+        vm.prank(oracleOwner3);
         IStakingOracleOps(staking).subscribeToCoinPair(coinPair);
 
         tasksRunner.switchRound();
@@ -338,7 +690,7 @@ contract AddTasksRunnerChangerForkTests is BaseFork {
         uint256 tasksFlags = tasksRunner.getTasksAvailableAsFlags();
         assertGt(tasksFlags, 0, "No available tasks to execute");
 
-        (uint256 pointsBefore, ) = tasksRunner.getOracleRoundInfo(ORACLE_OWNER_1);
+        (uint256 pointsBefore, ) = tasksRunner.getOracleRoundInfo(oracleOwner1);
         uint256 blockNumber = tasksRunner.getLastPublicationBlock();
         address votedOracle = oracle1;
         bytes32 messageHash = keccak256(
@@ -380,7 +732,7 @@ contract AddTasksRunnerChangerForkTests is BaseFork {
         vm.prank(votedOracle);
         tasksRunner.runTasks(version, coinPair, tasksFlags, votedOracle, blockNumber, sigV, sigR, sigS);
 
-        (uint256 pointsAfter, ) = tasksRunner.getOracleRoundInfo(ORACLE_OWNER_1);
+        (uint256 pointsAfter, ) = tasksRunner.getOracleRoundInfo(oracleOwner1);
         assertGt(pointsAfter, pointsBefore, "Oracle owner points should increase after running tasks");
 
         Vm.Log[] memory entries = vm.getRecordedLogs();
@@ -415,5 +767,162 @@ contract AddTasksRunnerChangerForkTests is BaseFork {
                 }
             }
         }
+    }
+
+    function test_TargemaTPIsSetOnUsdRif() public {
+        uint256 expectedTargetEma = addTasksRunnerChanger.rifBucketUsdrifTargetEma();
+        address usdRif = address(rifBucket.tpTokens(0));
+
+        uint256 tpCtargBefore = rifBucket.tpCtarg(0);
+        assertEq(tpCtargBefore, 5.5e18, "tpCtarg on usdRIF pegged token should be 5.5e18 before changer");
+
+        uint256 ctargemaCA = rifBucket.getCtargemaCA();
+        uint256 ctargemaTP = rifBucket.getCtargemaTP(usdRif);
+        assertEq(ctargemaCA, ctargemaTP, "ctargemaCA should equal ctargemaTP (only one pegged token in the bucket)");
+        assertEq(ctargemaCA, 11866059643163247835, "calcCtargemaCA should equal 11.86 before changer");
+
+        _executeAddTasksRunnerChanger();
+
+        uint256 tpCtargAfter = rifBucket.tpCtarg(0);
+        assertEq(
+            tpCtargAfter,
+            expectedTargetEma,
+            "tpCtarg on usdRIF pegged token should be set to rifBucketUsdrifTargetEma after changer"
+        );
+
+        _publishPriceOnRifOracle();
+
+        ctargemaCA = rifBucket.getCtargemaCA();
+        ctargemaTP = rifBucket.getCtargemaTP(usdRif);
+        assertEq(ctargemaCA, ctargemaTP, "ctargemaCA should equal ctargemaTP (only one pegged token in the bucket)");
+        assertEq(ctargemaCA, 13944792337996270365, "calcCtargemaCA should equal 13.9 after changer");
+    }
+
+    /// @dev After both changers run, queues a mintTP on the RIF bucket (usdRIF) and on the DOC
+    ///      bucket in the same flow, then executes both via a single
+    ///      `mocMultiCollateralGuard.execute()` call and verifies that both recipients received
+    ///      their pegged tokens.
+    function test_MintTPInBothBucketsAfterChanger() public {
+        _executeAddTasksRunnerChanger();
+        _publishPriceOnRifOracle();
+
+        // mock the DOC price to be valid after the vm.roll
+        vm.mockCall(
+            getMainnetAddress("docToUsdRifPriceProvider"),
+            abi.encodeWithSelector(ICoinPairPriceView.peek.selector),
+            abi.encode(bytes32(uint256(1e18)), true)
+        );
+
+        uint256 qACmax = 1000e18; // max collateral AC to spend per operation
+        uint256 qTP = 1e18; // 1 usdRIF
+
+        uint256 usdRifBalanceBefore = usdRifToken.balanceOf(holder);
+
+        // TP_MINT opType = 3; query the fee from each bucket's queue
+        uint8 TP_MINT = 3;
+        uint256 rifMintFee = IQueueExecFeesView(address(rifQueue)).getExecFee(TP_MINT);
+        uint256 docMintFee = IQueueExecFeesView(address(docBucket.mocQueue())).getExecFee(TP_MINT);
+
+        // --- queue mintTP on RIF bucket (usdRIF) ---
+        deal(address(rifToken), holder, qACmax);
+        vm.startPrank(holder);
+        rifToken.approve(address(rifBucket), qACmax);
+        rifBucket.mintTP{ value: rifMintFee }(address(usdRifToken), qTP, qACmax, holder, address(0));
+        vm.stopPrank();
+
+        // --- queue mintTP on DOC bucket ---
+        deal(address(docToken), holder, qACmax);
+        vm.startPrank(holder);
+        docToken.approve(address(docBucket), qACmax);
+        docBucket.mintTP{ value: docMintFee }(address(usdRifToken), qTP, qACmax, holder, address(0));
+        vm.stopPrank();
+
+        // advance past minOperWaitingBlk so both operations become executable
+        vm.roll(block.number + 10);
+
+        // --- execute both queues in a single guard call ---
+        mocMultiCollateralGuard.execute();
+
+        // --- assertions ---
+        assertEq(
+            usdRifToken.balanceOf(holder),
+            usdRifBalanceBefore + qTP + qTP,
+            "holder should have received usdRIF after mintTP"
+        );
+    }
+
+    /// @dev Publishes a real price on the newly created RIF/USD CoinPairPrice so that
+    ///      subsequent peek() calls return a valid price.  The new pair starts with no
+    ///      publication history, so we:
+    ///      1. Subscribe oracleOwner1/2/3 to the new coin pair.
+    ///      2. switchRound() to select them.
+    ///      3. Rotate their oracle signing keys to known private keys.
+    ///      4. Call publishPrice() with a quorum of signatures and the TP0 price read in setUp().
+    function _publishPriceOnRifOracle() internal {
+        uint256 PUBLISH_MESSAGE_VERSION = 3;
+
+        IOracleManagerView om = IOracleManagerView(preTasksRunnerChanger.oracleManagerProxy());
+        IStakingFull staking = IStakingFull(om.getStakingContract());
+        ICoinPairPriceFull feed = ICoinPairPriceFull(addTasksRunnerChanger.rifOracleCoinPair());
+
+        // Subscribe the three known oracle owners to the new RIF/USD pair
+        bytes32 coinpair = feed.getCoinPair();
+        vm.prank(oracleOwner1);
+        staking.subscribeToCoinPair(coinpair);
+        vm.prank(oracleOwner2);
+        staking.subscribeToCoinPair(coinpair);
+        vm.prank(oracleOwner3);
+        staking.subscribeToCoinPair(coinpair);
+
+        // Retrieve selected owners after the round switch
+        (, , , , address[] memory newOwners, ) = feed.getRoundInfo();
+        require(newOwners.length >= 1, "no selected owners for new RIF/USD pair");
+        (, , uint256 newLastPubBlock) = feed.getPriceInfo();
+
+        // Need strictly more than 50% of selected owners to sign
+        uint256 needed = newOwners.length / 2 + 1;
+        uint256[] memory privateKeys = new uint256[](needed);
+        for (uint256 i = 0; i < needed; i++) {
+            privateKeys[i] = 0x3000 + i + 1;
+        }
+
+        // Rotate oracle signing addresses for each selected owner
+        address[] memory signers = _rotationSignersFromKeys(IOracleCheats(address(vm)), privateKeys);
+        for (uint256 i = 0; i < signers.length; i++) {
+            vm.prank(newOwners[i]);
+            staking.setOracleAddress(signers[i]);
+            require(om.getOracleAddress(newOwners[i]) == signers[i], "failed to set signer for RIF/USD oracle");
+        }
+
+        // Advance one more block so block.number > newLastPubBlock
+        vm.roll(block.number + 1);
+
+        address votedOracle = signers[0];
+
+        bytes32 digest = _buildDigest(
+            PUBLISH_MESSAGE_VERSION,
+            coinpair,
+            rifBucketTp0Price,
+            votedOracle,
+            newLastPubBlock
+        );
+        (uint8[] memory sigV, bytes32[] memory sigR, bytes32[] memory sigS) = _buildSortedSignatures(
+            IOracleCheats(address(vm)),
+            privateKeys,
+            signers,
+            digest
+        );
+
+        vm.prank(votedOracle);
+        feed.publishPrice(
+            PUBLISH_MESSAGE_VERSION,
+            coinpair,
+            rifBucketTp0Price,
+            votedOracle,
+            newLastPubBlock,
+            sigV,
+            sigR,
+            sigS
+        );
     }
 }

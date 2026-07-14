@@ -1,0 +1,721 @@
+// SPDX-License-Identifier: UNLICENSED
+pragma solidity 0.8.24;
+
+import { Test } from "forge-std/Test.sol";
+import { PreTasksRunnerChanger, IUpgradeDelegator } from "../../../contracts/changers/preTasksRunnerChanger/PreTasksRunnerChanger.sol";
+import { IChangeContract } from "moc-main-latest/contracts/interfaces/IChangeContract.sol";
+import { IGovernor } from "moc-main-latest/contracts/interfaces/IGovernor.sol";
+import { OracleTestHelper, IOracleCheats } from "../../helpers/OracleTestHelper.sol";
+
+interface IGoverned {
+    function governor() external view returns (address);
+}
+
+interface IOwnableLike {
+    function owner() external view returns (address);
+}
+
+interface IOracleManagerView {
+    function getCoinPairCount() external view returns (uint256);
+    function getCoinPairAtIndex(uint256 i) external view returns (bytes32);
+    function getContractAddress(bytes32 coinpair) external view returns (address);
+    function getOracleAddress(address oracleOwnerAddr) external view returns (address oracleAddr);
+    function getStakingContract() external view returns (address staking);
+    function subscribeToCoinPair(address ownerAddr, bytes32 coinPair) external;
+    function token() external view returns (address);
+    function getRegistry() external view returns (address);
+}
+
+interface IStaking {
+    function setOracleAddress(address oracleAddr) external;
+}
+
+interface ICoinPairPrice {
+    function getCoinPair() external view returns (bytes32);
+    function getPriceInfo() external view returns (uint256 price, bool isValid, uint256 lastPubBlock);
+    function getRoundInfo()
+        external
+        view
+        returns (
+            uint256 round,
+            uint256 startBlock,
+            uint256 lockPeriodTimestamp,
+            uint256 totalPoints,
+            address[] memory selectedOwners,
+            address[] memory selectedOracles
+        );
+    function getMinOraclesPerRound() external view returns (uint256);
+    function getValidPricePeriodInBlocks() external view returns (uint256);
+    function getEmergencyPublishingPeriodInBlocks() external view returns (uint256);
+    function getLastPublicationBlock() external view returns (uint256);
+    function switchRound() external;
+    function publishPrice(
+        uint256 version,
+        bytes32 coinpair,
+        uint256 price,
+        address votedOracle,
+        uint256 blockNumber,
+        uint8[] calldata sigV,
+        bytes32[] calldata sigR,
+        bytes32[] calldata sigS
+    ) external;
+    function isPriceQueryModeWhitelisted(address _account) external view returns (bool);
+    function setPriceQueryMode(uint8 _mode) external;
+    function getPricePeekWhitelistLen() external view returns (uint256);
+    function getPricePeekWhitelistAtIndex(uint256 _idx) external view returns (address);
+    function getIsValid() external view returns (bool);
+    function getPrice() external view returns (uint256);
+}
+
+/// @dev Bundles all readable CoinPairPrice state into a single struct to avoid
+///      stack-too-deep errors in test functions that snapshot state before/after.
+struct CoinPairSnapshot {
+    bytes32 coinPair;
+    uint256 price;
+    uint256 lastPubBlock;
+    uint256 validPricePeriod;
+    uint256 emergencyPeriod;
+    uint256 minOracles;
+    uint256 round;
+    uint256 startBlock;
+    uint256 lockPeriodTs;
+    uint256 totalPoints;
+    address[] owners;
+    address[] oracles;
+}
+
+contract PreTasksRunnerForkTest is Test, OracleTestHelper {
+    // EIP-1967 implementation slot (used by oracle proxies)
+    bytes32 internal constant IMPLEMENTATION_SLOT = 0x360894a13ba1a3210667c828492db98dca3e2076cc3735a920a3ca505d382bbc;
+
+    uint256 internal constant FORK_BLOCK = 8980146;
+    uint256 internal constant PUBLISH_MESSAGE_VERSION = 3;
+
+    // ethers.encodeBytes32String("TASKSRUNNER")
+    bytes32 internal constant TASKS_RUNNER_NAME = 0x5441534b5352554e4e4552000000000000000000000000000000000000000000;
+
+    // Path to the mainnet parameters JSON
+    string internal constant MAINNET_PARAMS_PATH =
+        "./ignition/modules/changers/preTasksRunner/parameters/rskMainnet.json";
+
+    // All parameters loaded from JSON
+    address internal oracleManagerProxy;
+    address internal upgradeDelegator;
+    address internal proxyAdmin;
+    address internal pauser;
+    address internal governor;
+    address internal mocTokenAddress;
+    address internal registryAddress;
+
+    // TasksRunner init configuration — loaded from JSON
+    uint256 internal minOraclesPerRound;
+    uint256 internal maxOraclesPerRound;
+    uint256 internal maxSubscribedOraclesPerRound;
+    uint256 internal roundLockPeriod;
+    uint256 internal maxMissedSigRounds;
+    uint256 internal maxTasksPerBatch;
+    address internal tokenToCoinbasePriceProvider;
+    uint256 internal sharesCapMultiplier;
+
+    // Expected coinpairs that should remain after the changer executes
+    bytes32 internal constant COINPAIR_RBTCUSD = "BTCUSD";
+    bytes32 internal constant COINPAIR_RIFUSD = "RIFUSD";
+
+    PreTasksRunnerChanger internal changer;
+    address internal tasksRunnerProxy;
+
+    function setUp() public {
+        string memory defaultRpcUrl = "https://public-node.rsk.co";
+        string memory rpcUrl = vm.envOr("RSK_MAINNET_RPC_URL", defaultRpcUrl);
+        vm.createSelectFork(rpcUrl, FORK_BLOCK);
+
+        // Read all parameters from the JSON
+        _readParamsFromJson();
+
+        // Deploy new implementations using the compat contract bytecode into the fork
+        address newOracleManagerImpl = _deployFromArtifact("OracleManager.sol:OracleManager");
+        address newCoinPairImpl = _deployFromArtifact("CoinPairPrice.sol:CoinPairPrice");
+
+        // Deploy the TasksRunner proxy
+        tasksRunnerProxy = _deployTasksRunnerProxy();
+
+        changer = new PreTasksRunnerChanger(
+            oracleManagerProxy,
+            IUpgradeDelegator(upgradeDelegator),
+            newOracleManagerImpl,
+            newCoinPairImpl,
+            pauser,
+            tasksRunnerProxy,
+            TASKS_RUNNER_NAME
+        );
+    }
+
+    // ── Helpers ── JSON ────────────────────────────────────────────────────────
+
+    function _readParamsFromJson() internal {
+        string memory json = vm.readFile(MAINNET_PARAMS_PATH);
+
+        oracleManagerProxy = vm.parseJsonAddress(json, ".PreTasksRunnerModule.oracleManagerProxy");
+        upgradeDelegator = vm.parseJsonAddress(json, ".PreTasksRunnerModule.upgradeDelegator");
+        proxyAdmin = vm.parseJsonAddress(json, ".PreTasksRunnerModule.proxyAdmin");
+        pauser = vm.parseJsonAddress(json, ".PreTasksRunnerModule.pauser");
+        governor = vm.parseJsonAddress(json, ".PreTasksRunnerModule.governor");
+        mocTokenAddress = vm.parseJsonAddress(json, ".PreTasksRunnerModule.mocTokenAddress");
+        registryAddress = vm.parseJsonAddress(json, ".PreTasksRunnerModule.registry");
+
+        minOraclesPerRound = vm.parseJsonUint(json, ".PreTasksRunnerModule.minOraclesPerRound");
+        maxOraclesPerRound = vm.parseJsonUint(json, ".PreTasksRunnerModule.maxOraclesPerRound");
+        maxSubscribedOraclesPerRound = vm.parseJsonUint(json, ".PreTasksRunnerModule.maxSubscribedOraclesPerRound");
+        roundLockPeriod = vm.parseJsonUint(json, ".PreTasksRunnerModule.roundLockPeriod");
+        maxMissedSigRounds = vm.parseJsonUint(json, ".PreTasksRunnerModule.maxMissedSigRounds");
+        maxTasksPerBatch = vm.parseJsonUint(json, ".PreTasksRunnerModule.maxTasksPerBatch");
+        tokenToCoinbasePriceProvider = vm.parseJsonAddress(json, ".PreTasksRunnerModule.tokenToCoinbasePriceProvider");
+        sharesCapMultiplier = vm.parseJsonUint(json, ".PreTasksRunnerModule.sharesCapMultiplier");
+
+        require(oracleManagerProxy != address(0), "oracleManagerProxy is zero");
+        require(upgradeDelegator != address(0), "upgradeDelegator is zero");
+        require(pauser != address(0), "pauser is zero");
+        require(governor != address(0), "governor is zero");
+        require(mocTokenAddress != address(0), "mocTokenAddress is zero");
+        require(registryAddress != address(0), "registryAddress is zero");
+    }
+
+    /// @dev Deploys a TasksRunner implementation + TransparentUpgradeableProxy
+    ///      and calls initialize on the proxy.
+    function _deployTasksRunnerProxy() internal returns (address proxy) {
+        address impl = _deployFromArtifact("TasksRunner.sol:TasksRunner");
+        address baseFeeProvider = _deployFromArtifact("BasefeeProvider.sol:BasefeeProvider");
+
+        // Build initialize calldata for the TasksRunner proxy.
+        // For static-only tuple args (uint256,uint256,...) the ABI encoding of a tuple
+        // is identical to encoding the fields individually, so we can safely flatten them.
+        // The selector is built from the original tuple signature so routing is correct.
+        bytes memory initData;
+        {
+            bytes4 selector = bytes4(
+                keccak256(
+                    "initialize(address,bytes32,address[],address,(uint256,uint256,uint256,uint256),address,address,uint256,(uint256,address,address,uint256))"
+                )
+            );
+            address[] memory emptyTasks = new address[](0);
+            // Flatten struct fields: encoding is identical for static-only tuples
+            bytes memory encodedArgs = abi.encode(
+                governor, // address _governor
+                TASKS_RUNNER_NAME, // bytes32 _name
+                emptyTasks, // address[] _tasks (dynamic, empty)
+                mocTokenAddress, // address _mocTokenAddress
+                // _roundConfig (uint256,uint256,uint256,uint256) — flattened
+                maxOraclesPerRound,
+                maxSubscribedOraclesPerRound,
+                roundLockPeriod,
+                maxMissedSigRounds,
+                oracleManagerProxy, // address _oracleManager
+                registryAddress, // address _registry
+                minOraclesPerRound, // uint256 _minOraclesPerRound
+                // _tasksRunnerParams (uint256,address,address,uint256) — flattened
+                maxTasksPerBatch,
+                tokenToCoinbasePriceProvider, // tokenToCoinbasePriceProvider
+                baseFeeProvider, // baseFeeProvider
+                sharesCapMultiplier
+            );
+            initData = abi.encodePacked(selector, encodedArgs);
+        }
+
+        // Deploy TransparentUpgradeableProxy(impl, admin=proxyAdmin, data=initData)
+        bytes memory proxyBytecode = vm.getCode("TransparentUpgradeableProxy");
+        bytes memory constructorArgs = abi.encode(impl, proxyAdmin, initData);
+        bytes memory deployCode = abi.encodePacked(proxyBytecode, constructorArgs);
+        assembly {
+            proxy := create(0, add(deployCode, 0x20), mload(deployCode))
+        }
+        require(proxy != address(0), "TasksRunner proxy deployment failed");
+    }
+
+    // ── Tests ──────────────────────────────────────────────────────────────────
+
+    function testFork_ChangerExecutesWithoutRevert() public {
+        _executeChanger();
+        // If we reach here, execute() did not revert
+    }
+
+    function testFork_OracleManagerImplementationUpgraded() public {
+        address implBefore = _getImplementation(oracleManagerProxy);
+
+        _executeChanger();
+
+        address implAfter = _getImplementation(oracleManagerProxy);
+
+        assertNotEq(implAfter, implBefore, "OracleManager implementation was not changed");
+        assertEq(implAfter, changer.newOracleManagerImplementation(), "OracleManager implementation mismatch");
+    }
+
+    function testFork_AllCoinPairImplementationsUpgraded() public {
+        IOracleManagerView om = IOracleManagerView(oracleManagerProxy);
+        uint256 count = om.getCoinPairCount();
+        assertTrue(count > 0, "No CoinPair proxies registered");
+
+        // Capture implementations and proxies before
+        address[] memory proxies = new address[](count);
+        address[] memory implsBefore = new address[](count);
+        for (uint256 i = 0; i < count; i++) {
+            proxies[i] = changer.coinPairProxies(i);
+            implsBefore[i] = _getImplementation(proxies[i]);
+        }
+
+        _executeChanger();
+
+        // Verify all are upgraded to newCoinPairImplementation
+        for (uint256 i = 0; i < count; i++) {
+            address implAfter = _getImplementation(proxies[i]);
+            assertEq(implAfter, changer.newCoinPairImplementation(), "CoinPair implementation mismatch");
+            assertNotEq(implAfter, implsBefore[i], "CoinPair implementation was not changed");
+        }
+    }
+
+    function testFork_OnlyRBTCUSDAndRIFUSDRemainAfterUnregister() public {
+        IOracleManagerView om = IOracleManagerView(oracleManagerProxy);
+
+        uint256 countBefore = om.getCoinPairCount();
+        assertTrue(countBefore > 2, "Expected more than 2 coinpairs registered before changer");
+
+        _executeChanger();
+
+        uint256 countAfter = om.getCoinPairCount();
+        assertEq(countAfter, 3, "Expected exactly 3 coinpairs after changer (BTCUSD, RIFUSD and TASKSRUNNER)");
+
+        // Verify the two remaining coinpairs are BTCUSD and RIFUSD (TASKSRUNNER is also registered)
+        bool hasBtcUsd;
+        bool hasRifUsd;
+        bool hasTasksRunner;
+        for (uint256 i = 0; i < countAfter; i++) {
+            bytes32 cp = om.getCoinPairAtIndex(i);
+            if (cp == COINPAIR_RBTCUSD) hasBtcUsd = true;
+            if (cp == COINPAIR_RIFUSD) hasRifUsd = true;
+            if (cp == TASKS_RUNNER_NAME) hasTasksRunner = true;
+        }
+
+        assertTrue(hasBtcUsd, "BTCUSD not found in remaining coinpairs");
+        assertTrue(hasRifUsd, "RIFUSD not found in remaining coinpairs");
+        assertTrue(hasTasksRunner, "TASKSRUNNER not found in registered coinpairs");
+    }
+
+    function testFork_TasksRunnerProxyRegisteredInOracleManager() public {
+        _executeChanger();
+
+        IOracleManagerView om = IOracleManagerView(oracleManagerProxy);
+        address registeredAddr = om.getContractAddress(TASKS_RUNNER_NAME);
+
+        assertEq(registeredAddr, tasksRunnerProxy, "TasksRunner proxy not registered correctly in OracleManager");
+    }
+
+    function testFork_UnregisteredCoinPairsHaveNoContractAddress() public {
+        IOracleManagerView om = IOracleManagerView(oracleManagerProxy);
+
+        // Capture the bytes32 identifiers of the coinpairs at indices 1, 3, 4 before removal
+        bytes32 cpIdx1 = om.getCoinPairAtIndex(1);
+        bytes32 cpIdx3 = om.getCoinPairAtIndex(3);
+        bytes32 cpIdx4 = om.getCoinPairAtIndex(4);
+
+        _executeChanger();
+
+        // After unregistering, getContractAddress should return address(0) for removed coinpairs
+        address addr1 = om.getContractAddress(cpIdx1);
+        address addr3 = om.getContractAddress(cpIdx3);
+        address addr4 = om.getContractAddress(cpIdx4);
+
+        assertEq(addr1, address(0), "Coinpair at former index 1 still has a contract address");
+        assertEq(addr3, address(0), "Coinpair at former index 3 still has a contract address");
+        assertEq(addr4, address(0), "Coinpair at former index 4 still has a contract address");
+    }
+
+    function testFork_RBTCUSDAndRIFUSDContractAddressesArePreserved() public {
+        IOracleManagerView om = IOracleManagerView(oracleManagerProxy);
+
+        address rbtcUsdAddrBefore = om.getContractAddress(COINPAIR_RBTCUSD);
+        address rifUsdAddrBefore = om.getContractAddress(COINPAIR_RIFUSD);
+
+        require(rbtcUsdAddrBefore != address(0), "RBTCUSD contract address is zero before changer");
+        require(rifUsdAddrBefore != address(0), "RIFUSD contract address is zero before changer");
+
+        _executeChanger();
+
+        address rbtcUsdAddrAfter = om.getContractAddress(COINPAIR_RBTCUSD);
+        address rifUsdAddrAfter = om.getContractAddress(COINPAIR_RIFUSD);
+
+        assertEq(rbtcUsdAddrAfter, rbtcUsdAddrBefore, "RBTCUSD contract address changed after changer");
+        assertEq(rifUsdAddrAfter, rifUsdAddrBefore, "RIFUSD contract address changed after changer");
+    }
+
+    function testFork_PauserAddedToPriceQueryModeWhitelistOnBothCoinPairs() public {
+        _executeChanger();
+
+        IOracleManagerView om = IOracleManagerView(oracleManagerProxy);
+
+        address btcUsdProxy = om.getContractAddress(COINPAIR_RBTCUSD);
+        address rifUsdProxy = om.getContractAddress(COINPAIR_RIFUSD);
+
+        assertTrue(
+            ICoinPairPrice(btcUsdProxy).isPriceQueryModeWhitelisted(pauser),
+            "Pauser not whitelisted in BTCUSD priceQueryMode whitelist"
+        );
+        assertTrue(
+            ICoinPairPrice(rifUsdProxy).isPriceQueryModeWhitelisted(pauser),
+            "Pauser not whitelisted in RIFUSD priceQueryMode whitelist"
+        );
+    }
+
+    function testFork_PricePeekWhitelistLenIsOneOnBothCoinPairs() public {
+        _executeChanger();
+
+        IOracleManagerView om = IOracleManagerView(oracleManagerProxy);
+
+        address btcUsdProxy = om.getContractAddress(COINPAIR_RBTCUSD);
+        address rifUsdProxy = om.getContractAddress(COINPAIR_RIFUSD);
+
+        ICoinPairPrice btcFeed = ICoinPairPrice(btcUsdProxy);
+        ICoinPairPrice rifFeed = ICoinPairPrice(rifUsdProxy);
+
+        assertEq(btcFeed.getPricePeekWhitelistLen(), 3, "BTCUSD getPricePeekWhitelistLen should be 3");
+        assertEq(
+            btcFeed.getPricePeekWhitelistAtIndex(0),
+            0xe2927A0620b82A66D67F678FC9b826B0E01B1bFD, // CoinPairFree
+            "BTCUSD whitelist[0] address mismatch"
+        );
+        assertEq(
+            btcFeed.getPricePeekWhitelistAtIndex(1),
+            0xECbE91572f788945afd736a6bd9DdBe885E689d7, // InfoGetter
+            "BTCUSD whitelist[1] address mismatch"
+        );
+        assertEq(
+            btcFeed.getPricePeekWhitelistAtIndex(2),
+            0x419F84ED6d658f5FD6f4E108e224c77f0Ca328c4, // CalculatedPriceProvider
+            "BTCUSD whitelist[2] address mismatch"
+        );
+
+        assertEq(rifFeed.getPricePeekWhitelistLen(), 2, "RIFUSD getPricePeekWhitelistLen should be 2");
+        assertEq(
+            rifFeed.getPricePeekWhitelistAtIndex(0),
+            0x800B589EFBC926C01cDa5BDf7cf12d5dB7b2b076, // CoinPairFree
+            "RIFUSD whitelist[0] address mismatch"
+        );
+        assertEq(
+            rifFeed.getPricePeekWhitelistAtIndex(1),
+            0xECbE91572f788945afd736a6bd9DdBe885E689d7, // InfoGetter
+            "RIFUSD whitelist[1] address mismatch"
+        );
+    }
+
+    /// @notice Verifies that the pauser can switch BTCUSD to Invalid mode (price is reported as
+    ///         invalid) and to Revert mode (price queries revert). Also checks that returning to Ok
+    ///         mode restores normal behaviour.
+    function testFork_PauserCanSetPriceQueryModeOnBTCUSD() public {
+        _executeChanger();
+
+        IOracleManagerView om = IOracleManagerView(oracleManagerProxy);
+        address btcUsdProxy = om.getContractAddress(COINPAIR_RBTCUSD);
+        ICoinPairPrice feed = ICoinPairPrice(btcUsdProxy);
+
+        // Sanity: in Ok mode (0) the price should be valid
+        (, bool validBefore, ) = feed.getPriceInfo();
+        assertTrue(validBefore, "BTCUSD price should be valid in Ok mode before the test");
+
+        // ── Mode Invalid (1) ──────────────────────────────────────────────────
+        vm.prank(pauser);
+        feed.setPriceQueryMode(1);
+
+        // getPriceInfo returns (price, false, lastPubBlock) — isValid is false
+        (, bool isValidInvalid, ) = feed.getPriceInfo();
+        assertFalse(isValidInvalid, "getPriceInfo: isValid should be false in Invalid mode");
+
+        // getIsValid also returns false
+        assertFalse(feed.getIsValid(), "getIsValid should return false in Invalid mode");
+
+        // ── Mode Revert (2) ──────────────────────────────────────────────────
+        vm.prank(pauser);
+        feed.setPriceQueryMode(2);
+
+        // getPriceInfo must revert
+        vm.expectRevert(bytes("Forced revert active"));
+        feed.getPriceInfo();
+
+        // ── Back to Ok (0) ───────────────────────────────────────────────────
+        vm.prank(pauser);
+        feed.setPriceQueryMode(0);
+
+        (, bool validAfter, ) = feed.getPriceInfo();
+        assertTrue(validAfter, "BTCUSD price should be valid again after returning to Ok mode");
+    }
+
+    function testFork_AfterChanger_CanPublishPriceBTCUSD() public {
+        _executeChanger();
+
+        IOracleManagerView om = IOracleManagerView(oracleManagerProxy);
+        IStaking staking = IStaking(om.getStakingContract());
+
+        address btcUsdProxy = om.getContractAddress(COINPAIR_RBTCUSD);
+        ICoinPairPrice feed = ICoinPairPrice(btcUsdProxy);
+
+        (uint256 currentPrice, bool isValid, uint256 lastPubBlock) = feed.getPriceInfo();
+        require(isValid, "BTCUSD price invalid before publish");
+
+        // Advance past the lock period so switchRound() is allowed (callable by anyone)
+        (, , uint256 lockPeriodTimestamp, , , ) = feed.getRoundInfo();
+        vm.warp(lockPeriodTimestamp + 1);
+        vm.roll(lastPubBlock + 1);
+        feed.switchRound();
+
+        // New round: selectedOwners are now the top stakers selected by the contract
+        (, , , , address[] memory newOwners, ) = feed.getRoundInfo();
+        require(newOwners.length >= 1, "no selected owners for BTCUSD round");
+        (, , uint256 newLastPubBlock) = feed.getPriceInfo();
+
+        // Need strictly more than 50% of selected owners to sign
+        uint256 needed = newOwners.length / 2 + 1;
+        uint256[] memory privateKeys = _makePrivateKeys(needed, 0x1000);
+
+        // Rotate signers for the new round owners; new signers are now the selectedOracles
+        address[] memory signers = _rotateSignersForOwners(newOwners, privateKeys, om, staking);
+
+        // Advance one more block so block.number > newLastPubBlock
+        vm.roll(block.number + 1);
+
+        bytes32 coinpair = feed.getCoinPair();
+        uint256 newPrice = currentPrice + 1e18;
+        address votedOracle = signers[0];
+
+        bytes32 digest = _buildDigest(PUBLISH_MESSAGE_VERSION, coinpair, newPrice, votedOracle, newLastPubBlock);
+        (uint8[] memory sigV, bytes32[] memory sigR, bytes32[] memory sigS) = _buildSortedSignatures(
+            IOracleCheats(address(vm)),
+            privateKeys,
+            signers,
+            digest
+        );
+
+        vm.prank(votedOracle);
+        feed.publishPrice(PUBLISH_MESSAGE_VERSION, coinpair, newPrice, votedOracle, newLastPubBlock, sigV, sigR, sigS);
+
+        (uint256 updatedPrice, , uint256 updatedLastPubBlock) = feed.getPriceInfo();
+        assertEq(updatedPrice, newPrice, "BTCUSD price was not updated");
+        assertEq(updatedLastPubBlock, block.number, "BTCUSD publication block not updated");
+    }
+
+    function testFork_AfterChanger_CanPublishPriceRIFUSD() public {
+        _executeChanger();
+
+        IOracleManagerView om = IOracleManagerView(oracleManagerProxy);
+        IStaking staking = IStaking(om.getStakingContract());
+        address stakingAddr = address(staking);
+
+        // RIFUSD has no subscribed oracles after the changer runs (the coin pair is newly kept
+        // but had no subscribers). Subscribe the BTCUSD selected owners to RIFUSD so that
+        // switchRound() can build a non-empty selection. The staking contract is whitelisted
+        // in OracleManager, so pranking as it satisfies the authorizedChangerOrWhitelisted guard.
+        address btcUsdProxy = om.getContractAddress(COINPAIR_RBTCUSD);
+        (, , , , address[] memory btcOwners, ) = ICoinPairPrice(btcUsdProxy).getRoundInfo();
+        require(btcOwners.length >= 1, "no BTCUSD owners to subscribe to RIFUSD");
+        for (uint256 i = 0; i < btcOwners.length; i++) {
+            vm.prank(stakingAddr);
+            om.subscribeToCoinPair(btcOwners[i], COINPAIR_RIFUSD);
+        }
+
+        address rifUsdProxy = om.getContractAddress(COINPAIR_RIFUSD);
+        ICoinPairPrice rifFeed = ICoinPairPrice(rifUsdProxy);
+
+        (uint256 currentPrice, , uint256 lastPubBlock) = rifFeed.getPriceInfo();
+
+        // Advance past the lock period so switchRound() is allowed (callable by anyone)
+        (, , uint256 rifLockPeriodTimestamp, , , ) = rifFeed.getRoundInfo();
+        vm.warp(rifLockPeriodTimestamp + 1);
+        vm.roll(lastPubBlock + 1);
+        rifFeed.switchRound();
+
+        // New round: selectedOwners are the top RIFUSD stakers selected by the contract
+        (, , , , address[] memory newOwners, ) = rifFeed.getRoundInfo();
+        require(newOwners.length >= 1, "no selected owners for RIFUSD round");
+        (, , uint256 newLastPubBlock) = rifFeed.getPriceInfo();
+
+        // Need strictly more than 50% of selected owners to sign
+        uint256 needed = newOwners.length / 2 + 1;
+        uint256[] memory privateKeys = _makePrivateKeys(needed, 0x2000);
+
+        // Rotate signers for the new round owners
+        address[] memory signers = _rotateSignersForOwners(newOwners, privateKeys, om, staking);
+
+        // Advance one more block so block.number > newLastPubBlock
+        vm.roll(block.number + 1);
+
+        bytes32 coinpair = rifFeed.getCoinPair();
+        uint256 newPrice = currentPrice + 1e15;
+        address votedOracle = signers[0];
+
+        bytes32 digest = _buildDigest(PUBLISH_MESSAGE_VERSION, coinpair, newPrice, votedOracle, newLastPubBlock);
+        (uint8[] memory sigV, bytes32[] memory sigR, bytes32[] memory sigS) = _buildSortedSignatures(
+            IOracleCheats(address(vm)),
+            privateKeys,
+            signers,
+            digest
+        );
+
+        vm.prank(votedOracle);
+        rifFeed.publishPrice(
+            PUBLISH_MESSAGE_VERSION,
+            coinpair,
+            newPrice,
+            votedOracle,
+            newLastPubBlock,
+            sigV,
+            sigR,
+            sigS
+        );
+
+        (uint256 updatedPrice, , uint256 updatedLastPubBlock) = rifFeed.getPriceInfo();
+        assertEq(updatedPrice, newPrice, "RIFUSD price was not updated");
+        assertEq(updatedLastPubBlock, block.number, "RIFUSD publication block not updated");
+    }
+
+    /// @notice Verifies that upgrading the CoinPairPrice implementation does not corrupt
+    ///         any storage slot: all readable state before the changer must be identical
+    ///         after the changer completes.
+    function testFork_CoinPairStorageLayoutIntactAfterUpgrade() public {
+        IOracleManagerView om = IOracleManagerView(oracleManagerProxy);
+        address btcUsdProxy = om.getContractAddress(COINPAIR_RBTCUSD);
+        ICoinPairPrice feed = ICoinPairPrice(btcUsdProxy);
+
+        CoinPairSnapshot memory before_ = _snapshotCoinPair(feed);
+        _executeChanger();
+        CoinPairSnapshot memory after_ = _snapshotCoinPair(feed);
+
+        assertEq(after_.coinPair, before_.coinPair, "coinPair storage corrupted");
+        assertEq(after_.price, before_.price, "currentPrice storage corrupted");
+        assertEq(after_.lastPubBlock, before_.lastPubBlock, "lastPublicationBlock corrupted");
+        assertEq(after_.validPricePeriod, before_.validPricePeriod, "validPricePeriodInBlocks corrupted");
+        assertEq(after_.emergencyPeriod, before_.emergencyPeriod, "emergencyPublishingPeriodInBlocks corrupted");
+        assertEq(after_.minOracles, before_.minOracles, "minOraclesPerRound corrupted");
+        assertEq(after_.round, before_.round, "roundInfo.number corrupted");
+        assertEq(after_.startBlock, before_.startBlock, "roundInfo.startBlock corrupted");
+        assertEq(after_.lockPeriodTs, before_.lockPeriodTs, "roundInfo.lockPeriodTimestamp corrupted");
+        assertEq(after_.totalPoints, before_.totalPoints, "roundInfo.totalPoints corrupted");
+
+        assertEq(after_.owners.length, before_.owners.length, "selectedOwners length changed after upgrade");
+        for (uint256 i = 0; i < before_.owners.length; i++) {
+            assertEq(after_.owners[i], before_.owners[i], "selectedOwners entry corrupted after upgrade");
+        }
+
+        assertEq(after_.oracles.length, before_.oracles.length, "selectedOracles length changed after upgrade");
+        for (uint256 i = 0; i < before_.oracles.length; i++) {
+            assertEq(after_.oracles[i], before_.oracles[i], "selectedOracles entry corrupted after upgrade");
+        }
+    }
+
+    // ── Helpers ────────────────────────────────────────────────────────────────
+
+    /// @dev Generates an array of `count` sequential private keys starting at `base+1`.
+    function _makePrivateKeys(uint256 count, uint256 base) internal pure returns (uint256[] memory keys) {
+        keys = new uint256[](count);
+        for (uint256 i = 0; i < count; i++) {
+            keys[i] = base + i + 1;
+        }
+    }
+
+    function _executeChanger() internal {
+        address gov = IGoverned(oracleManagerProxy).governor();
+        address governorOwner = IOwnableLike(gov).owner();
+        vm.prank(governorOwner);
+        IGovernor(gov).executeChange(IChangeContract(address(changer)));
+    }
+
+    function _getImplementation(address proxy) internal view returns (address impl) {
+        bytes32 raw = vm.load(proxy, IMPLEMENTATION_SLOT);
+        impl = address(uint160(uint256(raw)));
+    }
+
+    function _deployFromArtifact(string memory contractName) internal returns (address deployed) {
+        bytes memory bytecode = vm.getCode(contractName);
+        assembly {
+            deployed := create(0, add(bytecode, 0x20), mload(bytecode))
+        }
+        require(deployed != address(0), string(abi.encodePacked("Failed to deploy: ", contractName)));
+    }
+
+    /// @dev Captures all key CoinPairPrice storage fields into a snapshot struct.
+    ///      Using a struct return avoids stack-too-deep when comparing before/after.
+    function _snapshotCoinPair(ICoinPairPrice feed) internal view returns (CoinPairSnapshot memory s) {
+        s.coinPair = feed.getCoinPair();
+        (s.price, , s.lastPubBlock) = feed.getPriceInfo();
+        s.validPricePeriod = feed.getValidPricePeriodInBlocks();
+        s.emergencyPeriod = feed.getEmergencyPublishingPeriodInBlocks();
+        s.minOracles = feed.getMinOraclesPerRound();
+        (s.round, s.startBlock, s.lockPeriodTs, s.totalPoints, s.owners, s.oracles) = feed.getRoundInfo();
+    }
+
+    // ── Simple upgrade changer for TasksRunner ───────────────────────────────────
+
+    /// @notice Validates that the tasksRunnerProxy can be upgraded after the PreTasksRunner
+    ///         changer has executed. A simple inline changer is deployed and executed via
+    ///         governance to upgrade the proxy to a fresh implementation.
+    function testFork_TasksRunnerCanBeUpgraded() public {
+        // Execute the original changer first so the tasksRunnerProxy is registered
+        // in OracleManager and the upgradeDelegator is in control of it.
+        _executeChanger();
+
+        // The tasksRunnerProxy uses the EIP-1967 slot (OZ TransparentUpgradeableProxy)
+        address implBefore = _getImplementation(tasksRunnerProxy);
+        assertTrue(implBefore != address(0), "tasksRunnerProxy impl should not be zero before upgrade");
+
+        // Deploy a second TasksRunner implementation (a different address than the original)
+        address newTasksRunnerImpl = _deployFromArtifact("TasksRunner.sol:TasksRunner");
+
+        // Create a simple changer that only upgrades the tasksRunnerProxy
+        TasksRunnerUpgradeChanger upgradeChanger = new TasksRunnerUpgradeChanger(
+            IUpgradeDelegator(upgradeDelegator),
+            tasksRunnerProxy,
+            newTasksRunnerImpl
+        );
+
+        // Execute it through governance
+        address gov = IGoverned(oracleManagerProxy).governor();
+        address governorOwner = IOwnableLike(gov).owner();
+        vm.prank(governorOwner);
+        IGovernor(gov).executeChange(IChangeContract(address(upgradeChanger)));
+
+        address implAfter = _getImplementation(tasksRunnerProxy);
+
+        assertNotEq(implAfter, implBefore, "TasksRunner implementation was not upgraded");
+        assertEq(implAfter, newTasksRunnerImpl, "TasksRunner implementation address mismatch");
+    }
+
+    function _rotateSignersForOwners(
+        address[] memory owners,
+        uint256[] memory privateKeys,
+        IOracleManagerView om,
+        IStaking staking
+    ) internal returns (address[] memory signers) {
+        require(owners.length >= privateKeys.length, "not enough selected owners");
+        signers = _rotationSignersFromKeys(IOracleCheats(address(vm)), privateKeys);
+        for (uint256 i = 0; i < signers.length; i++) {
+            vm.prank(owners[i]);
+            staking.setOracleAddress(signers[i]);
+            require(om.getOracleAddress(owners[i]) == signers[i], "failed to set majority signer");
+        }
+    }
+}
+
+/// @title TasksRunnerUpgradeChanger
+/// @notice A minimal IChangeContract that upgrades a single proxy to a new implementation
+///         via the UpgradeDelegator. Used in fork tests to validate that the TasksRunner
+///         proxy can be upgraded through governance after the PreTasksRunner changer runs.
+contract TasksRunnerUpgradeChanger is IChangeContract {
+    IUpgradeDelegator public immutable upgradeDelegator;
+    address public immutable proxy;
+    address public immutable newImplementation;
+
+    constructor(IUpgradeDelegator _upgradeDelegator, address _proxy, address _newImpl) {
+        upgradeDelegator = _upgradeDelegator;
+        proxy = _proxy;
+        newImplementation = _newImpl;
+    }
+
+    function execute() external {
+        upgradeDelegator.upgrade(proxy, newImplementation);
+    }
+}
