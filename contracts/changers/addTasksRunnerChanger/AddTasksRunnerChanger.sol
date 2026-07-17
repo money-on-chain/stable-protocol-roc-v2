@@ -59,6 +59,7 @@ interface IMocMultiCollateralGuardPriceUpdates {
  *      11. Rewire commission splitters and buffers that fund Foundation / oracle infra
  *      12. Rewire legacy RIF-based reverse auctions to the replacement providers
  *      13. Remove old reverse auctions and buffers from governed registry
+ *.     14. Reset useMaxLastPublication block because DOC bucket always has a valid price(it does not use conditional price)
  */
 contract AddTasksRunnerChanger is IChangeContract {
     bytes32 private constant MOC_FLOW_BUFFERS = 0x4cb845794d5472a713e41e8e4ddc566dab8d695f1dc6c8edd43dad9d55112a22;
@@ -342,6 +343,13 @@ contract AddTasksRunnerChanger is IChangeContract {
         governedRegistry.removeAddressArrayElement(MOC_FLOW_BUFFERS, bitProRewardsBuffer);
         governedRegistry.removeAddressArrayElement(MOC_FLOW_BUFFERS, bproRewardsBuffer);
         governedRegistry.removeAddressArrayElement(MOC_FLOW_BUFFERS, mocRewardsBuffer);
+
+        // 14) Reset useMaxLastPublication block because DOC bucket always has a valid price(it does not use conditional price)
+        //      false: use the minimum, so operations enqueued before the oldest price are executed. New operations
+        //      have to wait until all the prices are updated
+        //      true: use the maximum, so operations enqueued before the newest price are executed. New operations
+        //      have to wait until only one price is updated
+        mocMultiCollateralGuard.setUseMaxLastPublicationBlock(false);
     }
 
     /**
