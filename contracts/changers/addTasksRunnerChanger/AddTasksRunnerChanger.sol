@@ -361,7 +361,7 @@ contract AddTasksRunnerChanger is IChangeContract {
         // RIF splitters:
         // - RIF legs that used to pay Foundation now pay the new RIF 70/30 buffer
         // - MOC fee-token leg on rifCommissionSplitterV2 now pays the new MOC 70/30 buffer
-        rifCommissionSplitterV3.setAcTokenAddressRecipient2(splitRifFeesToFoundationAndRifOracle);
+        rifCommissionSplitterV3.setAcTokenAddressRecipient1(splitRifFeesToFoundationAndRifOracle);
         rifCommissionSplitterV2.setAcTokenAddressRecipient1(splitRifFeesToFoundationAndRifOracle);
         rifCommissionSplitterV2.setFeeTokenAddressRecipient1(splitMocFeesToFoundationAndRifOracle);
 

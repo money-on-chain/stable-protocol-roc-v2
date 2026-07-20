@@ -359,7 +359,7 @@ contract AddTasksRunnerChangerForkTests is BaseFork {
         ICommissionSplitterView docSplitterV2 = ICommissionSplitterView(docCommissionSplitterV2);
 
         assertEq(
-            rifSplitterV3.acTokenAddressRecipient2(),
+            rifSplitterV3.acTokenAddressRecipient1(),
             addTasksRunnerChanger.splitRifFeesToFoundationAndRifOracle(),
             "rifCommissionSplitterV3 Foundation RIF leg should be rewired to the new RIF buffer"
         );
