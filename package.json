@@ -1,30 +1,40 @@
 {
   "name": "roc-sc-protocol-v2",
-  "version": "3.0.8",
+  "version": "3.0.9",
   "private": true,
   "homepage": "https://www.moneyonchain.com",
   "description": "Money on Chain main smart contract protocol RIF implementation",
   "author": "MOC Investments Corp. 2020",
   "license": "AGPL-3.0",
   "dependencies": {
-    "@moc/flow": "git+ssh://git@github.com/money-on-chain/MoC-Flow.git#v3.0.1",
-    "@moc/oracles": "git+ssh://git@github.com/money-on-chain/OMoC-Decentralized-Oracle.git#v3.0.8",
-    "@moc/price-oracle-interfaces": "git+ssh://git@github.com/money-on-chain/price_oracle_interfaces.git#v0.1.0",
-    "moc-main-latest": "git+ssh://git@github.com/money-on-chain/main-sc-protocol-v2#v3.0.8",
     "solc": "0.8.24"
   },
   "devDependencies": {
     "@commitlint/cli": "20.3.1",
     "@commitlint/config-conventional": "20.3.1",
     "@eslint/js": "9.27.0",
+    "@moc/flow": "git+ssh://git@github.com/money-on-chain/MoC-Flow.git#v3.0.3",
+    "@moc/moc-main": "git+ssh://git@github.com/money-on-chain/main-sc-protocol-v2.git#v3.0.9",
+    "@moc/oracles": "git+ssh://git@github.com/money-on-chain/OMoC-Decentralized-Oracle.git#v3.0.10",
+    "@moc/periphery": "git+ssh://git@github.com/money-on-chain/MoC-Periphery#v3.0.5",
+    "@moc/price-oracle-interfaces": "git+ssh://git@github.com/money-on-chain/price_oracle_interfaces.git#v0.1.0",
     "@nomicfoundation/hardhat-ignition": "^3.1.8",
-    "@nomicfoundation/ignition-core": "3.1.8",
+    "@nomicfoundation/hardhat-ignition-viem": "3.1.6",
+    "@nomicfoundation/hardhat-keystore": "3.0.12",
+    "@nomicfoundation/hardhat-network-helpers": "3.0.11",
+    "@nomicfoundation/hardhat-node-test-runner": "3.0.17",
     "@nomicfoundation/hardhat-toolbox-viem": "5.0.7",
+    "@nomicfoundation/hardhat-verify": "3.0.21",
+    "@nomicfoundation/hardhat-viem": "3.0.9",
+    "@nomicfoundation/hardhat-viem-assertions": "3.1.2",
+    "@nomicfoundation/ignition-core": "3.1.8",
     "@openzeppelin-v4.8.0/contracts": "npm:@openzeppelin/contracts@4.8.0",
     "@openzeppelin-v4.8.0/contracts-upgradeable": "npm:@openzeppelin/contracts-upgradeable@4.8.0",
     "@openzeppelin/contracts": "4.9.3",
     "@openzeppelin/contracts-upgradeable": "4.9.3",
+    "@openzeppelin/defender-deploy-client-cli": "0.0.1-alpha.10",
     "@openzeppelin/foundry-upgrades": "0.4.0",
+    "@openzeppelin/upgrades-core": "1.46.0",
     "@solidstate/hardhat-contract-sizer": "^3.0.3",
     "@types/chai": "5.2.3",
     "@types/fs-extra": "11.0.4",
@@ -38,11 +48,13 @@
     "forge-std": "github:foundry-rs/forge-std#v1.9.7",
     "hardhat": "3.9.0",
     "husky": "9.1.7",
+    "moc-main-latest": "git+ssh://git@github.com/money-on-chain/main-sc-protocol-v2#v3.0.9",
     "prettier": "3.8.1",
     "prettier-plugin-solidity": "1.4.2",
     "solhint": "5.0.5",
     "solhint-plugin-prettier": "0.1.0",
     "standard-version": "9.5.0",
+    "ts-test-helpers": "git+ssh://git@github.com/money-on-chain/ts-test-helpers#v0.1.2",
     "typescript": "5.9.3",
     "typescript-eslint": "8.54.0",
     "viem": "2.53.1"
@@ -81,13 +93,28 @@
     "./types": "./types",
     "./types/*": "./types/*"
   },
-  "files": ["dist", "contracts", "ignition", "addressBook.js", "addressBook.d.ts", "addressBook.json", "types"],
-  "keywords": ["blockchain", "ethereum", "hardhat", "smart-contracts", "solidity", "rsk"],
+  "files": [
+    "dist",
+    "contracts",
+    "ignition",
+    "addressBook.js",
+    "addressBook.d.ts",
+    "addressBook.json",
+    "types"
+  ],
+  "keywords": [
+    "blockchain",
+    "ethereum",
+    "hardhat",
+    "smart-contracts",
+    "solidity",
+    "rsk"
+  ],
   "scripts": {
-    "prepare": "husky install",
+    "hooks:install": "husky install",
     "clean": "hardhat clean && rm -rf dist cache out artifacts",
     "compile": "hardhat build",
-    "build": "pnpm clean && pnpm compile && pnpm exec tsc -p tsconfig.json",
+    "build:local": "pnpm clean && pnpm compile && pnpm exec tsc -p tsconfig.json",
     "quality": "pnpm format:check && pnpm lint && pnpm check",
     "check": "pnpm exec tsc --noEmit -p tsconfig.json",
     "format": "pnpm exec prettier ./test/* --write",
@@ -102,5 +129,11 @@
     "tenderly-verify:rskTestnet": "pnpm hardhat run scripts/tenderly-verify.ts --network rskTestnet"
   },
   "type": "module",
-  "packageManager": "pnpm@10.13.1+sha512.37ebf1a5c7a30d5fabe0c5df44ee8da4c965ca0c5af3dbab28c3a1681b70a256218d05c81c9c0dcf767ef6b8551eb5b960042b9ed4300c59242336377e01cfad"
+  "packageManager": "pnpm@11.15.1+sha512.81350b07e53c9538a02f1f2303b4290fa2d7be04e56e2a970c4cc4b417dc761de196edabd49d55c7dc9580db81007c44143e4e3d7e462b3000d23c255122d065",
+  "peerDependencies": {
+    "@moc/flow": "3.0.3",
+    "@moc/oracles": "3.0.10",
+    "@moc/price-oracle-interfaces": "0.1.0",
+    "moc-main-latest": "3.0.9"
+  }
 }

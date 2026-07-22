@@ -1,0 +1,11 @@
+autoInstallPeers: false
+
+allowBuilds:
+  esbuild: true
+  keccak: true
+  secp256k1: true
+
+peerDependencyRules:
+  allowedVersions:
+    "main-sc-protocol-v2@3.0.9>hardhat": "3.9.0"
+    "hardhat-watcher@2.5.0>hardhat": "3.9.0"
