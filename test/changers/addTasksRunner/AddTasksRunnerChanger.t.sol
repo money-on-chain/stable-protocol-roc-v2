@@ -851,6 +851,152 @@ contract AddTasksRunnerChangerForkTests is BaseFork {
         );
     }
 
+    /// @dev After both changers run, queues a mintTP on the RIF bucket, then verifies that:
+    ///      1. Updating only the RIF price (lastPublicationBlock) is not enough to execute the queue.
+    ///      2. Once the DOC price is also updated, the queue executes successfully.
+    function test_QueueExecutionRequiresBothPriceUpdates_RifFirst() public {
+        _executeAddTasksRunnerChanger();
+
+        address rifPriceProvider = addTasksRunnerChanger.rifOracleCoinPair();
+        address docPriceProvider = getMainnetAddress("docToUsdRifPriceProvider");
+
+        // Mock both peek() calls as always valid — validity is not what gates execution here.
+        vm.mockCall(
+            rifPriceProvider,
+            abi.encodeWithSelector(ICoinPairPriceView.peek.selector),
+            abi.encode(bytes32(uint256(1e18)), true)
+        );
+        vm.mockCall(
+            docPriceProvider,
+            abi.encodeWithSelector(ICoinPairPriceView.peek.selector),
+            abi.encode(bytes32(uint256(1e18)), true)
+        );
+
+        uint256 qACmax = 1000e18;
+        uint256 qTP = 1e18; // 1 usdRIF
+
+        uint8 TP_MINT = 3;
+        uint256 rifMintFee = IQueueExecFeesView(address(rifQueue)).getExecFee(TP_MINT);
+
+        // --- queue mintTP on RIF bucket (usdRIF) ---
+        deal(address(rifToken), holder, qACmax);
+        vm.startPrank(holder);
+        rifToken.approve(address(rifBucket), qACmax);
+        rifBucket.mintTP{ value: rifMintFee }(address(usdRifToken), qTP, qACmax, holder, address(0));
+        vm.stopPrank();
+
+        // Advance one block — this becomes the "publication block" we will simulate.
+        vm.roll(block.number + 1);
+        uint256 pubBlock = block.number;
+
+        uint256 usdRifBalanceBefore = usdRifToken.balanceOf(holder);
+
+        // Step 2: only RIF published at pubBlock — DOC lastPublicationBlock is still old.
+        // The guard uses the MINIMUM lastPublicationBlock (useMaxLastPublicationBlock=false),
+        // so the DOC's stale block prevents execution.
+        vm.mockCall(
+            rifPriceProvider,
+            abi.encodeWithSelector(bytes4(keccak256("getLastPublicationBlock()"))),
+            abi.encode(pubBlock)
+        );
+        // DOC is NOT mocked: its real on-chain lastPublicationBlock predates the enqueue block.
+
+        mocMultiCollateralGuard.execute();
+
+        assertEq(
+            usdRifToken.balanceOf(holder),
+            usdRifBalanceBefore,
+            "operation should NOT execute when only RIF price is updated"
+        );
+
+        // Step 3: DOC also publishes at pubBlock — both prices are now current.
+        vm.mockCall(
+            docPriceProvider,
+            abi.encodeWithSelector(bytes4(keccak256("getLastPublicationBlock()"))),
+            abi.encode(pubBlock)
+        );
+
+        mocMultiCollateralGuard.execute();
+
+        assertEq(
+            usdRifToken.balanceOf(holder),
+            usdRifBalanceBefore + qTP,
+            "operation should execute once both RIF and DOC prices are updated"
+        );
+    }
+
+    /// @dev Same as test_QueueExecutionRequiresBothPriceUpdates_RifFirst but the DOC
+    ///      lastPublicationBlock is simulated first. The operation must still wait for
+    ///      the RIF publication before it can be executed.
+    function test_QueueExecutionRequiresBothPriceUpdates_DocFirst() public {
+        _executeAddTasksRunnerChanger();
+
+        address rifPriceProvider = addTasksRunnerChanger.rifOracleCoinPair();
+        address docPriceProvider = getMainnetAddress("docToUsdRifPriceProvider");
+
+        // Mock both peek() calls as always valid — validity is not what gates execution here.
+        vm.mockCall(
+            rifPriceProvider,
+            abi.encodeWithSelector(ICoinPairPriceView.peek.selector),
+            abi.encode(bytes32(uint256(1e18)), true)
+        );
+        vm.mockCall(
+            docPriceProvider,
+            abi.encodeWithSelector(ICoinPairPriceView.peek.selector),
+            abi.encode(bytes32(uint256(1e18)), true)
+        );
+
+        uint256 qACmax = 1000e18;
+        uint256 qTP = 1e18; // 1 usdRIF
+
+        uint8 TP_MINT = 3;
+        uint256 rifMintFee = IQueueExecFeesView(address(rifQueue)).getExecFee(TP_MINT);
+
+        // --- queue mintTP on RIF bucket (usdRIF) ---
+        deal(address(rifToken), holder, qACmax);
+        vm.startPrank(holder);
+        rifToken.approve(address(rifBucket), qACmax);
+        rifBucket.mintTP{ value: rifMintFee }(address(usdRifToken), qTP, qACmax, holder, address(0));
+        vm.stopPrank();
+
+        // Advance one block — this becomes the "publication block" we will simulate.
+        vm.roll(block.number + 1);
+        uint256 pubBlock = block.number;
+
+        uint256 usdRifBalanceBefore = usdRifToken.balanceOf(holder);
+
+        // Step 2: only DOC published at pubBlock — RIF lastPublicationBlock is still old.
+        vm.mockCall(
+            docPriceProvider,
+            abi.encodeWithSelector(bytes4(keccak256("getLastPublicationBlock()"))),
+            abi.encode(pubBlock)
+        );
+        // RIF is NOT mocked: its real on-chain lastPublicationBlock is 0 (freshly deployed pair).
+
+        mocMultiCollateralGuard.execute();
+
+        assertEq(
+            usdRifToken.balanceOf(holder),
+            usdRifBalanceBefore,
+            "operation should NOT execute when only DOC price is updated"
+        );
+
+        // Step 3: RIF also publishes at pubBlock — both prices are now current.
+        vm.mockCall(
+            rifPriceProvider,
+            abi.encodeWithSelector(bytes4(keccak256("getLastPublicationBlock()"))),
+            abi.encode(pubBlock)
+        );
+
+        mocMultiCollateralGuard.execute();
+
+        assertEq(
+            usdRifToken.balanceOf(holder),
+            usdRifBalanceBefore + qTP,
+            "operation should execute once both DOC and RIF prices are updated"
+        );
+    }
+
     /// @dev Publishes a real price on the newly created RIF/USD CoinPairPrice so that
     ///      subsequent peek() calls return a valid price.  The new pair starts with no
     ///      publication history, so we:
