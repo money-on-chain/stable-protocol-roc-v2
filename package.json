@@ -93,23 +93,8 @@
     "./types": "./types",
     "./types/*": "./types/*"
   },
-  "files": [
-    "dist",
-    "contracts",
-    "ignition",
-    "addressBook.js",
-    "addressBook.d.ts",
-    "addressBook.json",
-    "types"
-  ],
-  "keywords": [
-    "blockchain",
-    "ethereum",
-    "hardhat",
-    "smart-contracts",
-    "solidity",
-    "rsk"
-  ],
+  "files": ["dist", "contracts", "ignition", "addressBook.js", "addressBook.d.ts", "addressBook.json", "types"],
+  "keywords": ["blockchain", "ethereum", "hardhat", "smart-contracts", "solidity", "rsk"],
   "scripts": {
     "hooks:install": "husky install",
     "clean": "hardhat clean && rm -rf dist cache out artifacts",
@@ -122,8 +107,14 @@
     "lint": "pnpm exec eslint . --max-warnings 0",
     "lint:fix": "pnpm exec eslint . --fix --max-warnings 0",
     "release": "standard-version",
-    "test": "hardhat test solidity",
+    "test": "npx hardhat test solidity",
+    "test:storage": "FOUNDRY_PROFILE=storage forge clean && FOUNDRY_PROFILE=storage forge build --force && FOUNDRY_PROFILE=storage forge test -vv",
     "test:tasksRunner": "./scripts/changers/addTasksRunner/run-fork-tests.sh",
+    "test:fork:mainnet": "hardhat test solidity -vvv",
+    "test:all": "pnpm run test && npm run test:storage",
+    "merge-params": "node scripts/changers/multiCollateralUpgrade/merge-ignition-params.mjs",
+    "deploy-pauser-split-rskTestnet": "npx hardhat ignition deploy ./ignition/modules/changers/pauserSplit/PauserSplitChanger.ts --network rskTestnet --parameters ./ignition/modules/changers/pauserSplit/parameters/rskTestnet.json",
+    "deploy-pauser-split-rskMainnet": "npx hardhat ignition deploy ./ignition/modules/changers/pauserSplit/PauserSplitChanger.ts --network rskMainnet --parameters ./ignition/modules/changers/pauserSplit/parameters/rskMainnet.json",
     "verify:rskTestnet": "pnpm hardhat ignition verify --network rskTestnet",
     "verify:rskMainnet": "pnpm hardhat ignition verify --network rskMainnet chain-30",
     "tenderly-verify:rskTestnet": "pnpm hardhat run scripts/tenderly-verify.ts --network rskTestnet"
