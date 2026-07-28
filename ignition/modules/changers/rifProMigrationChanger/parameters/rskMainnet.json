@@ -1,0 +1,8 @@
+{
+  "RifProMigrationChanger": {
+    "rifBucketProxy": "0xA27024Ed70035E46dba712609fc2Afa1c97aA36A",
+    "legacyRifProToken": "0xCD101a2414256DA8F8E25d7b483b3cf639a71683",
+    "newRifProTokenName": "RIFPro Token",
+    "newRifProTokenSymbol": "RIFP"
+  }
+}
