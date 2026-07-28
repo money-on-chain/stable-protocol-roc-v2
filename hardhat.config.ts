@@ -1,22 +1,10 @@
-import { HardhatUserConfig } from "hardhat/config";
+import { defineConfig } from "hardhat/config";
 import type { HttpNetworkAccountsUserConfig } from "hardhat/types/config";
 import { resolve, dirname } from "path";
 import { fileURLToPath } from "url";
 import { config as dotenvConfig } from "dotenv";
-import hardhatToolboxMochaEthers from "@nomicfoundation/hardhat-toolbox-mocha-ethers";
+import hardhatToolboxViem from "@nomicfoundation/hardhat-toolbox-viem";
 import hardhatContractSizer from "@solidstate/hardhat-contract-sizer";
-import "@nomicfoundation/hardhat-verify";
-
-// Note: @nomicfoundation/hardhat-toolbox-mocha-ethers includes:
-// - @nomicfoundation/hardhat-ethers
-// - @nomicfoundation/hardhat-ethers-chai-matchers
-// - @nomicfoundation/hardhat-ignition
-// - @nomicfoundation/hardhat-ignition-ethers
-// - @nomicfoundation/hardhat-keystore
-// - @nomicfoundation/hardhat-mocha
-// - @nomicfoundation/hardhat-network-helpers
-// - @nomicfoundation/hardhat-typechain
-// - @nomicfoundation/hardhat-verify
 
 // ESM equivalent of __dirname
 const __filename = fileURLToPath(import.meta.url);
@@ -45,82 +33,11 @@ const accounts: HttpNetworkAccountsUserConfig = pk ? [pk] : { mnemonic: mnemonic
 const testnet_rpc_url = process.env["RSK_TESTNET_RPC_URL"] || "https://public-node.testnet.rsk.co";
 const mainnet_rpc_url = process.env["RSK_MAINNET_RPC_URL"] || "https://public-node.rsk.co";
 
-const compilers = [
-  {
-    version: "0.5.8",
-    settings: { optimizer: { enabled: true, runs: 200 } },
-  },
-  {
-    version: "0.6.12",
-    settings: { optimizer: { enabled: true, runs: 200 } },
-  },
-  {
-    version: "0.7.6",
-    settings: { optimizer: { enabled: true, runs: 200 } },
-  },
-  {
-    version: "0.8.16",
-    settings: {
-      optimizer: {
-        enabled: true,
-        runs: 200,
-      },
-      evmVersion: "london",
-      outputSelection: {
-        "*": {
-          "*": ["storageLayout"],
-        },
-      },
-    },
-  },
-  {
-    version: "0.8.20",
-    settings: {
-      optimizer: {
-        enabled: true,
-        runs: 200,
-        details: {
-          yulDetails: {
-            optimizerSteps:
-              "dhfoDgvulfnTUtnIf[xa[r]EscLMcCTUtTOntnfDIulLculVcul[j]Tpeulxa[rul]xa[r]cLgvifCTUca[r]LSsTOtfDnca[r]Iulc]jmul[jul]VcTOculjmul",
-          },
-        },
-      },
-      viaIR: true,
-      evmVersion: "london",
-      outputSelection: {
-        "*": {
-          "*": ["storageLayout"],
-        },
-      },
-    },
-  },
-  {
-    version: "0.8.24",
-    settings: {
-      optimizer: {
-        enabled: true,
-        runs: 200,
-        details: {
-          yulDetails: {
-            optimizerSteps:
-              "dhfoDgvulfnTUtnIf[xa[r]EscLMcCTUtTOntnfDIulLculVcul[j]Tpeulxa[rul]xa[r]cLgvifCTUca[r]LSsTOtfDnca[r]Iulc]jmul[jul]VcTOculjmul",
-          },
-        },
-      },
-      viaIR: true,
-      evmVersion: "london",
-      outputSelection: {
-        "*": {
-          "*": ["storageLayout"],
-        },
-      },
-    },
-  },
-];
+export { compilers, npmFilesToBuild } from "./config/solidity.js";
+import { compilers, npmFilesToBuild } from "./config/solidity.js";
 
-const config: HardhatUserConfig = {
-  plugins: [hardhatToolboxMochaEthers, hardhatContractSizer],
+export default defineConfig({
+  plugins: [hardhatToolboxViem, hardhatContractSizer],
 
   solidity: {
     profiles: {
@@ -132,30 +49,7 @@ const config: HardhatUserConfig = {
         compilers,
       },
     },
-    npmFilesToBuild: [
-      "moc-main-latest/contracts/collateral/rc20/MocCARC20.sol",
-      "moc-main-latest/contracts/core/MocCoreExpansion.sol",
-      "moc-main-latest/contracts/mocks/PriceProviderMock.sol",
-      "moc-main-latest/contracts/auxiliary/CommissionSplitterRC20.sol",
-      "moc-main-latest/contracts/governance/InterimGovernor.sol",
-      "moc-main-latest/contracts/tokens/MocRC20.sol",
-      "moc-main-latest/contracts/queue/MocQueue.sol",
-      "moc-main-latest/contracts/multiCollateral/MocMultiCollateralGuard.sol",
-
-      "moc-main-latest/contracts/auxiliary/MocReverseAuction.sol",
-      "moc-main-latest/contracts/multiCollateral/swapper/MocSwapperV3.sol",
-      "moc-main-latest/contracts/multiCollateral/swapper/MocSwapperV3MultiHop.sol",
-
-      "@moc/price-oracle-interfaces/contracts/PriceProviderInverse.sol",
-      "@moc/price-oracle-interfaces/contracts/PriceProviderDummy.sol",
-      "@moc/price-oracle-interfaces/contracts/PriceProviderDocRbtc.sol",
-      "@moc/price-oracle-interfaces/contracts/PriceProviderDocUsd.sol",
-      "@moc/price-oracle-interfaces/contracts/PriceProviderDiv.sol",
-
-      "@moc/flow/contracts/BufferToken.sol",
-
-      "@openzeppelin/contracts/proxy/ERC1967/ERC1967Proxy.sol",
-    ],
+    npmFilesToBuild,
   },
   contractSizer: {
     runOnCompile: true,
@@ -166,9 +60,6 @@ const config: HardhatUserConfig = {
     // Rootstock explorer is still experimental
     // as it needs extra parameters obtained from the website
     // to interact with the nextjs app.
-    rootstockExplorer: {
-      enabled: false,
-    },
     blockscout: {
       enabled: true,
     },
@@ -190,11 +81,6 @@ const config: HardhatUserConfig = {
           url: "https://rootstock.blockscout.com",
           apiUrl: "https://rootstock.blockscout.com/api",
         },
-        rootstockExplorer: {
-          name: "Rootstock.io",
-          url: "https://explorer.rootstock.io",
-          apiUrl: "https://explorer.rootstock.io",
-        },
       },
     },
     [chainIds.rskTestnet]: {
@@ -209,11 +95,6 @@ const config: HardhatUserConfig = {
           url: "https://rootstock-testnet.blockscout.com",
           apiUrl: "https://rootstock-testnet.blockscout.com/api",
         },
-        rootstockExplorer: {
-          name: "Rootstock.io Testnet",
-          url: "https://explorer.testnet.rootstock.io",
-          apiUrl: "https://explorer.testnet.rootstock.io",
-        },
       },
     },
   },
@@ -225,6 +106,22 @@ const config: HardhatUserConfig = {
         mnemonic: mnemonic!,
         accountsBalance: 1000000000n,
       },
+    },
+    // This is the network used when running 'hardhat node'.
+    // cli arguments are broken in 'hardhat node' so we use ENV vars
+    // directly in this network.
+    node: {
+      type: "edr-simulated",
+      chainId: Number(process.env["FORK_CHAIN_ID"]) || undefined,
+      forking: {
+        url: (process.env["FORK_RPC_URL"] as string) || mainnet_rpc_url,
+        blockNumber: Number(process.env["FORK_BLOCK_NUMBER"]) || undefined,
+      },
+      accounts: {
+        mnemonic: mnemonic!,
+        accountsBalance: 10000000000000000000000n,
+      },
+      gas: 30000000,
     },
     rskAlphaTestnet: {
       type: "http",
@@ -248,7 +145,7 @@ const config: HardhatUserConfig = {
       type: "edr-simulated",
       forking: {
         url: "https://public-node.rsk.co",
-        blockNumber: 8524500,
+        blockNumber: 8525307,
       },
       chainId: 30,
       accounts: {
@@ -261,7 +158,6 @@ const config: HardhatUserConfig = {
       type: "http",
       url: "http://localhost:8545",
       chainId: chainIds.rskMainnet,
-      accounts,
       gas: 30000000,
     },
   },
@@ -270,7 +166,6 @@ const config: HardhatUserConfig = {
     timeBeforeBumpingFees: 120000,
     maxFeeBumps: 10,
     requiredConfirmations: 1,
-    maxUnconfirmedTxs: 1,
   },
   paths: {
     artifacts: "./artifacts",
@@ -283,14 +178,8 @@ const config: HardhatUserConfig = {
     solidity: {
       ffi: true,
       fsPermissions: {
-        readDirectory: ["./out", "./test", "./ignition"],
+        readDirectory: ["./out", "./test", "./ignition", "./addressBook.json"],
       },
     },
   },
-
-  typechain: {
-    outDir: "./typechain",
-  },
-};
-
-export default config;
+});

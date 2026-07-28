@@ -6,7 +6,6 @@ artifacts/
 build/
 cache/
 coverage/
-dist/
 lib/
 node_modules/
 typechain/
@@ -15,17 +14,14 @@ bytecodes/
 corpus/
 crytic-export/
 .openzeppelin/
-deployments/development
-deployments/hardhat
 out/
 ignition/deployments/chain-test
-test/changers/multiCollateralUpgrade/fixtures/deployed-addresses.json
-ignition/modules/changers/multiCollateralUpgrade/parameters/full-rskMainnet.json
-
-
+ignition/deployments/chain-pre-test
+test/changers/addTasksRunner/fixtures
 # files
 *.env
 *.log
 *.tsbuildinfo
 coverage.json
 npm-debug.log*
+soljson-latest.js
