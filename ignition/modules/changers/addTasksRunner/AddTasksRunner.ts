@@ -490,6 +490,13 @@ const AddTasksRunnerModule: IgnitionModule = buildModule("AddTasksRunner", m => 
       id: "TaskSwitchRoundCoinPair",
     },
   );
+  const switchRoundRifUsdCoinPairTask = m.contract(
+    "@moc/oracles/contracts/tasks/oracles/TaskSwitchRoundCoinPair.sol:TaskSwitchRoundCoinPair",
+    [rifUsdCoinPairAddress],
+    {
+      id: "TaskSwitchRoundRifUsdCoinPair",
+    },
+  );
   const distributeSupportersTask = m.contract(
     "@moc/oracles/contracts/tasks/oracles/TaskDistributeSupporters.sol:TaskDistributeSupporters",
     [oracleTasks.supporters],
@@ -778,6 +785,7 @@ const AddTasksRunnerModule: IgnitionModule = buildModule("AddTasksRunner", m => 
     settlementTaskV1,
     mintStepTask,
     switchRoundCoinPairTask,
+    switchRoundRifUsdCoinPairTask,
     switchRoundTasksRunnerCoinPairTask,
     distributeSupportersTask,
     executeQueueTask,

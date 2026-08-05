@@ -3,8 +3,8 @@ import type { HttpNetworkAccountsUserConfig } from "hardhat/types/config";
 import { resolve, dirname } from "path";
 import { fileURLToPath } from "url";
 import { config as dotenvConfig } from "dotenv";
-import hardhatToolboxViem from "@nomicfoundation/hardhat-toolbox-viem";
 import hardhatContractSizer from "@solidstate/hardhat-contract-sizer";
+import hardhatIgnition from "@nomicfoundation/hardhat-ignition";
 
 // ESM equivalent of __dirname
 const __filename = fileURLToPath(import.meta.url);
@@ -37,7 +37,7 @@ export { compilers, npmFilesToBuild } from "./config/solidity.js";
 import { compilers, npmFilesToBuild } from "./config/solidity.js";
 
 export default defineConfig({
-  plugins: [hardhatToolboxViem, hardhatContractSizer],
+  plugins: [hardhatIgnition, hardhatContractSizer],
 
   solidity: {
     profiles: {
@@ -72,6 +72,9 @@ export default defineConfig({
     [chainIds.rskMainnet]: {
       name: "Rootstock",
       chainType: "generic",
+      hardforkHistory: {
+        london: { blockNumber: 0 },
+      },
       blockExplorers: {
         etherscan: {
           url: "",
@@ -86,6 +89,9 @@ export default defineConfig({
     [chainIds.rskTestnet]: {
       name: "Rootstock Testnet",
       chainType: "generic",
+      hardforkHistory: {
+        london: { blockNumber: 0 },
+      },
       blockExplorers: {
         etherscan: {
           url: "",
@@ -134,12 +140,18 @@ export default defineConfig({
       url: testnet_rpc_url,
       chainId: chainIds.rskTestnet,
       accounts,
+      ignition: {
+        maxUnconfirmedTxs: 1,
+      },
     },
     rskMainnet: {
       type: "http",
       url: mainnet_rpc_url,
       chainId: chainIds.rskMainnet,
       accounts,
+      ignition: {
+        maxUnconfirmedTxs: 1,
+      },
     },
     rskMainnetFork: {
       type: "edr-simulated",
@@ -157,7 +169,9 @@ export default defineConfig({
     localhost: {
       type: "http",
       url: "http://localhost:8545",
-      chainId: chainIds.rskMainnet,
+      // Keep the HTTP client aligned with the chain id used by the local fork.
+      // The fork runner sets FORK_CHAIN_ID to 30 (mainnet) or 31 (testnet).
+      chainId: Number(process.env["FORK_CHAIN_ID"]) || chainIds.rskMainnet,
       gas: 30000000,
     },
   },
@@ -166,6 +180,7 @@ export default defineConfig({
     timeBeforeBumpingFees: 120000,
     maxFeeBumps: 10,
     requiredConfirmations: 1,
+    maxUnconfirmedTxs: 1,
   },
   paths: {
     artifacts: "./artifacts",
