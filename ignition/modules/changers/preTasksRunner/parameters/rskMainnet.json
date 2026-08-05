@@ -14,6 +14,21 @@
     "maxMissedSigRounds": 10,
     "maxTasksPerBatch": 3,
     "tokenToCoinbasePriceProvider": "0x6Fec7e69DD1Dc2E395114383E9D250E7d1cdAba1",
-    "sharesCapMultiplier": "1500000000000000000"
+    "sharesCapMultiplier": "1500000000000000000",
+    "mocSwapper": "0x24122d7FF0EF57C18e5C333E2c7bD863e4F23c73",
+    "rifToken": "0x2AcC95758f8b5F583470ba265EB685a8F45fC9D5",
+    "mocToken": "0x9aC7Fe28967b30e3a4E6E03286D715B42B453d10",
+    "__rifToMocPaths_comment": "RIF -> USD0 -> WBTC -> MoC: 3 hops => 3 fees",
+    "rifToMocIntermediateTokens": [
+      "0x779Ded0c9e1022225f8E0630b35a9b54bE713736",
+      "0x542fDA317318eBF1d3DEAf76E0b632741A7e677d"
+    ],
+    "rifToMocFees": [3000, 3000, 3000],
+    "__mocToRifPaths_comment": "MoC -> WBTC -> USD0 -> RIF: 3 hops => 3 fees",
+    "mocToRifIntermediateTokens": [
+      "0x542fDA317318eBF1d3DEAf76E0b632741A7e677d",
+      "0x779Ded0c9e1022225f8E0630b35a9b54bE713736"
+    ],
+    "mocToRifFees": [3000, 3000, 3000]
   }
 }

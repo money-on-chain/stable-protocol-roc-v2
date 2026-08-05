@@ -23,6 +23,15 @@ const PreTasksRunnerModule: IgnitionModule = buildModule("PreTasksRunnerModule",
   const tokenToCoinbasePriceProvider = m.getParameter("tokenToCoinbasePriceProvider");
   const sharesCapMultiplier = m.getParameter("sharesCapMultiplier");
 
+  // MocSwapper RIF <-> MoC path parameters
+  const mocSwapper = m.getParameter("mocSwapper");
+  const rifToken = m.getParameter("rifToken");
+  const mocToken = m.getParameter("mocToken");
+  const rifToMocIntermediateTokens = m.getParameter("rifToMocIntermediateTokens");
+  const rifToMocFees = m.getParameter("rifToMocFees");
+  const mocToRifIntermediateTokens = m.getParameter("mocToRifIntermediateTokens");
+  const mocToRifFees = m.getParameter("mocToRifFees");
+
   // Deploy new OracleManager implementation
   const newOracleManagerImplementation = m.contract("@moc/oracles/contracts/OracleManager.sol:OracleManager", [], {
     id: "OracleManagerImplementation",
@@ -81,6 +90,13 @@ const PreTasksRunnerModule: IgnitionModule = buildModule("PreTasksRunnerModule",
     pauser,
     tasksRunnerProxy,
     TASKS_RUNNER_NAME,
+    mocSwapper,
+    rifToken,
+    mocToken,
+    rifToMocIntermediateTokens,
+    rifToMocFees,
+    mocToRifIntermediateTokens,
+    mocToRifFees,
   ]);
 
   return {

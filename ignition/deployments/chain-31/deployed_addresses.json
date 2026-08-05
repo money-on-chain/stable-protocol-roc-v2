@@ -33,5 +33,6 @@
   "FullMultiCollateralUpgrade#FeeFlow_ReverseAuctionDOCtoMOC": "0xBe950B0B03Fbc4205dc1E596c479F2Ef03cCA64f",
   "FullMultiCollateralUpgrade#FeeFlow_FeesSplitterProxy": "0xCA58E6B68b349BAd86b5E405fF68fa15c88Df22C",
   "FullMultiCollateralUpgrade#DocBucket_DocBucketProxy": "0xFc2aF3396D8DB9398f7cF704Fa5F78aBAbb79650",
-  "FullMultiCollateralUpgrade#MultiCollateral_MultiCollateralUpgradeChanger": "0x1abd996AbF04acE075cC7DB434e596705871AAa0"
+  "FullMultiCollateralUpgrade#MultiCollateral_MultiCollateralUpgradeChanger": "0x1abd996AbF04acE075cC7DB434e596705871AAa0",
+  "UniswapV3OracleModule#UniswapV3Oracle": "0x6C3A218AF21b82E17BC684c0B2DB3C799a3c66c1"
 }

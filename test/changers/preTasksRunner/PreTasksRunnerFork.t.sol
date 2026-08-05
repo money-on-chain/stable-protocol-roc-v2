@@ -15,6 +15,24 @@ interface IOwnableLike {
     function owner() external view returns (address);
 }
 
+interface IMocSwapperView {
+    function encodedPaths(address tokenIn, address tokenOut) external view returns (bytes memory);
+    function maxAmountToSwapProviders(address tokenIn, address tokenOut) external view returns (address);
+}
+
+interface IERC20Like {
+    function balanceOf(address account) external view returns (uint256);
+}
+
+interface IReverseAuction {
+    function tokenIn() external view returns (address);
+    function tokenOut() external view returns (address);
+    function outputAccount() external view returns (address);
+    function orderThreshold() external view returns (uint256);
+    function readyToTriggerOrders() external view returns (bool);
+    function triggerOrders() external;
+}
+
 interface IOracleManagerView {
     function getCoinPairCount() external view returns (uint256);
     function getCoinPairAtIndex(uint256 i) external view returns (bytes32);
@@ -22,6 +40,7 @@ interface IOracleManagerView {
     function getOracleAddress(address oracleOwnerAddr) external view returns (address oracleAddr);
     function getStakingContract() external view returns (address staking);
     function subscribeToCoinPair(address ownerAddr, bytes32 coinPair) external;
+    function isSubscribed(address ownerAddr, bytes32 coinPair) external view returns (bool);
     function token() external view returns (address);
     function getRegistry() external view returns (address);
 }
@@ -88,13 +107,13 @@ contract PreTasksRunnerForkTest is Test, OracleTestHelper {
     // EIP-1967 implementation slot (used by oracle proxies)
     bytes32 internal constant IMPLEMENTATION_SLOT = 0x360894a13ba1a3210667c828492db98dca3e2076cc3735a920a3ca505d382bbc;
 
-    uint256 internal constant FORK_BLOCK = 8980146;
+    uint256 internal constant FORK_BLOCK = 9055200;
     uint256 internal constant PUBLISH_MESSAGE_VERSION = 3;
 
     // ethers.encodeBytes32String("TASKSRUNNER")
     bytes32 internal constant TASKS_RUNNER_NAME = 0x5441534b5352554e4e4552000000000000000000000000000000000000000000;
 
-    // Path to the mainnet parameters JSON
+    // Default parameters JSON; network-specific suites override _paramsPath().
     string internal constant MAINNET_PARAMS_PATH =
         "./ignition/modules/changers/preTasksRunner/parameters/rskMainnet.json";
 
@@ -116,18 +135,28 @@ contract PreTasksRunnerForkTest is Test, OracleTestHelper {
     uint256 internal maxTasksPerBatch;
     address internal tokenToCoinbasePriceProvider;
     uint256 internal sharesCapMultiplier;
+    address internal mocSwapper;
+    address internal rifToken;
+    address internal mocToken;
+    address[] internal rifToMocIntermediateTokens;
+    uint24[] internal rifToMocFees;
+    address[] internal mocToRifIntermediateTokens;
+    uint24[] internal mocToRifFees;
 
     // Expected coinpairs that should remain after the changer executes
     bytes32 internal constant COINPAIR_RBTCUSD = "BTCUSD";
     bytes32 internal constant COINPAIR_RIFUSD = "RIFUSD";
+    address internal constant RIF_TO_MOC_REVERSE_AUCTION = 0x323f6117A256E8f697Ac8d2816eb71e9B7134809;
+    address internal constant MOC_TO_RIF_REVERSE_AUCTION = 0xd3D1aFc638cEF2C55D2Ee33e0C355972f11Be065;
+    uint256 internal constant RIF_TO_MOC_RATE = 2.50e18;
+    uint256 internal constant MOC_TO_RIF_RATE = 0.40e18;
+    uint256 internal constant TOLERANCE_BPS = 500;
 
     PreTasksRunnerChanger internal changer;
     address internal tasksRunnerProxy;
 
-    function setUp() public {
-        string memory defaultRpcUrl = "https://public-node.rsk.co";
-        string memory rpcUrl = vm.envOr("RSK_MAINNET_RPC_URL", defaultRpcUrl);
-        vm.createSelectFork(rpcUrl, FORK_BLOCK);
+    function setUp() public virtual {
+        vm.createSelectFork(_forkRpcUrl(), _forkBlock());
 
         // Read all parameters from the JSON
         _readParamsFromJson();
@@ -146,14 +175,21 @@ contract PreTasksRunnerForkTest is Test, OracleTestHelper {
             newCoinPairImpl,
             pauser,
             tasksRunnerProxy,
-            TASKS_RUNNER_NAME
+            TASKS_RUNNER_NAME,
+            mocSwapper,
+            rifToken,
+            mocToken,
+            rifToMocIntermediateTokens,
+            rifToMocFees,
+            mocToRifIntermediateTokens,
+            mocToRifFees
         );
     }
 
     // ── Helpers ── JSON ────────────────────────────────────────────────────────
 
     function _readParamsFromJson() internal {
-        string memory json = vm.readFile(MAINNET_PARAMS_PATH);
+        string memory json = vm.readFile(_paramsPath());
 
         oracleManagerProxy = vm.parseJsonAddress(json, ".PreTasksRunnerModule.oracleManagerProxy");
         upgradeDelegator = vm.parseJsonAddress(json, ".PreTasksRunnerModule.upgradeDelegator");
@@ -171,6 +207,13 @@ contract PreTasksRunnerForkTest is Test, OracleTestHelper {
         maxTasksPerBatch = vm.parseJsonUint(json, ".PreTasksRunnerModule.maxTasksPerBatch");
         tokenToCoinbasePriceProvider = vm.parseJsonAddress(json, ".PreTasksRunnerModule.tokenToCoinbasePriceProvider");
         sharesCapMultiplier = vm.parseJsonUint(json, ".PreTasksRunnerModule.sharesCapMultiplier");
+        mocSwapper = vm.parseJsonAddress(json, ".PreTasksRunnerModule.mocSwapper");
+        rifToken = vm.parseJsonAddress(json, ".PreTasksRunnerModule.rifToken");
+        mocToken = vm.parseJsonAddress(json, ".PreTasksRunnerModule.mocToken");
+        rifToMocIntermediateTokens = vm.parseJsonAddressArray(json, ".PreTasksRunnerModule.rifToMocIntermediateTokens");
+        rifToMocFees = _parseUint24Array(json, ".PreTasksRunnerModule.rifToMocFees");
+        mocToRifIntermediateTokens = vm.parseJsonAddressArray(json, ".PreTasksRunnerModule.mocToRifIntermediateTokens");
+        mocToRifFees = _parseUint24Array(json, ".PreTasksRunnerModule.mocToRifFees");
 
         require(oracleManagerProxy != address(0), "oracleManagerProxy is zero");
         require(upgradeDelegator != address(0), "upgradeDelegator is zero");
@@ -178,6 +221,26 @@ contract PreTasksRunnerForkTest is Test, OracleTestHelper {
         require(governor != address(0), "governor is zero");
         require(mocTokenAddress != address(0), "mocTokenAddress is zero");
         require(registryAddress != address(0), "registryAddress is zero");
+    }
+
+    function _paramsPath() internal pure virtual returns (string memory) {
+        return MAINNET_PARAMS_PATH;
+    }
+
+    function _forkRpcUrl() internal view virtual returns (string memory) {
+        return vm.envOr("RSK_MAINNET_RPC_URL", string("https://public-node.rsk.co"));
+    }
+
+    function _forkBlock() internal pure virtual returns (uint256) {
+        return FORK_BLOCK;
+    }
+
+    function _parseUint24Array(string memory json, string memory key) internal pure returns (uint24[] memory result) {
+        uint256[] memory values = vm.parseJsonUintArray(json, key);
+        result = new uint24[](values.length);
+        for (uint256 i = 0; i < values.length; i++) {
+            result[i] = uint24(values[i]);
+        }
     }
 
     /// @dev Deploys a TasksRunner implementation + TransparentUpgradeableProxy
@@ -375,34 +438,8 @@ contract PreTasksRunnerForkTest is Test, OracleTestHelper {
         ICoinPairPrice btcFeed = ICoinPairPrice(btcUsdProxy);
         ICoinPairPrice rifFeed = ICoinPairPrice(rifUsdProxy);
 
-        assertEq(btcFeed.getPricePeekWhitelistLen(), 3, "BTCUSD getPricePeekWhitelistLen should be 3");
-        assertEq(
-            btcFeed.getPricePeekWhitelistAtIndex(0),
-            0xe2927A0620b82A66D67F678FC9b826B0E01B1bFD, // CoinPairFree
-            "BTCUSD whitelist[0] address mismatch"
-        );
-        assertEq(
-            btcFeed.getPricePeekWhitelistAtIndex(1),
-            0xECbE91572f788945afd736a6bd9DdBe885E689d7, // InfoGetter
-            "BTCUSD whitelist[1] address mismatch"
-        );
-        assertEq(
-            btcFeed.getPricePeekWhitelistAtIndex(2),
-            0x419F84ED6d658f5FD6f4E108e224c77f0Ca328c4, // CalculatedPriceProvider
-            "BTCUSD whitelist[2] address mismatch"
-        );
-
-        assertEq(rifFeed.getPricePeekWhitelistLen(), 2, "RIFUSD getPricePeekWhitelistLen should be 2");
-        assertEq(
-            rifFeed.getPricePeekWhitelistAtIndex(0),
-            0x800B589EFBC926C01cDa5BDf7cf12d5dB7b2b076, // CoinPairFree
-            "RIFUSD whitelist[0] address mismatch"
-        );
-        assertEq(
-            rifFeed.getPricePeekWhitelistAtIndex(1),
-            0xECbE91572f788945afd736a6bd9DdBe885E689d7, // InfoGetter
-            "RIFUSD whitelist[1] address mismatch"
-        );
+        _assertWhitelist(btcFeed, _expectedBtcPricePeekWhitelist());
+        _assertWhitelist(rifFeed, _expectedRifPricePeekWhitelist());
     }
 
     /// @notice Verifies that the pauser can switch BTCUSD to Invalid mode (price is reported as
@@ -506,16 +543,17 @@ contract PreTasksRunnerForkTest is Test, OracleTestHelper {
         IStaking staking = IStaking(om.getStakingContract());
         address stakingAddr = address(staking);
 
-        // RIFUSD has no subscribed oracles after the changer runs (the coin pair is newly kept
-        // but had no subscribers). Subscribe the BTCUSD selected owners to RIFUSD so that
-        // switchRound() can build a non-empty selection. The staking contract is whitelisted
-        // in OracleManager, so pranking as it satisfies the authorizedChangerOrWhitelisted guard.
+        // Ensure the RIFUSD round has enough selected owners. Mainnet starts with no RIFUSD
+        // subscribers, while testnet can already contain some of the BTCUSD owners, so this
+        // setup must only add owners that are not subscribed yet.
         address btcUsdProxy = om.getContractAddress(COINPAIR_RBTCUSD);
         (, , , , address[] memory btcOwners, ) = ICoinPairPrice(btcUsdProxy).getRoundInfo();
         require(btcOwners.length >= 1, "no BTCUSD owners to subscribe to RIFUSD");
         for (uint256 i = 0; i < btcOwners.length; i++) {
-            vm.prank(stakingAddr);
-            om.subscribeToCoinPair(btcOwners[i], COINPAIR_RIFUSD);
+            if (!om.isSubscribed(btcOwners[i], COINPAIR_RIFUSD)) {
+                vm.prank(stakingAddr);
+                om.subscribeToCoinPair(btcOwners[i], COINPAIR_RIFUSD);
+            }
         }
 
         address rifUsdProxy = om.getContractAddress(COINPAIR_RIFUSD);
@@ -607,6 +645,79 @@ contract PreTasksRunnerForkTest is Test, OracleTestHelper {
         }
     }
 
+    function testFork_MocSwapperPathsAreConfigured() public {
+        if (mocSwapper == address(0)) return;
+
+        IMocSwapperView swapper = IMocSwapperView(mocSwapper);
+        address rifProviderBefore = swapper.maxAmountToSwapProviders(rifToken, mocToken);
+        address mocProviderBefore = swapper.maxAmountToSwapProviders(mocToken, rifToken);
+
+        _executeChanger();
+
+        assertEq(
+            swapper.maxAmountToSwapProviders(rifToken, mocToken),
+            rifProviderBefore,
+            "RIF -> MoC provider changed"
+        );
+        assertEq(
+            swapper.maxAmountToSwapProviders(mocToken, rifToken),
+            mocProviderBefore,
+            "MoC -> RIF provider changed"
+        );
+        assertEq(
+            swapper.encodedPaths(rifToken, mocToken),
+            _encodePath(rifToken, rifToMocIntermediateTokens, rifToMocFees, mocToken),
+            "RIF -> MoC path mismatch"
+        );
+        assertEq(
+            swapper.encodedPaths(mocToken, rifToken),
+            _encodePath(mocToken, mocToRifIntermediateTokens, mocToRifFees, rifToken),
+            "MoC -> RIF path mismatch"
+        );
+    }
+
+    function testFork_MergedChanger_RifToMocReverseAuctionWorks() public {
+        if (mocSwapper == address(0)) return;
+
+        _executeChanger();
+
+        IReverseAuction auction = IReverseAuction(RIF_TO_MOC_REVERSE_AUCTION);
+        uint256 threshold = auction.orderThreshold();
+        deal(rifToken, RIF_TO_MOC_REVERSE_AUCTION, threshold > 0 ? threshold * 2 : 1000 ether);
+        require(auction.readyToTriggerOrders(), "RIF auction is not ready");
+
+        uint256 inputBefore = IERC20Like(rifToken).balanceOf(RIF_TO_MOC_REVERSE_AUCTION);
+        uint256 outputBefore = IERC20Like(mocToken).balanceOf(auction.outputAccount());
+        auction.triggerOrders();
+        uint256 inputSpent = inputBefore - IERC20Like(rifToken).balanceOf(RIF_TO_MOC_REVERSE_AUCTION);
+        uint256 outputReceived = IERC20Like(mocToken).balanceOf(auction.outputAccount()) - outputBefore;
+
+        assertGt(inputSpent, 0, "RIF auction did not spend RIF");
+        assertGt(outputReceived, 0, "RIF auction did not receive MoC");
+        _assertWithinTolerance(outputReceived, (inputSpent * RIF_TO_MOC_RATE) / 1e18);
+    }
+
+    function testFork_MergedChanger_MocToRifReverseAuctionWorks() public {
+        if (mocSwapper == address(0)) return;
+
+        _executeChanger();
+
+        IReverseAuction auction = IReverseAuction(MOC_TO_RIF_REVERSE_AUCTION);
+        uint256 threshold = auction.orderThreshold();
+        deal(mocToken, MOC_TO_RIF_REVERSE_AUCTION, threshold > 0 ? threshold * 2 : 1000 ether);
+        require(auction.readyToTriggerOrders(), "MoC auction is not ready");
+
+        uint256 inputBefore = IERC20Like(mocToken).balanceOf(MOC_TO_RIF_REVERSE_AUCTION);
+        uint256 outputBefore = IERC20Like(rifToken).balanceOf(auction.outputAccount());
+        auction.triggerOrders();
+        uint256 inputSpent = inputBefore - IERC20Like(mocToken).balanceOf(MOC_TO_RIF_REVERSE_AUCTION);
+        uint256 outputReceived = IERC20Like(rifToken).balanceOf(auction.outputAccount()) - outputBefore;
+
+        assertGt(inputSpent, 0, "MoC auction did not spend MoC");
+        assertGt(outputReceived, 0, "MoC auction did not receive RIF");
+        _assertWithinTolerance(outputReceived, (inputSpent * MOC_TO_RIF_RATE) / 1e18);
+    }
+
     // ── Helpers ────────────────────────────────────────────────────────────────
 
     /// @dev Generates an array of `count` sequential private keys starting at `base+1`.
@@ -646,6 +757,46 @@ contract PreTasksRunnerForkTest is Test, OracleTestHelper {
         s.emergencyPeriod = feed.getEmergencyPublishingPeriodInBlocks();
         s.minOracles = feed.getMinOraclesPerRound();
         (s.round, s.startBlock, s.lockPeriodTs, s.totalPoints, s.owners, s.oracles) = feed.getRoundInfo();
+    }
+
+    function _expectedBtcPricePeekWhitelist() internal pure virtual returns (address[] memory expected) {
+        expected = new address[](3);
+        expected[0] = 0xe2927A0620b82A66D67F678FC9b826B0E01B1bFD; // CoinPairFree
+        expected[1] = 0xECbE91572f788945afd736a6bd9DdBe885E689d7; // InfoGetter
+        expected[2] = 0x419F84ED6d658f5FD6f4E108e224c77f0Ca328c4; // CalculatedPriceProvider
+    }
+
+    function _expectedRifPricePeekWhitelist() internal pure virtual returns (address[] memory expected) {
+        expected = new address[](2);
+        expected[0] = 0x800B589EFBC926C01cDa5BDf7cf12d5dB7b2b076; // CoinPairFree
+        expected[1] = 0xECbE91572f788945afd736a6bd9DdBe885E689d7; // InfoGetter
+    }
+
+    function _assertWhitelist(ICoinPairPrice feed, address[] memory expected) internal view {
+        assertEq(feed.getPricePeekWhitelistLen(), expected.length, "price peek whitelist length mismatch");
+        for (uint256 i = 0; i < expected.length; i++) {
+            assertEq(feed.getPricePeekWhitelistAtIndex(i), expected[i], "price peek whitelist entry mismatch");
+        }
+    }
+
+    function _encodePath(
+        address tokenIn,
+        address[] memory intermediateTokens,
+        uint24[] memory fees,
+        address tokenOut
+    ) internal pure returns (bytes memory path) {
+        path = abi.encodePacked(tokenIn);
+        for (uint256 i = 0; i < intermediateTokens.length; i++) {
+            path = bytes.concat(path, abi.encodePacked(fees[i], intermediateTokens[i]));
+        }
+        path = bytes.concat(path, abi.encodePacked(fees[fees.length - 1], tokenOut));
+    }
+
+    function _assertWithinTolerance(uint256 actual, uint256 expected) internal pure {
+        uint256 min = (expected * (10000 - TOLERANCE_BPS)) / 10000;
+        uint256 max = (expected * (10000 + TOLERANCE_BPS)) / 10000;
+        assertGe(actual, min, "swap output is below tolerance");
+        assertLe(actual, max, "swap output is above tolerance");
     }
 
     // ── Simple upgrade changer for TasksRunner ───────────────────────────────────

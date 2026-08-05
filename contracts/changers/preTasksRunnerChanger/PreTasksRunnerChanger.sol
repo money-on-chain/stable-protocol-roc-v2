@@ -2,6 +2,7 @@
 pragma solidity 0.8.24;
 
 import { IChangeContract } from "moc-main-latest/contracts/interfaces/IChangeContract.sol";
+import { IDataProvider } from "moc-main-latest/contracts/interfaces/IDataProvider.sol";
 
 interface IUpgradeDelegator {
     function upgrade(address proxy, address newImplementation) external;
@@ -19,6 +20,18 @@ interface ICoinPairPrice {
     function addPriceQueryModeWhitelist(address _account) external;
 }
 
+interface IMocSwapperV3MultiHop {
+    function setPath(
+        address tokenA_,
+        address tokenB_,
+        address[] memory intermediateTokens_,
+        uint24[] memory fees_,
+        IDataProvider providerSwappingAtoB_
+    ) external;
+
+    function maxAmountToSwapProviders(address tokenIn_, address tokenOut_) external view returns (IDataProvider);
+}
+
 /**
  * @title PreTasksRunnerChanger
  * @notice ChangeContract used to:
@@ -26,6 +39,7 @@ interface ICoinPairPrice {
  *   2. Unregister deprecated CoinPairs at indices 1, 3 and 4 from OracleManager
  *   3. Add pauser address to the priceQueryMode whitelist on the 2 remaining CoinPairs (BTCUSD and RIFUSD)
  *   4. Register the new TasksRunner proxy as a coinpair in OracleManager
+ *   5. Set the RIF <-> MoC paths on the MocSwapper, preserving its existing providers
  */
 contract PreTasksRunnerChanger is IChangeContract {
     address public immutable oracleManagerProxy;
@@ -39,6 +53,15 @@ contract PreTasksRunnerChanger is IChangeContract {
     address public immutable tasksRunnerProxy;
     bytes32 public immutable tasksRunnerName;
 
+    IMocSwapperV3MultiHop public immutable mocSwapper;
+    address public immutable rifToken;
+    address public immutable mocToken;
+
+    address[] public rifToMocIntermediateTokens;
+    uint24[] public rifToMocFees;
+    address[] public mocToRifIntermediateTokens;
+    uint24[] public mocToRifFees;
+
     address[] public coinPairProxies;
 
     constructor(
@@ -48,7 +71,14 @@ contract PreTasksRunnerChanger is IChangeContract {
         address _newCoinPairImplementation,
         address _pauser,
         address _tasksRunnerProxy,
-        bytes32 _tasksRunnerName
+        bytes32 _tasksRunnerName,
+        address _mocSwapper,
+        address _rifToken,
+        address _mocToken,
+        address[] memory _rifToMocIntermediateTokens,
+        uint24[] memory _rifToMocFees,
+        address[] memory _mocToRifIntermediateTokens,
+        uint24[] memory _mocToRifFees
     ) {
         oracleManagerProxy = _oracleManagerProxy;
         upgradeDelegator = _upgradeDelegator;
@@ -57,6 +87,13 @@ contract PreTasksRunnerChanger is IChangeContract {
         pauser = _pauser;
         tasksRunnerProxy = _tasksRunnerProxy;
         tasksRunnerName = _tasksRunnerName;
+        mocSwapper = IMocSwapperV3MultiHop(_mocSwapper);
+        rifToken = _rifToken;
+        mocToken = _mocToken;
+        rifToMocIntermediateTokens = _rifToMocIntermediateTokens;
+        rifToMocFees = _rifToMocFees;
+        mocToRifIntermediateTokens = _mocToRifIntermediateTokens;
+        mocToRifFees = _mocToRifFees;
 
         // Read all CoinPair proxies from OracleManager at construction time
         IOracleManager om = IOracleManager(_oracleManagerProxy);
@@ -69,9 +106,21 @@ contract PreTasksRunnerChanger is IChangeContract {
     }
 
     function execute() external {
+        if (address(mocSwapper) != address(0)) {
+            // Only for mainnet
+            _setMocSwapperPaths();
+        }
         _beforeUpgrade();
         _upgrade();
         _afterUpgrade();
+    }
+
+    function _setMocSwapperPaths() internal {
+        IDataProvider rifToMocProvider = mocSwapper.maxAmountToSwapProviders(rifToken, mocToken);
+        IDataProvider mocToRifProvider = mocSwapper.maxAmountToSwapProviders(mocToken, rifToken);
+
+        mocSwapper.setPath(rifToken, mocToken, rifToMocIntermediateTokens, rifToMocFees, rifToMocProvider);
+        mocSwapper.setPath(mocToken, rifToken, mocToRifIntermediateTokens, mocToRifFees, mocToRifProvider);
     }
 
     function _beforeUpgrade() internal virtual {}
