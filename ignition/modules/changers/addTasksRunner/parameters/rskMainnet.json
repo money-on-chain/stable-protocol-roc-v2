@@ -41,7 +41,7 @@
     "mocCommissionSplitterV3.token": "0x0000000000000000000000000000000000000000",
     "mocCommissionSplitterV3.feeToken": "0x0000000000000000000000000000000000000000",
     "mocCommissionSplitterV3.tokenBalanceThreshold": "10000000000000000",
-    "mocCommissionSplitterV3.feeTokenBalanceThreshold": "0",
+    "mocCommissionSplitterV3.feeTokenBalanceThreshold": "1000000000000000000000",
     "reverseAuctions.revAuctionRBTCtoMOC_tasksRunner.mocSwapper": "0x60A8e0Ea47450f8FA74b705b7c0d60Ff22fD5e3F",
     "reverseAuctions.revAuctionRBTCtoMOC_tasksRunner.tokenIn": "0x0000000000000000000000000000000000000000",
     "reverseAuctions.revAuctionRBTCtoMOC_tasksRunner.tokenOut": "0x9AC7fE28967B30E3A4e6e03286d715b42B453D10",

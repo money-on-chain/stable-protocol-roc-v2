@@ -685,6 +685,7 @@ contract AddTasksRunnerChangerForkTests is BaseFork {
         IStakingOracleOps(staking).subscribeToCoinPair(coinPair);
 
         tasksRunner.switchRound();
+        vm.warp(block.timestamp + 7 days);
 
         uint256 version = 3;
         uint256 tasksFlags = tasksRunner.getTasksAvailableAsFlags();

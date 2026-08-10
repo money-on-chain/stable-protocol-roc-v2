@@ -12,3 +12,8 @@ peerDependencyRules:
   allowedVersions:
     "main-sc-protocol-v2@3.0.9>hardhat": "3.9.0"
     "hardhat-watcher@2.5.0>hardhat": "3.9.0"
+
+blockExoticSubdeps: false
+
+overrides:
+  "@nomicfoundation/ignition-core": "https://github.com/money-on-chain/hardhat/releases/download/v3.0.10-moc/nomicfoundation-ignition-core-3.0.3.tgz"

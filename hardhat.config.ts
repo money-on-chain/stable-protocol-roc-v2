@@ -3,8 +3,8 @@ import type { HttpNetworkAccountsUserConfig } from "hardhat/types/config";
 import { resolve, dirname } from "path";
 import { fileURLToPath } from "url";
 import { config as dotenvConfig } from "dotenv";
-import hardhatToolboxViem from "@nomicfoundation/hardhat-toolbox-viem";
 import hardhatContractSizer from "@solidstate/hardhat-contract-sizer";
+import hardhatIgnition from "@nomicfoundation/hardhat-ignition";
 
 // ESM equivalent of __dirname
 const __filename = fileURLToPath(import.meta.url);
@@ -37,7 +37,7 @@ export { compilers, npmFilesToBuild } from "./config/solidity.js";
 import { compilers, npmFilesToBuild } from "./config/solidity.js";
 
 export default defineConfig({
-  plugins: [hardhatToolboxViem, hardhatContractSizer],
+  plugins: [hardhatIgnition, hardhatContractSizer],
 
   solidity: {
     profiles: {
@@ -55,18 +55,6 @@ export default defineConfig({
     runOnCompile: true,
     except: [/.*[Tt]ests?$/, /.*[Mm]ock.*/, /.*Handler$/, /.*\.t\.sol/],
     flat: false,
-  },
-  verify: {
-    // Rootstock explorer is still experimental
-    // as it needs extra parameters obtained from the website
-    // to interact with the nextjs app.
-    blockscout: {
-      enabled: true,
-    },
-    etherscan: {
-      enabled: false,
-      apiKey: process.env.ETHERSCAN_API_KEY ?? "unused",
-    },
   },
   chainDescriptors: {
     [chainIds.rskMainnet]: {
@@ -134,12 +122,18 @@ export default defineConfig({
       url: testnet_rpc_url,
       chainId: chainIds.rskTestnet,
       accounts,
+      ignition: {
+        maxUnconfirmedTxs: 1,
+      },
     },
     rskMainnet: {
       type: "http",
       url: mainnet_rpc_url,
       chainId: chainIds.rskMainnet,
       accounts,
+      ignition: {
+        maxUnconfirmedTxs: 1,
+      },
     },
     rskMainnetFork: {
       type: "edr-simulated",
@@ -166,6 +160,7 @@ export default defineConfig({
     timeBeforeBumpingFees: 120000,
     maxFeeBumps: 10,
     requiredConfirmations: 1,
+    maxUnconfirmedTxs: 1,
   },
   paths: {
     artifacts: "./artifacts",
