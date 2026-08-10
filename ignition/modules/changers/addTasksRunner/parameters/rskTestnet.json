@@ -144,6 +144,7 @@
     "bufferTasks.mocRewardsBuffer": "0x0000000000000000000000000000000000000000",
     "rifDerived.rifToRbtcDivisor": "0xbffBD993FF1d229B0FfE55668F2009d20d4F7C5f",
     "rifDerived.mocToRifBaseProvider": "0x0000000000000000000000000000000000000000",
-    "rifBucketUsdrifTargetEma": "7000000000000000000"
+    "rifBucketUsdrifTargetEma": "7000000000000000000",
+    "docMaxOperWaitingBlk": "3"
   }
 }

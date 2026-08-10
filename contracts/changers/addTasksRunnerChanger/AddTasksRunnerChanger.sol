@@ -93,6 +93,7 @@ contract AddTasksRunnerChanger is IChangeContract {
     IGovernedRegistry public immutable governedRegistry;
     address public immutable tasksRunner;
     address public immutable taskExecuteQueueV3;
+    address public immutable taskExecuteQueueV3Fallback;
     address public immutable taskUpdateEmaV3RifBucket;
     MocRif public immutable rifBucket;
     address public immutable rifOracleCoinPair;
@@ -112,6 +113,7 @@ contract AddTasksRunnerChanger is IChangeContract {
     uint256 public immutable rifBucketUsdrifTargetEma;
     uint256[] private rifBucketExecutionCosts;
     uint256[] private docBucketExecutionCosts;
+    uint256 public immutable docMaxOperWaitingBlk;
     address[] private tasks;
 
     /**
@@ -143,6 +145,7 @@ contract AddTasksRunnerChanger is IChangeContract {
     @param tasksRunner_ Already-deployed TasksRunner contract to add tasks to
     @param tasks_ List of task addresses to add to the already-deployed TasksRunner
     @param taskExecuteQueueV3_ Deployed task that checks bucket prices before queue execution
+    @param taskExecuteQueueV3Fallback_ Deployed fallback task for expired queue operations
     @param taskUpdateEmaV3RifBucket_ Deployed RIF-bucket EMA task that checks direct TP prices
     @param rifBucket_ RIF bucket whose direct price provider is set to the already-deployed RIF/USD CoinPair
     @param rifOracleCoinPair_ Already-deployed direct RIF/USD CoinPair contract
@@ -161,6 +164,7 @@ contract AddTasksRunnerChanger is IChangeContract {
     @param mocRewardsBufferBtcUsdOutputIndex_ Static output index of the BTC/USD branch on mocRewardsBuffer
     @param rifBucketExecutionCosts_ Updated queue execution-cost payload for the RIF bucket queue, including priceUpdatesCost
     @param docBucketExecutionCosts_ Updated queue execution-cost payload for the DOC bucket queue, including priceUpdatesCost
+    @param docMaxOperWaitingBlk_ Maximum number of blocks a DOC queue operation may wait before fallback execution
     @param rifBucketUsdrifTargetEma_ New target coverage EMA ratio (tpCtarg) to set on the usdRIF pegged token in the RIF bucket
   */
     constructor(
@@ -191,6 +195,7 @@ contract AddTasksRunnerChanger is IChangeContract {
         address tasksRunner_,
         address[] memory tasks_,
         address taskExecuteQueueV3_,
+        address taskExecuteQueueV3Fallback_,
         address taskUpdateEmaV3RifBucket_,
         MocRif rifBucket_,
         address rifOracleCoinPair_,
@@ -209,6 +214,7 @@ contract AddTasksRunnerChanger is IChangeContract {
         uint256 mocRewardsBufferBtcUsdOutputIndex_,
         uint256[] memory rifBucketExecutionCosts_,
         uint256[] memory docBucketExecutionCosts_,
+        uint256 docMaxOperWaitingBlk_,
         uint256 rifBucketUsdrifTargetEma_
     ) {
         mocMultiCollateralGuard = mocMultiCollateralGuard_;
@@ -238,6 +244,7 @@ contract AddTasksRunnerChanger is IChangeContract {
         tasksRunner = tasksRunner_;
         tasks = tasks_;
         taskExecuteQueueV3 = taskExecuteQueueV3_;
+        taskExecuteQueueV3Fallback = taskExecuteQueueV3Fallback_;
         taskUpdateEmaV3RifBucket = taskUpdateEmaV3RifBucket_;
         rifBucket = rifBucket_;
         rifOracleCoinPair = rifOracleCoinPair_;
@@ -256,6 +263,7 @@ contract AddTasksRunnerChanger is IChangeContract {
         mocRewardsBufferBtcUsdOutputIndex = mocRewardsBufferBtcUsdOutputIndex_;
         rifBucketExecutionCosts = rifBucketExecutionCosts_;
         docBucketExecutionCosts = docBucketExecutionCosts_;
+        docMaxOperWaitingBlk = docMaxOperWaitingBlk_;
         rifBucketUsdrifTargetEma = rifBucketUsdrifTargetEma_;
     }
 
@@ -280,6 +288,7 @@ contract AddTasksRunnerChanger is IChangeContract {
         // 2) Update queue execution costs, adding the shared price-updates fee
         _updateQueueExecutionCosts(rifQueue, rifBucketExecutionCosts);
         _updateQueueExecutionCosts(docQueue, docBucketExecutionCosts);
+        docQueue.setMaxOperWaitingBlk(docMaxOperWaitingBlk);
 
         // 3) Set MocCoreExpansion on buckets
         rifBucketOps.setMocCoreExpansion(mocCoreExpansionRifBucket);
@@ -428,6 +437,7 @@ contract AddTasksRunnerChanger is IChangeContract {
         _whitelistIfNeeded(coinPair, rifToRbtcPriceProvider);
         _whitelistIfNeeded(coinPair, mocToRifPriceProvider);
         _whitelistIfNeeded(coinPair, taskExecuteQueueV3);
+        _whitelistIfNeeded(coinPair, taskExecuteQueueV3Fallback);
         _whitelistIfNeeded(coinPair, taskUpdateEmaV3RifBucket);
         _whitelistIfNeeded(coinPair, infoAddr);
     }

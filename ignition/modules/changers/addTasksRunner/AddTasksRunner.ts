@@ -223,6 +223,7 @@ const AddTasksRunnerModule: IgnitionModule = buildModule("AddTasksRunner", m => 
   };
 
   const rifBucketUsdrifTargetEma = getParameter<bigint>("rifBucketUsdrifTargetEma");
+  const docMaxOperWaitingBlk = getParameter<bigint>("docMaxOperWaitingBlk");
 
   // ---------------------------------------------------------------------------
   // Stage 1 - Base Deployments
@@ -503,6 +504,11 @@ const AddTasksRunnerModule: IgnitionModule = buildModule("AddTasksRunner", m => 
     [core.mocMultiCollateralGuard],
     { id: "TaskExecuteQueueV3" },
   );
+  const executeQueueFallbackTask = m.contract(
+    "@moc/oracles/contracts/tasks/v3/TaskExecuteQueueV3Fallback.sol:TaskExecuteQueueV3Fallback",
+    [core.mocMultiCollateralGuard],
+    { id: "TaskExecuteQueueV3Fallback" },
+  );
 
   const updateEmaTaskRifBucket = m.contract(
     "@moc/oracles/contracts/tasks/v3/TaskUpdateEmaV3.sol:TaskUpdateEmaV3",
@@ -781,6 +787,7 @@ const AddTasksRunnerModule: IgnitionModule = buildModule("AddTasksRunner", m => 
     switchRoundTasksRunnerCoinPairTask,
     distributeSupportersTask,
     executeQueueTask,
+    executeQueueFallbackTask,
     updateEmaTaskRifBucket,
     updateEmaTaskDocBucket,
     executeLiquidationTaskRifBucket,
@@ -885,6 +892,7 @@ const AddTasksRunnerModule: IgnitionModule = buildModule("AddTasksRunner", m => 
       tasksRunnerContract,
       allTasks,
       executeQueueTask,
+      executeQueueFallbackTask,
       updateEmaTaskRifBucket,
       core.rifBucket,
       rifOracleCoinPair,
@@ -903,6 +911,7 @@ const AddTasksRunnerModule: IgnitionModule = buildModule("AddTasksRunner", m => 
       mocRewardsBufferCfg.btcUsdOutputIndex,
       queueExecutionCosts.rifBucket,
       queueExecutionCosts.docBucket,
+      docMaxOperWaitingBlk,
       rifBucketUsdrifTargetEma,
     ],
     {
@@ -931,6 +940,7 @@ const AddTasksRunnerModule: IgnitionModule = buildModule("AddTasksRunner", m => 
     mocQueueLatestImpl,
     mocCoreExpansionLatestImpl,
     executeQueueTask,
+    executeQueueFallbackTask,
     updateEmaTaskV1,
     evalLiquidationTaskV1,
     interestPaymentTaskV1,
