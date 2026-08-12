@@ -15,7 +15,7 @@
     "@eslint/js": "9.27.0",
     "@moc/flow": "git+ssh://git@github.com/money-on-chain/MoC-Flow.git#v3.0.3",
     "@moc/moc-main": "git+ssh://git@github.com/money-on-chain/main-sc-protocol-v2.git#v3.0.9",
-    "@moc/oracles": "git+ssh://git@github.com/money-on-chain/OMoC-Decentralized-Oracle.git#v3.0.10",
+    "@moc/oracles": "git+ssh://git@github.com/money-on-chain/OMoC-Decentralized-Oracle.git#v3.0.11",
     "@moc/periphery": "git+ssh://git@github.com/money-on-chain/MoC-Periphery#v3.0.5",
     "@moc/price-oracle-interfaces": "git+ssh://git@github.com/money-on-chain/price_oracle_interfaces.git#v0.1.0",
     "@nomicfoundation/hardhat-ethers": "https://github.com/money-on-chain/hardhat/releases/download/v3.0.10-moc/nomicfoundation-hardhat-ethers-4.0.2.tgz",

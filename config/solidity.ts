@@ -92,6 +92,7 @@ export const npmFilesToBuild = [
   "@moc/price-oracle-interfaces/contracts/PriceProviderDiv.sol",
   "@moc/price-oracle-interfaces/contracts/UniswapV3Oracle.sol",
   "@moc/oracles/contracts/tasks/v3/TaskExecuteQueueV3.sol",
+  "@moc/oracles/contracts/tasks/v3/TaskExecuteQueueV3Fallback.sol",
   "@moc/oracles/contracts/tasks/v1/TaskUpdateEmaV1.sol",
   "@moc/oracles/contracts/tasks/v1/TaskEvalLiquidationV1.sol",
   "@moc/oracles/contracts/tasks/v1/TaskInterestPaymentV1.sol",
