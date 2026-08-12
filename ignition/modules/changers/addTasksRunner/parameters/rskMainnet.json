@@ -41,7 +41,7 @@
     "mocCommissionSplitterV3.token": "0x0000000000000000000000000000000000000000",
     "mocCommissionSplitterV3.feeToken": "0x0000000000000000000000000000000000000000",
     "mocCommissionSplitterV3.tokenBalanceThreshold": "10000000000000000",
-    "mocCommissionSplitterV3.feeTokenBalanceThreshold": "0",
+    "mocCommissionSplitterV3.feeTokenBalanceThreshold": "1000000000000000000000",
     "reverseAuctions.revAuctionRBTCtoMOC_tasksRunner.mocSwapper": "0x60A8e0Ea47450f8FA74b705b7c0d60Ff22fD5e3F",
     "reverseAuctions.revAuctionRBTCtoMOC_tasksRunner.tokenIn": "0x0000000000000000000000000000000000000000",
     "reverseAuctions.revAuctionRBTCtoMOC_tasksRunner.tokenOut": "0x9AC7fE28967B30E3A4e6e03286d715b42B453D10",
@@ -144,6 +144,7 @@
     "bufferTasks.mocRewardsBuffer": "0xf09006E812BE98c7B18c877Af5C126629acB6cAb",
     "rifDerived.rifToRbtcDivisor": "0xe2927A0620b82A66D67F678FC9b826B0E01B1bFD",
     "rifDerived.mocToRifBaseProvider": "0x11683439c9509C135ee4F7bB6e23835e1d86ECBA",
-    "rifBucketUsdrifTargetEma": "7000000000000000000"
+    "rifBucketUsdrifTargetEma": "7000000000000000000",
+    "docMaxOperWaitingBlk": "3"
   }
 }

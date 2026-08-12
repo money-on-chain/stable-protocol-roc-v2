@@ -56,18 +56,6 @@ export default defineConfig({
     except: [/.*[Tt]ests?$/, /.*[Mm]ock.*/, /.*Handler$/, /.*\.t\.sol/],
     flat: false,
   },
-  verify: {
-    // Rootstock explorer is still experimental
-    // as it needs extra parameters obtained from the website
-    // to interact with the nextjs app.
-    blockscout: {
-      enabled: true,
-    },
-    etherscan: {
-      enabled: false,
-      apiKey: process.env.ETHERSCAN_API_KEY ?? "unused",
-    },
-  },
   chainDescriptors: {
     [chainIds.rskMainnet]: {
       name: "Rootstock",

@@ -61,6 +61,10 @@ interface ITasksRunnerView {
     ) external;
 }
 
+interface ITaskView {
+    function checkTask() external view returns (bool);
+}
+
 interface IBufferTokenView {
     function getOutput(uint256 idx) external view returns (address, uint256, uint256, uint256);
 }
@@ -113,6 +117,7 @@ interface IStakingFull {
 interface IQueueExecFeesView {
     function priceUpdatesCost() external view returns (uint256);
     function getExecFee(uint8 opType) external view returns (uint256);
+    function maxOperWaitingBlk() external view returns (uint256);
 }
 
 interface IStakingOracleOps {
@@ -247,6 +252,11 @@ contract AddTasksRunnerChangerForkTests is BaseFork {
             "DOC queue priceUpdatesCost should be set to fund two oracle prices"
         );
         assertEq(
+            IQueueExecFeesView(address(docBucket.mocQueue())).maxOperWaitingBlk(),
+            3,
+            "DOC queue maxOperWaitingBlk should be set to 3"
+        );
+        assertEq(
             IReverseAuctionView(addTasksRunnerChanger.revAuctionRIFtoMOC_rocRewardsBuffer()).outputAccount(),
             mocRewardsBuffer,
             "RIF->MOC legacy auction output should point to mocRewardsBuffer"
@@ -322,10 +332,15 @@ contract AddTasksRunnerChangerForkTests is BaseFork {
         {
             string memory tasksJson = vm.readFile(TASKS_DEPLOYED_ADDRESSES_PATH);
             address taskExecuteQueueV3 = vm.parseJsonAddress(tasksJson, ".TaskExecuteQueueV3");
+            address taskExecuteQueueV3Fallback = vm.parseJsonAddress(tasksJson, ".TaskExecuteQueueV3Fallback");
             address taskUpdateEmaV3RifBucket = vm.parseJsonAddress(tasksJson, ".TaskUpdateEmaV3RifBucket");
             assertTrue(
                 rifOracleCoinPair.isPricePeekWhitelisted(taskExecuteQueueV3),
                 "TaskExecuteQueueV3 should be whitelisted on the new direct RIF/USD pair"
+            );
+            assertTrue(
+                rifOracleCoinPair.isPricePeekWhitelisted(taskExecuteQueueV3Fallback),
+                "TaskExecuteQueueV3Fallback should be whitelisted on the new direct RIF/USD pair"
             );
             assertTrue(
                 rifOracleCoinPair.isPricePeekWhitelisted(taskUpdateEmaV3RifBucket),
@@ -436,6 +451,7 @@ contract AddTasksRunnerChangerForkTests is BaseFork {
             "TaskSwitchRoundTasksRunnerCoinPair",
             "TaskDistributeSupporters",
             "TaskExecuteQueueV3",
+            "TaskExecuteQueueV3Fallback",
             "TaskUpdateEmaV3RifBucket",
             "TaskUpdateEmaV3DocBucket",
             "TaskExecuteLiquidationV3RifBucket",
@@ -493,6 +509,43 @@ contract AddTasksRunnerChangerForkTests is BaseFork {
             address taskAddress = vm.parseJsonAddress(json, selector);
             assertTrue(tasksRunner.containsTask(taskAddress), string.concat("task not found: ", taskKeys[i]));
         }
+    }
+
+    function test_TaskExecuteQueueV3FallbackIsAvailableOnlyForExpiredOperations() public {
+        _executeAddTasksRunnerChanger();
+
+        string memory json = vm.readFile(TASKS_DEPLOYED_ADDRESSES_PATH);
+        address fallbackTask = vm.parseJsonAddress(json, ".TaskExecuteQueueV3Fallback");
+
+        // With no expired operation, the fallback task must remain unavailable.
+        assertFalse(ITaskView(fallbackTask).checkTask(), "fallback task should be unavailable initially");
+
+        uint256 qACmax = 1000e18;
+        uint256 qTP = 1e18;
+        uint8 TP_MINT = 3;
+        uint256 mintFee = IQueueExecFeesView(address(rifQueue)).getExecFee(TP_MINT);
+
+        deal(address(rifToken), holder, qACmax);
+        vm.startPrank(holder);
+        rifToken.approve(address(rifBucket), qACmax);
+        rifBucket.mintTP{ value: mintFee }(address(usdRifToken), qTP, qACmax, holder, address(0));
+        vm.stopPrank();
+
+        // Simulate unavailable TP prices. The operation is queued, but not expired yet.
+        (, address rifPriceProvider) = IMocV2(address(rifBucket)).pegContainer(0);
+        vm.mockCall(
+            rifPriceProvider,
+            abi.encodeWithSelector(ICoinPairPriceView.peek.selector),
+            abi.encode(bytes32(uint256(1e18)), false)
+        );
+        assertFalse(ITaskView(fallbackTask).checkTask(), "fallback task should wait for expiration");
+
+        vm.roll(block.number + rifQueue.maxOperWaitingBlk() + 1);
+
+        assertTrue(
+            ITaskView(fallbackTask).checkTask(),
+            "fallback task should be available when a queued operation is expired"
+        );
     }
 
     function test_BuffersOutputsAreSet() public {
@@ -698,6 +751,7 @@ contract AddTasksRunnerChangerForkTests is BaseFork {
         (, , uint256 lockPeriodTimestamp, , , ) = tasksRunner.getRoundInfo();
         vm.warp(lockPeriodTimestamp + 1);
         tasksRunner.switchRound();
+        vm.warp(block.timestamp + 7 days);
 
         uint256 version = 3;
         uint256 tasksFlags = tasksRunner.getTasksAvailableAsFlags();

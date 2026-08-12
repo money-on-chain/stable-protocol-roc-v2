@@ -8,7 +8,7 @@ const PreTasksRunnerModule: IgnitionModule = buildModule("PreTasksRunnerModule",
   const oracleManagerProxy = m.getParameter("oracleManagerProxy");
   const upgradeDelegator = m.getParameter("upgradeDelegator");
   const proxyAdmin = m.getParameter("proxyAdmin");
-  const pauser = m.getParameter("pauser");
+  const multiSigCoinPairPauser = m.getParameter("multiSigCoinPairPauser");
 
   // TasksRunner initializer parameters
   const governor = m.getParameter("governor");
@@ -87,7 +87,7 @@ const PreTasksRunnerModule: IgnitionModule = buildModule("PreTasksRunnerModule",
     upgradeDelegator,
     newOracleManagerImplementation,
     newCoinPairImplementation,
-    pauser,
+    multiSigCoinPairPauser,
     tasksRunnerProxy,
     TASKS_RUNNER_NAME,
     mocSwapper,

@@ -19,7 +19,7 @@
   "AddTasksRunner#TaskDistributeSupporters": "0x2EBe68aB2d6F53d2e5bDc06b2b1f1E3C4081839D",
   "AddTasksRunner#TaskEvalLiquidationV1": "0x24834369CCA71818D0572EA8Ee479913D8220a2e",
   "AddTasksRunner#TaskLiquidateMocRewardsBuffer": "0x53d730E166A990EA8C62f3ce1793b55B380B5833",
-  "AddTasksRunner#TaskSplitMocCommissionSplitterV3": "0xB9D35793e2c09a23b661F7a25fba60edc2ddF081",
+  "AddTasksRunner#TaskSplitMocCommissionSplitterV3": "0xd384B7fB51a6542caC42a28B47a8935a7D39FBFb",
   "AddTasksRunner#TaskExecuteLiquidationV3DocBucket": "0x0693EA617ADC8e85d9BfE092d7De52C94a7f3695",
   "AddTasksRunner#TaskExecuteLiquidationV3RifBucket": "0xAB42bF06f695039dD52726FdA9EA48FB77093e43",
   "AddTasksRunner#TaskExecuteMicroLiquidationV3DocBucket": "0xd4eE0f4B3BB1263ABC9f2e5d48155550F0158350",
@@ -82,5 +82,6 @@
   "AddTasksRunner#TaskTriggerOrderRevAuctionRBTCtoMOC_rocNodes": "0x13421161F352E6E995fe1ae7A907F11716e880df",
   "AddTasksRunner#TaskTriggerOrderRevAuctionRIFtoMOC_tasksRunner": "0x4f237C0Da78e7a29C91A5c607fdb992F5BaA1282",
   "AddTasksRunner#TaskTriggerOrderSwapRifFeesToMocForRifOracle": "0xdf3Af84D75a247626dcf166203f35F328238A2D3",
+  "AddTasksRunner#TaskExecuteQueueV3Fallback": "0x24ac00680f78146A68eD93d2c08773d1C2383E04",
   "AddTasksRunner#AddTasksRunnerChanger": "0x4439b97f65D51A12276f7c6BeFcbA517112e9B9F"
 }

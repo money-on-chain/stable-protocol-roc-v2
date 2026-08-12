@@ -48,7 +48,7 @@ contract PreTasksRunnerChanger is IChangeContract {
     address public immutable newOracleManagerImplementation;
     address public immutable newCoinPairImplementation;
 
-    address public immutable pauser;
+    address public immutable multiSigCoinPairPauser;
 
     address public immutable tasksRunnerProxy;
     bytes32 public immutable tasksRunnerName;
@@ -69,7 +69,7 @@ contract PreTasksRunnerChanger is IChangeContract {
         IUpgradeDelegator _upgradeDelegator,
         address _newOracleManagerImplementation,
         address _newCoinPairImplementation,
-        address _pauser,
+        address _multiSigCoinPairPauser,
         address _tasksRunnerProxy,
         bytes32 _tasksRunnerName,
         address _mocSwapper,
@@ -84,7 +84,7 @@ contract PreTasksRunnerChanger is IChangeContract {
         upgradeDelegator = _upgradeDelegator;
         newOracleManagerImplementation = _newOracleManagerImplementation;
         newCoinPairImplementation = _newCoinPairImplementation;
-        pauser = _pauser;
+        multiSigCoinPairPauser = _multiSigCoinPairPauser;
         tasksRunnerProxy = _tasksRunnerProxy;
         tasksRunnerName = _tasksRunnerName;
         mocSwapper = IMocSwapperV3MultiHop(_mocSwapper);
@@ -163,7 +163,7 @@ contract PreTasksRunnerChanger is IChangeContract {
         for (uint256 i = 0; i < remainingCount; i++) {
             bytes32 coinPair = om.getCoinPairAtIndex(i);
             address proxy = om.getContractAddress(coinPair);
-            ICoinPairPrice(proxy).addPriceQueryModeWhitelist(pauser);
+            ICoinPairPrice(proxy).addPriceQueryModeWhitelist(multiSigCoinPairPauser);
         }
 
         // Register the new TasksRunner proxy as a coinpair in OracleManager
