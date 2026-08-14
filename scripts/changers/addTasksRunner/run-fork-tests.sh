@@ -3,7 +3,7 @@
 # Script to run AddTasksRunner fork tests
 #
 # This script:
-# 1. Starts a Hardhat node forking RSK mainnet (in-memory EDR)
+# 1. Starts a Hardhat node forking the selected RSK network (in-memory EDR)
 # 2. Deploys PreTasksRunner (TasksRunner proxy + PreTasksRunnerChanger)
 # 3. Deploys AddTasksRunner (includes AddTasksRunnerChanger), injecting the
 #    TasksRunner proxy address and RIF/USD CoinPair address produced by step 2
@@ -14,7 +14,7 @@
 #   ./scripts/changers/addTasksRunner/run-fork-tests.sh [network]
 #
 # Arguments:
-#   network - The network to fork (default: rskMainnet)
+#   network - The network to fork (default: rskMainnet; also supports rskTestnet)
 # =============================================================================
 
 set -e
@@ -26,12 +26,23 @@ NODE_PID=""
 PRE_TASKS_DEPLOYMENT_ID="chain-pre-test"
 ADD_TASKS_DEPLOYMENT_ID="chain-test"
 DEPLOYED_ADDRESSES_FILE="test/changers/addTasksRunner/fixtures/deployed-addresses.json"
+SKIP_PRE_TASKS=false
 
 # These are exported so that hardhat has them as ENV vars, used in hardhat.config.ts
 # for configuring the 'node' network.
-export FORK_BLOCK_NUMBER="${FORK_BLOCK_NUMBER:-"9024485"}"
-export FORK_RPC_URL="${FORK_RPC_URL:-${RSK_MAINNET_RPC_URL:-https://public-node.rsk.co}}"
-export FORK_CHAIN_ID=30
+if [ "$NETWORK" = "rskTestnet" ]; then
+    PRE_TASKS_DEPLOYMENT_ID="preTasksRunner-testnet"
+    SKIP_PRE_TASKS=true
+    export FORK_BLOCK_NUMBER="${FORK_BLOCK_NUMBER:-"7933673"}"
+    export FORK_RPC_URL="${FORK_RPC_URL:-${RSK_TESTNET_RPC_URL:-https://public-node.testnet.rsk.co}}"
+    export FORK_CHAIN_ID=31
+    TEST_FILE="test/changers/addTasksRunner/AddTasksRunnerChangerTestnetFork.t.sol"
+else
+    export FORK_BLOCK_NUMBER="${FORK_BLOCK_NUMBER:-"9024485"}"
+    export FORK_RPC_URL="${FORK_RPC_URL:-${RSK_MAINNET_RPC_URL:-https://public-node.rsk.co}}"
+    export FORK_CHAIN_ID=30
+    TEST_FILE="test/changers/addTasksRunner/AddTasksRunnerChanger.t.sol"
+fi
 
 # Colors for output
 RED='\033[0;31m'
@@ -78,7 +89,7 @@ check_requirements() {
 }
 
 start_node() {
-    log_info "Starting Hardhat node forking RSK mainnet..."
+    log_info "Starting Hardhat node forking $NETWORK..."
     log_info "Fork RPC URL: $FORK_RPC_URL"
 
     lsof -ti:$NODE_PORT | xargs kill -9 2>/dev/null || true
@@ -125,6 +136,11 @@ validate_add_tasks_params() {
 }
 
 deploy_pre_tasks_runner() {
+    if [ "$SKIP_PRE_TASKS" = true ]; then
+        log_info "Skipping PreTasksRunner deployment for testnet; using $PRE_TASKS_DEPLOYMENT_ID"
+        return 0
+    fi
+
     log_info "Deploying PreTasksRunner via Ignition..."
 
     rm -rf "ignition/deployments/$PRE_TASKS_DEPLOYMENT_ID"
@@ -272,11 +288,13 @@ run_forge_tests() {
     log_info "Running fork tests..."
 
     pnpm hardhat build
-    FORK_URL="http://127.0.0.1:$NODE_PORT" pnpm hardhat test solidity test/changers/addTasksRunner/AddTasksRunnerChanger.t.sol -vvv
+    FORK_URL="http://127.0.0.1:$NODE_PORT" pnpm hardhat test solidity "$TEST_FILE" -vvv
 
     log_success "Tests completed"
 
-    rm -rf "ignition/deployments/$PRE_TASKS_DEPLOYMENT_ID"
+    if [ "$SKIP_PRE_TASKS" = false ]; then
+        rm -rf "ignition/deployments/$PRE_TASKS_DEPLOYMENT_ID"
+    fi
     rm -rf "ignition/deployments/$ADD_TASKS_DEPLOYMENT_ID"
 }
 

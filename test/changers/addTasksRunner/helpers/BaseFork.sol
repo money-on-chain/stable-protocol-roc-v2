@@ -13,6 +13,10 @@ import { IChangeContract } from "moc-main-latest/contracts/interfaces/IChangeCon
 import { IGovernor } from "moc-main-latest/contracts/interfaces/IGovernor.sol";
 import { OracleTestHelper, IOracleCheats } from "../../../helpers/OracleTestHelper.sol";
 
+interface IOwnableOwner {
+    function owner() external view returns (address);
+}
+
 contract BaseFork is IgnitionDeployments, OracleTestHelper {
     MocRif public rifBucket;
     MocQueue public rifQueue;
@@ -41,15 +45,15 @@ contract BaseFork is IgnitionDeployments, OracleTestHelper {
         require(addTasksChangerAddr != address(0), "AddTasksRunnerChanger not deployed");
         addTasksRunnerChanger = AddTasksRunnerChanger(addTasksChangerAddr);
 
-        address queueAddr = getMainnetAddress("rifQueue");
+        address queueAddr = _getNetworkAddress("rifQueue");
         require(queueAddr != address(0), "RifQueue not configured");
         rifQueue = MocQueue(payable(queueAddr));
 
-        address guardAddr = getMainnetAddress("mocMultiCollateralGuard");
+        address guardAddr = _getNetworkAddress("mocMultiCollateralGuard");
         require(guardAddr != address(0), "MocMultiCollateralGuard not configured");
         mocMultiCollateralGuard = MocMultiCollateralGuard(payable(guardAddr));
 
-        address docBucketAddr = getMainnetAddress("docBucket");
+        address docBucketAddr = _getNetworkAddress("docBucket");
         require(docBucketAddr != address(0), "DocBucket not configured");
         docBucket = MocCARC20(payable(docBucketAddr));
     }
@@ -61,7 +65,7 @@ contract BaseFork is IgnitionDeployments, OracleTestHelper {
         _loadDeployedAddresses();
         _loadIgnitionContracts();
 
-        rifBucket = MocRif(payable(getMainnetAddress("mocCore")));
+        rifBucket = MocRif(payable(_getNetworkAddress("mocCore")));
 
         rifToken = MocRC20(address(rifBucket.acToken()));
         rifProToken = MocRC20(address(rifBucket.tcToken()));
@@ -70,13 +74,18 @@ contract BaseFork is IgnitionDeployments, OracleTestHelper {
         docToken = MocRC20(address(docBucket.acToken()));
         docProToken = MocRC20(address(docBucket.tcToken()));
 
-        holder = getMainnetAddress("holder");
-        governorOwner = getMainnetAddress("governorOwner");
+        // These are test-only accounts. The holder does not need to exist on the
+        // fork, while the governor owner is read from the live Governor contract
+        // so the suite works for both mainnet and testnet address books.
+        holder = vm.addr(0xBEEF);
+        governorOwner = IOwnableOwner(address(rifBucket.governor())).owner();
         vm.deal(holder, 100 ether);
         vm.deal(governorOwner, 100 ether);
     }
 
     function _executePreTasksRunnerChanger() internal {
+        if (!_shouldExecutePreTasksRunnerChanger()) return;
+
         IGovernor governor = IGovernor(address(rifBucket.governor()));
         vm.prank(governorOwner);
         governor.executeChange(IChangeContract(address(preTasksRunnerChanger)));
@@ -86,5 +95,13 @@ contract BaseFork is IgnitionDeployments, OracleTestHelper {
         IGovernor governor = IGovernor(address(rifBucket.governor()));
         vm.prank(governorOwner);
         governor.executeChange(IChangeContract(address(addTasksRunnerChanger)));
+    }
+
+    function _getNetworkAddress(string memory key) internal view virtual returns (address) {
+        return getMainnetAddress(key);
+    }
+
+    function _shouldExecutePreTasksRunnerChanger() internal pure virtual returns (bool) {
+        return true;
     }
 }

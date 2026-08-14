@@ -60,6 +60,9 @@ export default defineConfig({
     [chainIds.rskMainnet]: {
       name: "Rootstock",
       chainType: "generic",
+      hardforkHistory: {
+        london: { blockNumber: 0 },
+      },
       blockExplorers: {
         etherscan: {
           url: "",
@@ -74,6 +77,9 @@ export default defineConfig({
     [chainIds.rskTestnet]: {
       name: "Rootstock Testnet",
       chainType: "generic",
+      hardforkHistory: {
+        london: { blockNumber: 0 },
+      },
       blockExplorers: {
         etherscan: {
           url: "",
@@ -151,7 +157,9 @@ export default defineConfig({
     localhost: {
       type: "http",
       url: "http://localhost:8545",
-      chainId: chainIds.rskMainnet,
+      // Keep the HTTP client aligned with the chain id used by the local fork.
+      // The fork runner sets FORK_CHAIN_ID to 30 (mainnet) or 31 (testnet).
+      chainId: Number(process.env["FORK_CHAIN_ID"]) || chainIds.rskMainnet,
       gas: 30000000,
     },
   },
