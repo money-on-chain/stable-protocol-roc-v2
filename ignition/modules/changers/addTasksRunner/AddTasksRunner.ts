@@ -1,5 +1,6 @@
 import { buildModule } from "@nomicfoundation/hardhat-ignition/modules";
 import type { IgnitionModule } from "@nomicfoundation/ignition-core";
+import { batchModule } from "ignition-utils";
 
 /**
  * Hardhat Ignition module for AddTasksRunner changer deployment.
@@ -996,4 +997,4 @@ const AddTasksRunnerModule: IgnitionModule = buildModule("AddTasksRunner", m => 
   };
 });
 
-export default AddTasksRunnerModule;
+export default batchModule(AddTasksRunnerModule);

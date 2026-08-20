@@ -1,12 +1,13 @@
 {
   "name": "roc-sc-protocol-v2",
-  "version": "3.1.1",
+  "version": "3.2.1",
   "private": true,
   "homepage": "https://www.moneyonchain.com",
   "description": "Money on Chain main smart contract protocol RIF implementation",
   "author": "MOC Investments Corp. 2020",
   "license": "AGPL-3.0",
   "dependencies": {
+    "@nomicfoundation/hardhat-ignition": "^3.1.8",
     "solc": "0.8.24"
   },
   "devDependencies": {
@@ -18,14 +19,16 @@
     "@moc/oracles": "git+ssh://git@github.com/money-on-chain/OMoC-Decentralized-Oracle.git#v3.0.11",
     "@moc/periphery": "git+ssh://git@github.com/money-on-chain/MoC-Periphery#v3.0.5",
     "@moc/price-oracle-interfaces": "git+ssh://git@github.com/money-on-chain/price_oracle_interfaces.git#v0.1.0",
-    "@nomicfoundation/hardhat-ethers": "https://github.com/money-on-chain/hardhat/releases/download/v3.0.10-moc/nomicfoundation-hardhat-ethers-4.0.2.tgz",
-    "@nomicfoundation/hardhat-ignition": "https://github.com/money-on-chain/hardhat/releases/download/v3.0.10-moc/nomicfoundation-hardhat-ignition-3.0.3.tgz",
-    "@nomicfoundation/hardhat-ignition-ethers": "https://github.com/money-on-chain/hardhat/releases/download/v3.0.10-moc/nomicfoundation-hardhat-ignition-ethers-3.0.3.tgz",
-    "@nomicfoundation/hardhat-network-helpers": "https://github.com/money-on-chain/hardhat/releases/download/v3.0.10-moc/nomicfoundation-hardhat-network-helpers-3.0.1.tgz",
-    "@nomicfoundation/hardhat-toolbox-mocha-ethers": "https://github.com/money-on-chain/hardhat/releases/download/v3.0.10-moc/nomicfoundation-hardhat-toolbox-mocha-ethers-3.0.0.tgz",
-    "@nomicfoundation/hardhat-utils": "https://github.com/money-on-chain/hardhat/releases/download/v3.0.10-moc/nomicfoundation-hardhat-utils-3.0.4.tgz",
-    "@nomicfoundation/hardhat-verify": "https://github.com/money-on-chain/hardhat/releases/download/v3.0.10-moc/nomicfoundation-hardhat-verify-3.0.4.tgz",
-    "@nomicfoundation/ignition-core": "https://github.com/money-on-chain/hardhat/releases/download/v3.0.10-moc/nomicfoundation-ignition-core-3.0.3.tgz",
+    "@nomicfoundation/hardhat-ignition": "^3.1.8",
+    "@nomicfoundation/hardhat-ignition-viem": "3.1.6",
+    "@nomicfoundation/hardhat-keystore": "3.0.12",
+    "@nomicfoundation/hardhat-network-helpers": "3.0.11",
+    "@nomicfoundation/hardhat-node-test-runner": "3.0.17",
+    "@nomicfoundation/hardhat-toolbox-viem": "5.0.7",
+    "@nomicfoundation/hardhat-verify": "3.0.21",
+    "@nomicfoundation/hardhat-viem": "3.0.9",
+    "@nomicfoundation/hardhat-viem-assertions": "3.1.2",
+    "@nomicfoundation/ignition-core": "3.1.8",
     "@openzeppelin-v4.8.0/contracts": "npm:@openzeppelin/contracts@4.8.0",
     "@openzeppelin-v4.8.0/contracts-upgradeable": "npm:@openzeppelin/contracts-upgradeable@4.8.0",
     "@openzeppelin/contracts": "4.9.3",
@@ -46,6 +49,7 @@
     "forge-std": "github:foundry-rs/forge-std#v1.9.7",
     "hardhat": "3.9.0",
     "husky": "9.1.7",
+    "ignition-utils": "git+https://github.com/money-on-chain/ignition-utils.git#v1.0.0",
     "moc-main-latest": "git+ssh://git@github.com/money-on-chain/main-sc-protocol-v2#v3.0.9",
     "prettier": "3.8.1",
     "prettier-plugin-solidity": "1.4.2",
@@ -92,25 +96,10 @@
     "./types": "./types",
     "./types/*": "./types/*"
   },
-  "files": [
-    "dist",
-    "contracts",
-    "ignition",
-    "addressBook.js",
-    "addressBook.d.ts",
-    "addressBook.json",
-    "types"
-  ],
-  "keywords": [
-    "blockchain",
-    "ethereum",
-    "hardhat",
-    "smart-contracts",
-    "solidity",
-    "rsk"
-  ],
+  "files": ["dist", "contracts", "ignition", "addressBook.js", "addressBook.d.ts", "addressBook.json", "types"],
+  "keywords": ["blockchain", "ethereum", "hardhat", "smart-contracts", "solidity", "rsk"],
   "scripts": {
-    "hooks:install": "husky install",
+    "hooks:install": "husky",
     "clean": "hardhat clean && rm -rf dist cache out artifacts",
     "compile": "hardhat build",
     "build:local": "pnpm clean && pnpm compile && pnpm exec tsc -p tsconfig.json",
@@ -138,8 +127,11 @@
   "packageManager": "pnpm@11.20.0+sha512.9a6f330a95b66446ea088faf1521405a8a01f07fde7124cc9958dfed52d4bb436737e65b08f85f37b46fcba375092558ac51262b816844b22f63406ed166bfee",
   "peerDependencies": {
     "@moc/flow": "3.0.3",
-    "@moc/oracles": "3.0.10",
+    "@moc/oracles": "3.0.11",
     "@moc/price-oracle-interfaces": "0.1.0",
+    "@nomicfoundation/hardhat-verify": "^3.0.0",
+    "hardhat": "^3.8.0",
+    "ignition-utils": "1.0.0",
     "moc-main-latest": "3.0.9"
   }
 }

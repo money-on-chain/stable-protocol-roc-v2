@@ -1,4 +1,5 @@
 import { buildModule } from "@nomicfoundation/hardhat-ignition/modules";
+import { batchModule } from "ignition-utils";
 
 const PauserSplitRifProMigrationChangerModule = buildModule("PauserSplitRifProMigrationChanger", m => {
   const mocMultiCollateralGuard = m.getParameter<string>("mocMultiCollateralGuard");
@@ -36,4 +37,4 @@ const PauserSplitRifProMigrationChangerModule = buildModule("PauserSplitRifProMi
   return { rifBucketImplementation, newRifProTokenImplementation, newRifProToken, changer };
 });
 
-export default PauserSplitRifProMigrationChangerModule;
+export default batchModule(PauserSplitRifProMigrationChangerModule);

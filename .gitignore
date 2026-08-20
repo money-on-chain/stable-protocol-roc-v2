@@ -4,7 +4,6 @@
 .coverage_contracts/
 artifacts/
 build/
-dist/
 cache/
 coverage/
 lib/

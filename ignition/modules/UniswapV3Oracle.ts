@@ -1,4 +1,5 @@
 import { buildModule } from "@nomicfoundation/hardhat-ignition/modules";
+import { batchModule } from "ignition-utils";
 
 /**
  * Deploys the Uniswap V3 oracle used for the WRBTC/MOC testnet pool.
@@ -21,4 +22,4 @@ const UniswapV3OracleModule = buildModule("UniswapV3OracleModule", m => {
   return { oracle };
 });
 
-export default UniswapV3OracleModule;
+export default batchModule(UniswapV3OracleModule);

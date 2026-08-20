@@ -1,1 +1,8 @@
-npm run lint
+pnpm lint
+pnpm build:local
+
+if ! git diff --quiet -- dist || [ -n "$(git ls-files --others --exclude-standard -- dist)" ]; then
+  echo "The build changed dist. Review and stage the generated files, then commit again."
+  git status --short -- dist
+  exit 1
+fi

@@ -1,5 +1,6 @@
 import { buildModule } from "@nomicfoundation/hardhat-ignition/modules";
 import type { IgnitionModule } from "@nomicfoundation/ignition-core";
+import { batchModule } from "ignition-utils";
 
 // ethers.encodeBytes32String("TASKSRUNNER")
 const TASKS_RUNNER_NAME = "0x5441534b5352554e4e4552000000000000000000000000000000000000000000";
@@ -109,4 +110,4 @@ const PreTasksRunnerModule: IgnitionModule = buildModule("PreTasksRunnerModule",
   };
 });
 
-export default PreTasksRunnerModule;
+export default batchModule(PreTasksRunnerModule);

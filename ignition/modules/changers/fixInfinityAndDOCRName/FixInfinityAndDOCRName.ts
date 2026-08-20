@@ -1,5 +1,6 @@
 import { buildModule } from "@nomicfoundation/hardhat-ignition/modules";
 import type { IgnitionModule } from "@nomicfoundation/ignition-core";
+import { batchModule } from "ignition-utils";
 
 /**
  * Hardhat Ignition module for FixInfinityAndDOCRNameChanger deployment
@@ -22,4 +23,4 @@ const FixInfinityAndDOCRNameModule: IgnitionModule = buildModule("FixInfinityAnd
   };
 });
 
-export default FixInfinityAndDOCRNameModule;
+export default batchModule(FixInfinityAndDOCRNameModule);

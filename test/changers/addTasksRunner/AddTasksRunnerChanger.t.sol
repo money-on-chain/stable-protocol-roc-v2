@@ -31,6 +31,7 @@ interface ICoinPairPriceView {
 interface ITasksRunnerView {
     function getTaskCount() external view returns (uint256);
     function containsTask(address _task) external view returns (bool);
+    function getTasksAvailable() external view returns (address[] memory);
     function getLastPublicationBlock() external view returns (uint256);
     function getTasksAvailableAsFlags() external view returns (uint256);
     function getName() external view returns (bytes32);
@@ -440,7 +441,7 @@ contract AddTasksRunnerChangerForkTests is BaseFork {
         _executeAddTasksRunnerChanger();
 
         string memory json = vm.readFile(TASKS_DEPLOYED_ADDRESSES_PATH);
-        string[57] memory taskKeys = [
+        string[58] memory taskKeys = [
             "TaskUpdateEmaV1",
             "TaskEvalLiquidationV1",
             "TaskInterestPaymentV1",
@@ -748,15 +749,35 @@ contract AddTasksRunnerChangerForkTests is BaseFork {
         _subscribeIfNeeded(IStakingOracleOps(staking), oracleOwner2, coinPair);
         _subscribeIfNeeded(IStakingOracleOps(staking), oracleOwner3, coinPair);
 
-        (, , uint256 lockPeriodTimestamp, , , ) = tasksRunner.getRoundInfo();
-        vm.warp(lockPeriodTimestamp + 1);
         tasksRunner.switchRound();
-        vm.warp(block.timestamp + 7 days);
+
+        // makes TaskInterestPaymentV3RifBucket available to execute
+        uint256 nextInterestPayment = rifBucket.nextTCInterestPayment();
+        vm.warp(nextInterestPayment + 1);
 
         uint256 version = 3;
-        uint256 tasksFlags = tasksRunner.getTasksAvailableAsFlags();
-        assertGt(tasksFlags, 0, "No available tasks to execute");
 
+        string memory tasksJson = vm.readFile(TASKS_DEPLOYED_ADDRESSES_PATH);
+        address expectedInterestTask = vm.parseJsonAddress(tasksJson, ".TaskInterestPaymentV3RifBucket");
+        address expectedSwitchRoundTask = vm.parseJsonAddress(tasksJson, ".TaskSwitchRoundRifUsdCoinPair");
+        address[] memory availableTasks = tasksRunner.getTasksAvailable();
+        uint256 availableTaskCount;
+        bool interestTaskAvailable;
+        bool switchRoundTaskAvailable;
+
+        for (uint256 i = 0; i < availableTasks.length; i++) {
+            if (availableTasks[i] != address(0)) {
+                availableTaskCount++;
+                if (availableTasks[i] == expectedInterestTask) interestTaskAvailable = true;
+                if (availableTasks[i] == expectedSwitchRoundTask) switchRoundTaskAvailable = true;
+            }
+        }
+
+        assertEq(availableTaskCount, 2, "Unexpected number of available tasks");
+        assertTrue(interestTaskAvailable, "Interest payment task is not available");
+        assertTrue(switchRoundTaskAvailable, "RIF/USD switch round task is not available");
+
+        uint256 tasksFlags = tasksRunner.getTasksAvailableAsFlags();
         (uint256 pointsBefore, ) = tasksRunner.getOracleRoundInfo(oracleOwner1);
         uint256 blockNumber = tasksRunner.getLastPublicationBlock();
         address votedOracle = oracle1;
@@ -804,18 +825,17 @@ contract AddTasksRunnerChangerForkTests is BaseFork {
 
         Vm.Log[] memory entries = vm.getRecordedLogs();
         bytes32 taskExecutedSig = keccak256("TaskExecuted(address,address,address,uint256,bool)");
-        bool sawTaskExecuted = false;
+        uint256 sawTaskExecuted;
         for (uint256 i = 0; i < entries.length; i++) {
             if (
                 entries[i].emitter == address(tasksRunner) &&
                 entries[i].topics.length > 0 &&
                 entries[i].topics[0] == taskExecutedSig
             ) {
-                sawTaskExecuted = true;
-                break;
+                sawTaskExecuted++;
             }
         }
-        assertTrue(sawTaskExecuted, "At least one TaskExecuted event should be emitted");
+        assertEq(sawTaskExecuted, 2, "Two TaskExecuted event should be emitted");
     }
 
     function _sortSignaturesBySigner(

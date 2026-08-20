@@ -4,13 +4,13 @@ settings:
   autoInstallPeers: false
   excludeLinksFromLockfile: false
 
-overrides:
-  '@nomicfoundation/ignition-core': https://github.com/money-on-chain/hardhat/releases/download/v3.0.10-moc/nomicfoundation-ignition-core-3.0.3.tgz
-
 importers:
 
   .:
     dependencies:
+      '@nomicfoundation/hardhat-ignition':
+        specifier: ^3.1.8
+        version: 3.1.8(@nomicfoundation/hardhat-verify@3.0.21(hardhat@3.9.0))(hardhat@3.9.0)
       solc:
         specifier: 0.8.24
         version: 0.8.24(debug@4.4.3(supports-color@7.2.0))
@@ -32,37 +32,40 @@ importers:
         version: main-sc-protocol-v2@git+ssh://git@github.com/money-on-chain/main-sc-protocol-v2.git#808fae8dba59c793d490b0b3668fbeb23c773c9b(hardhat@3.9.0)
       '@moc/oracles':
         specifier: git+ssh://git@github.com/money-on-chain/OMoC-Decentralized-Oracle.git#v3.0.11
-        version: '@moneyonchain/oracles@https://codeload.github.com/money-on-chain/OMoC-Decentralized-Oracle/tar.gz/97346da016e2ac460b09969568330dfdc0a19df4(@moneyonchain/periphery@https://codeload.github.com/money-on-chain/MoC-Periphery/tar.gz/6be2d281a42cc17b8136184054dcb62f7c586a7b)(main-sc-protocol-v2@git+ssh://git@github.com/money-on-chain/main-sc-protocol-v2.git#808fae8dba59c793d490b0b3668fbeb23c773c9b(hardhat@3.9.0))(ts-test-helpers@https://codeload.github.com/money-on-chain/ts-test-helpers/tar.gz/6177adbe32646487c88dc9553b160c22d498e8e2(hardhat@3.9.0)(typescript@5.9.3)(zod@3.25.76))(typescript@5.9.3)(zod@3.25.76)'
+        version: '@moneyonchain/oracles@https://codeload.github.com/money-on-chain/OMoC-Decentralized-Oracle/tar.gz/97346da016e2ac460b09969568330dfdc0a19df4(@moneyonchain/periphery@https://codeload.github.com/money-on-chain/MoC-Periphery/tar.gz/6be2d281a42cc17b8136184054dcb62f7c586a7b)(main-sc-protocol-v2@git+ssh://git@github.com/money-on-chain/main-sc-protocol-v2.git#808fae8dba59c793d490b0b3668fbeb23c773c9b(hardhat@3.9.0))(ts-test-helpers@https://codeload.github.com/money-on-chain/ts-test-helpers/tar.gz/6177adbe32646487c88dc9553b160c22d498e8e2(@nomicfoundation/hardhat-toolbox-viem@5.0.7(6290106f27664cbed5721001e427defd))(hardhat@3.9.0)(typescript@5.9.3)(zod@3.25.76))(typescript@5.9.3)(zod@3.25.76)'
       '@moc/periphery':
         specifier: git+ssh://git@github.com/money-on-chain/MoC-Periphery#v3.0.5
         version: '@moneyonchain/periphery@https://codeload.github.com/money-on-chain/MoC-Periphery/tar.gz/6be2d281a42cc17b8136184054dcb62f7c586a7b'
       '@moc/price-oracle-interfaces':
         specifier: git+ssh://git@github.com/money-on-chain/price_oracle_interfaces.git#v0.1.0
         version: price-oracle-interfaces@https://codeload.github.com/money-on-chain/price_oracle_interfaces/tar.gz/1d40834055f9d12ac3b3ce98bce82199336eb7d9
-      '@nomicfoundation/hardhat-ethers':
-        specifier: https://github.com/money-on-chain/hardhat/releases/download/v3.0.10-moc/nomicfoundation-hardhat-ethers-4.0.2.tgz
-        version: https://github.com/money-on-chain/hardhat/releases/download/v3.0.10-moc/nomicfoundation-hardhat-ethers-4.0.2.tgz(hardhat@3.9.0)(supports-color@7.2.0)
-      '@nomicfoundation/hardhat-ignition':
-        specifier: https://github.com/money-on-chain/hardhat/releases/download/v3.0.10-moc/nomicfoundation-hardhat-ignition-3.0.3.tgz
-        version: https://github.com/money-on-chain/hardhat/releases/download/v3.0.10-moc/nomicfoundation-hardhat-ignition-3.0.3.tgz(@nomicfoundation/hardhat-verify@https://github.com/money-on-chain/hardhat/releases/download/v3.0.10-moc/nomicfoundation-hardhat-verify-3.0.4.tgz(hardhat@3.9.0)(supports-color@7.2.0))(hardhat@3.9.0)(supports-color@7.2.0)
-      '@nomicfoundation/hardhat-ignition-ethers':
-        specifier: https://github.com/money-on-chain/hardhat/releases/download/v3.0.10-moc/nomicfoundation-hardhat-ignition-ethers-3.0.3.tgz
-        version: https://github.com/money-on-chain/hardhat/releases/download/v3.0.10-moc/nomicfoundation-hardhat-ignition-ethers-3.0.3.tgz(@nomicfoundation/hardhat-ethers@https://github.com/money-on-chain/hardhat/releases/download/v3.0.10-moc/nomicfoundation-hardhat-ethers-4.0.2.tgz(hardhat@3.9.0)(supports-color@7.2.0))(@nomicfoundation/hardhat-ignition@https://github.com/money-on-chain/hardhat/releases/download/v3.0.10-moc/nomicfoundation-hardhat-ignition-3.0.3.tgz(@nomicfoundation/hardhat-verify@https://github.com/money-on-chain/hardhat/releases/download/v3.0.10-moc/nomicfoundation-hardhat-verify-3.0.4.tgz(hardhat@3.9.0)(supports-color@7.2.0))(hardhat@3.9.0)(supports-color@7.2.0))(@nomicfoundation/hardhat-verify@https://github.com/money-on-chain/hardhat/releases/download/v3.0.10-moc/nomicfoundation-hardhat-verify-3.0.4.tgz(hardhat@3.9.0)(supports-color@7.2.0))(@nomicfoundation/ignition-core@https://github.com/money-on-chain/hardhat/releases/download/v3.0.10-moc/nomicfoundation-ignition-core-3.0.3.tgz(supports-color@7.2.0))(ethers@6.17.0)(hardhat@3.9.0)
+      '@nomicfoundation/hardhat-ignition-viem':
+        specifier: 3.1.6
+        version: 3.1.6(@nomicfoundation/hardhat-ignition@3.1.8(@nomicfoundation/hardhat-verify@3.0.21(hardhat@3.9.0))(hardhat@3.9.0))(@nomicfoundation/hardhat-verify@3.0.21(hardhat@3.9.0))(@nomicfoundation/hardhat-viem@3.0.9(hardhat@3.9.0)(viem@2.53.1(typescript@5.9.3)(zod@3.25.76)))(@nomicfoundation/ignition-core@3.1.8)(hardhat@3.9.0)(viem@2.53.1(typescript@5.9.3)(zod@3.25.76))
+      '@nomicfoundation/hardhat-keystore':
+        specifier: 3.0.12
+        version: 3.0.12(hardhat@3.9.0)
       '@nomicfoundation/hardhat-network-helpers':
-        specifier: https://github.com/money-on-chain/hardhat/releases/download/v3.0.10-moc/nomicfoundation-hardhat-network-helpers-3.0.1.tgz
-        version: https://github.com/money-on-chain/hardhat/releases/download/v3.0.10-moc/nomicfoundation-hardhat-network-helpers-3.0.1.tgz(hardhat@3.9.0)(supports-color@7.2.0)
-      '@nomicfoundation/hardhat-toolbox-mocha-ethers':
-        specifier: https://github.com/money-on-chain/hardhat/releases/download/v3.0.10-moc/nomicfoundation-hardhat-toolbox-mocha-ethers-3.0.0.tgz
-        version: https://github.com/money-on-chain/hardhat/releases/download/v3.0.10-moc/nomicfoundation-hardhat-toolbox-mocha-ethers-3.0.0.tgz(af8ae41cec01d0a12db0bb0b045855bf)
-      '@nomicfoundation/hardhat-utils':
-        specifier: https://github.com/money-on-chain/hardhat/releases/download/v3.0.10-moc/nomicfoundation-hardhat-utils-3.0.4.tgz
-        version: https://github.com/money-on-chain/hardhat/releases/download/v3.0.10-moc/nomicfoundation-hardhat-utils-3.0.4.tgz(supports-color@7.2.0)
+        specifier: 3.0.11
+        version: 3.0.11(hardhat@3.9.0)
+      '@nomicfoundation/hardhat-node-test-runner':
+        specifier: 3.0.17
+        version: 3.0.17(hardhat@3.9.0)
+      '@nomicfoundation/hardhat-toolbox-viem':
+        specifier: 5.0.7
+        version: 5.0.7(6290106f27664cbed5721001e427defd)
       '@nomicfoundation/hardhat-verify':
-        specifier: https://github.com/money-on-chain/hardhat/releases/download/v3.0.10-moc/nomicfoundation-hardhat-verify-3.0.4.tgz
-        version: https://github.com/money-on-chain/hardhat/releases/download/v3.0.10-moc/nomicfoundation-hardhat-verify-3.0.4.tgz(hardhat@3.9.0)(supports-color@7.2.0)
+        specifier: 3.0.21
+        version: 3.0.21(hardhat@3.9.0)
+      '@nomicfoundation/hardhat-viem':
+        specifier: 3.0.9
+        version: 3.0.9(hardhat@3.9.0)(viem@2.53.1(typescript@5.9.3)(zod@3.25.76))
+      '@nomicfoundation/hardhat-viem-assertions':
+        specifier: 3.1.2
+        version: 3.1.2(@nomicfoundation/hardhat-viem@3.0.9(hardhat@3.9.0)(viem@2.53.1(typescript@5.9.3)(zod@3.25.76)))(hardhat@3.9.0)(viem@2.53.1(typescript@5.9.3)(zod@3.25.76))
       '@nomicfoundation/ignition-core':
-        specifier: https://github.com/money-on-chain/hardhat/releases/download/v3.0.10-moc/nomicfoundation-ignition-core-3.0.3.tgz
-        version: https://github.com/money-on-chain/hardhat/releases/download/v3.0.10-moc/nomicfoundation-ignition-core-3.0.3.tgz(supports-color@7.2.0)
+        specifier: 3.1.8
+        version: 3.1.8
       '@openzeppelin-v4.8.0/contracts':
         specifier: npm:@openzeppelin/contracts@4.8.0
         version: '@openzeppelin/contracts@4.8.0'
@@ -86,7 +89,7 @@ importers:
         version: 1.46.0(supports-color@7.2.0)
       '@solidstate/hardhat-contract-sizer':
         specifier: ^3.0.3
-        version: 3.0.3(@nomicfoundation/hardhat-utils@https://github.com/money-on-chain/hardhat/releases/download/v3.0.10-moc/nomicfoundation-hardhat-utils-3.0.4.tgz(supports-color@7.2.0))(debug@4.4.3(supports-color@7.2.0))(hardhat@3.9.0)(supports-color@7.2.0)
+        version: 3.0.3(@nomicfoundation/hardhat-utils@4.1.7)(debug@4.4.3(supports-color@7.2.0))(hardhat@3.9.0)(supports-color@7.2.0)
       '@types/chai':
         specifier: 5.2.3
         version: 5.2.3
@@ -123,6 +126,9 @@ importers:
       husky:
         specifier: 9.1.7
         version: 9.1.7
+      ignition-utils:
+        specifier: git+https://github.com/money-on-chain/ignition-utils.git#v1.0.0
+        version: https://codeload.github.com/money-on-chain/ignition-utils/tar.gz/786b080cda2b7636fcc48e14cf2d5fff2a36915f(@nomicfoundation/hardhat-ignition-viem@3.1.6(@nomicfoundation/hardhat-ignition@3.1.8(@nomicfoundation/hardhat-verify@3.0.21(hardhat@3.9.0))(hardhat@3.9.0))(@nomicfoundation/hardhat-verify@3.0.21(hardhat@3.9.0))(@nomicfoundation/hardhat-viem@3.0.9(hardhat@3.9.0)(viem@2.53.1(typescript@5.9.3)(zod@3.25.76)))(@nomicfoundation/ignition-core@3.1.8)(hardhat@3.9.0)(viem@2.53.1(typescript@5.9.3)(zod@3.25.76)))(@nomicfoundation/hardhat-ignition@3.1.8(@nomicfoundation/hardhat-verify@3.0.21(hardhat@3.9.0))(hardhat@3.9.0))(typescript@5.9.3)(zod@3.25.76)
       moc-main-latest:
         specifier: git+ssh://git@github.com/money-on-chain/main-sc-protocol-v2#v3.0.9
         version: main-sc-protocol-v2@git+ssh://git@github.com/money-on-chain/main-sc-protocol-v2.git#808fae8dba59c793d490b0b3668fbeb23c773c9b(hardhat@3.9.0)
@@ -143,7 +149,7 @@ importers:
         version: 9.5.0
       ts-test-helpers:
         specifier: git+ssh://git@github.com/money-on-chain/ts-test-helpers#v0.1.2
-        version: https://codeload.github.com/money-on-chain/ts-test-helpers/tar.gz/6177adbe32646487c88dc9553b160c22d498e8e2(hardhat@3.9.0)(typescript@5.9.3)(zod@3.25.76)
+        version: https://codeload.github.com/money-on-chain/ts-test-helpers/tar.gz/6177adbe32646487c88dc9553b160c22d498e8e2(@nomicfoundation/hardhat-toolbox-viem@5.0.7(6290106f27664cbed5721001e427defd))(hardhat@3.9.0)(typescript@5.9.3)(zod@3.25.76)
       typescript:
         specifier: 5.9.3
         version: 5.9.3
@@ -155,6 +161,18 @@ importers:
         version: 2.53.1(typescript@5.9.3)(zod@3.25.76)
 
 packages:
+
+  '@actions/core@3.0.1':
+    resolution: {integrity: sha512-a6d/Nwahm9fliVGRhdhofo40HjHQasUPusmc7vBfyky+7Z+P2A1J68zyFVaNcEclc/Se+eO595oAr5nwEIoIUA==}
+
+  '@actions/exec@3.0.0':
+    resolution: {integrity: sha512-6xH/puSoNBXb72VPlZVm7vQ+svQpFyA96qdDBvhB8eNZOE8LtPf9L4oAsfzK/crCL8YZ+19fKYVnM63Sl+Xzlw==}
+
+  '@actions/http-client@4.0.1':
+    resolution: {integrity: sha512-+Nvd1ImaOZBSoPbsUtEhv+1z99H12xzncCkz0a3RuehINE81FZSe2QTj3uvAPTcJX/SCzUQHQ0D1GrPMbrPitg==}
+
+  '@actions/io@3.0.2':
+    resolution: {integrity: sha512-nRBchcMM+QK1pdjO7/idu86rbJI5YHUKCvKs0KxnSYbVe3F51UfGxuZX4Qy/fWlp6l7gWFwIkrOzN+oUK03kfw==}
 
   '@adraffy/ens-normalize@1.11.1':
     resolution: {integrity: sha512-nhCBV3quEgesuf7c7KYfperqSS14T8bYuvJ8PcLJp6znkZpFc0AuW4qBtr8eKVyPPe/8RSr7sglCWPU5eaxwKQ==}
@@ -607,6 +625,18 @@ packages:
     resolution: {integrity: sha512-H9XAx3hc0BQHY6l+IFSWHDySypcXsvsuLhgYLUGywmJ5pswRVQJUHpOsobnLYp2ZUaUlKiKDrgWWhosOwAEM8Q==}
     engines: {node: '>=6.9.0'}
 
+  '@jest/diff-sequences@30.4.0':
+    resolution: {integrity: sha512-zOpzlfUs45l6u7jm39qr87JCHUDsaeCtvL+kQe/Vn9jSnRB4/5IPXISm0h9I1vZW/o00Kn4UTJ2MOlhnUGwv3g==}
+    engines: {node: ^18.14.0 || ^20.0.0 || ^22.0.0 || >=24.0.0}
+
+  '@jest/get-type@30.1.0':
+    resolution: {integrity: sha512-eMbZE2hUnx1WV0pmURZY9XoXPkUYjpc55mb0CrhtdWLtzMQPFvu/rZkTLZFTsdaVQa+Tr4eWAteqcUzoawq/uA==}
+    engines: {node: ^18.14.0 || ^20.0.0 || ^22.0.0 || >=24.0.0}
+
+  '@jest/schemas@30.4.1':
+    resolution: {integrity: sha512-i6b4qw5qnP8c5FEeBJg/uZQ4ddrkN6Ca8qISJh0pr7a5hfn3h3v5x60BEbOC7OYAGZNMs1LfFLwnW2CuK8F57Q==}
+    engines: {node: ^18.14.0 || ^20.0.0 || ^22.0.0 || >=24.0.0}
+
   '@kwsites/file-exists@1.1.1':
     resolution: {integrity: sha512-m9/5YGR18lIwxSFDwfE3oA7bWuq9kdau6ugN4H2rJeyhFQZcG9AgSHkQtSD15a8WvTgfz9aikZMrKPHvbpqFiw==}
 
@@ -630,6 +660,10 @@ packages:
   '@moneyonchain/periphery@https://codeload.github.com/money-on-chain/MoC-Periphery/tar.gz/6be2d281a42cc17b8136184054dcb62f7c586a7b':
     resolution: {gitHosted: true, integrity: sha512-NKERyUEoaZhIiQTLN98cYr2J9GUEi/xdhVCYBs157H+Lnj+IBK8E22rbmldWsbh2zIKi2SFtOxEIRvW6zpOJhA==, tarball: https://codeload.github.com/money-on-chain/MoC-Periphery/tar.gz/6be2d281a42cc17b8136184054dcb62f7c586a7b}
     version: 3.0.5
+
+  '@noble/ciphers@1.2.1':
+    resolution: {integrity: sha512-rONPWMC7PeExE077uLE4oqWrZ1IvAfz3oH9LibVAcVCopJiA9R62uavnbEzdkVmJYI6M6Zgkbeb07+tWjlq2XA==}
+    engines: {node: ^14.21.3 || >=16}
 
   '@noble/ciphers@1.3.0':
     resolution: {integrity: sha512-2I0gnIVPtfnMw9ee9h1dJG7tp81+8Ob3OJb3Mv37rx5L40/b0i7djjCVvGOVqc9AEIQyvyu1i6ypKdFw8R8gQw==}
@@ -656,6 +690,10 @@ packages:
   '@noble/hashes@1.4.0':
     resolution: {integrity: sha512-V1JJ1WTRUqHHrOSh597hURcMqVKVGL/ea3kv0gSnEdsEZ0/+VyPghM1lMNGc00z7CIQorSvbKpuJkxvuHbvdbg==}
     engines: {node: '>= 16'}
+
+  '@noble/hashes@1.7.1':
+    resolution: {integrity: sha512-B8XBPsn4vT/KJAGqDzbwztd+6Yte3P4V7iafm24bxgDe/mlRuK6xmWPuCNrKt2vDafZ8MfJLlchDG/vYafQEjQ==}
+    engines: {node: ^14.21.3 || >=16}
 
   '@noble/hashes@1.7.2':
     resolution: {integrity: sha512-biZ0NUSxyjLLqo6KxEJ1b+C2NAx0wtDoFvCaXHGgUkeHzf3Xc1xKumFKREuT7f7DARNZ/slvYUwFG6B0f2b6hQ==}
@@ -700,81 +738,89 @@ packages:
   '@nomicfoundation/hardhat-errors@3.0.18':
     resolution: {integrity: sha512-SK1GMQiV1r1/UbIU/2S13D1iueR8nYE6R+hK2AvJYCjvOCQGStK2oGHIPKVCdCK12yDZK0LE1OrCwxwcEvIu2w==}
 
-  '@nomicfoundation/hardhat-ethers@https://github.com/money-on-chain/hardhat/releases/download/v3.0.10-moc/nomicfoundation-hardhat-ethers-4.0.2.tgz':
-    resolution: {integrity: sha512-teW1GpImmpKF5pZGM5SVDHD10bGj5MafjdmmG/Ort0gRuPt0PZz1Up2ggJQPHdzP6/Q30Wgdmhg/qLGL/48lpw==, tarball: https://github.com/money-on-chain/hardhat/releases/download/v3.0.10-moc/nomicfoundation-hardhat-ethers-4.0.2.tgz}
-    version: 4.0.2
+  '@nomicfoundation/hardhat-ignition-viem@3.1.6':
+    resolution: {integrity: sha512-ggjHftjDNLQPnHBMEtDcTafYJfTzqTMlorKlAWj0HunzwiDhC5p7ox2MuEGmZHqt2oVjrnPF5E+Dp3G0RlYRgg==}
     peerDependencies:
-      hardhat: ^3.0.7
-
-  '@nomicfoundation/hardhat-ignition-ethers@https://github.com/money-on-chain/hardhat/releases/download/v3.0.10-moc/nomicfoundation-hardhat-ignition-ethers-3.0.3.tgz':
-    resolution: {integrity: sha512-0bgcVcw1yQvRE+inWlpg33XJVYr+A0+RN+Ptlkuapiu24QNkmXG+Z67EotHXfXBf0WyOIPJ2F4LmOmm59RKSUQ==, tarball: https://github.com/money-on-chain/hardhat/releases/download/v3.0.10-moc/nomicfoundation-hardhat-ignition-ethers-3.0.3.tgz}
-    version: 3.0.3
-    peerDependencies:
-      '@nomicfoundation/hardhat-ethers': ^4.0.0
-      '@nomicfoundation/hardhat-ignition': ^3.0.2
+      '@nomicfoundation/hardhat-ignition': ^3.1.2
       '@nomicfoundation/hardhat-verify': ^3.0.0
-      '@nomicfoundation/ignition-core': ^3.0.2
-      ethers: ^6.14.0
-      hardhat: ^3.0.0
+      '@nomicfoundation/hardhat-viem': ^3.0.4
+      '@nomicfoundation/ignition-core': ^3.0.7
+      hardhat: ^3.8.0
+      viem: ^2.47.6
 
-  '@nomicfoundation/hardhat-ignition@https://github.com/money-on-chain/hardhat/releases/download/v3.0.10-moc/nomicfoundation-hardhat-ignition-3.0.3.tgz':
-    resolution: {integrity: sha512-4mIw56GzNvjBKpCe6H4IEuEoZU/gnzlZVYlkL5J5OcyMQ6tKhqx9uEE6cIuspRaKRYn9zPSbjFQcxvX8nxp/cA==, tarball: https://github.com/money-on-chain/hardhat/releases/download/v3.0.10-moc/nomicfoundation-hardhat-ignition-3.0.3.tgz}
-    version: 3.0.3
+  '@nomicfoundation/hardhat-ignition@3.1.8':
+    resolution: {integrity: sha512-zVsR1SA1gqjd3SF3C+BljttSEMOaIbSIEvHgFhXF/A1IgeecJYD/MqGcvGAW4s51r5ZGQnUSl9t/5VQKvuExlw==}
     peerDependencies:
       '@nomicfoundation/hardhat-verify': ^3.0.0
-      hardhat: ^3.0.0
+      hardhat: ^3.8.0
 
-  '@nomicfoundation/hardhat-network-helpers@https://github.com/money-on-chain/hardhat/releases/download/v3.0.10-moc/nomicfoundation-hardhat-network-helpers-3.0.1.tgz':
-    resolution: {integrity: sha512-bNDZJawEEZhUQkUwvwlM5lLwcEBxQ5wNYDZsNHeiycPcYsDRhSFDuVPuKppJ78NGGnDUiwVsEogr/kRcQHk9rg==, tarball: https://github.com/money-on-chain/hardhat/releases/download/v3.0.10-moc/nomicfoundation-hardhat-network-helpers-3.0.1.tgz}
-    version: 3.0.1
+  '@nomicfoundation/hardhat-keystore@3.0.12':
+    resolution: {integrity: sha512-uXySRPOOHtAg/RrwmqiQyw0QDA6Er3H6rB4su0J59mBPC/QHw9B5F9dDfF2u+FZn5LVWH6Gh58mEvJhRt0a4dQ==}
     peerDependencies:
-      hardhat: ^3.0.0
+      hardhat: ^3.8.0
 
-  '@nomicfoundation/hardhat-toolbox-mocha-ethers@https://github.com/money-on-chain/hardhat/releases/download/v3.0.10-moc/nomicfoundation-hardhat-toolbox-mocha-ethers-3.0.0.tgz':
-    resolution: {integrity: sha512-9E25QgNNibx7aHXfYA03uzJQUcQQU3LkdN9Wp3uAbZwNIODJgPv6UJ77G8VQccwKgRcsMTijam1FOZgCbJc7pw==, tarball: https://github.com/money-on-chain/hardhat/releases/download/v3.0.10-moc/nomicfoundation-hardhat-toolbox-mocha-ethers-3.0.0.tgz}
-    version: 3.0.0
+  '@nomicfoundation/hardhat-network-helpers@3.0.11':
+    resolution: {integrity: sha512-3/xuORejAOGbfqBmIen+OCHu9ExK9O8pjE11ILU9NcN37zy3GDbyNCKV9keK1gSjWWVb0okAlAR/yvewfEE4TA==}
     peerDependencies:
-      '@nomicfoundation/hardhat-ethers': ^4.0.0
-      '@nomicfoundation/hardhat-ethers-chai-matchers': ^3.0.0
-      '@nomicfoundation/hardhat-ignition': ^3.0.0
-      '@nomicfoundation/hardhat-ignition-ethers': ^3.0.0
+      hardhat: ^3.8.0
+
+  '@nomicfoundation/hardhat-node-test-reporter@3.1.1':
+    resolution: {integrity: sha512-dGWMfDYM2gg7leFA2w3RMKW3TzIXJm0+8VLOLxCbROQ9bJTzI76nwrPNmVNAeH49Q2cU3WCdgw7YXAp7lcoYRA==}
+
+  '@nomicfoundation/hardhat-node-test-runner@3.0.17':
+    resolution: {integrity: sha512-zn+5BJ00n9pCFIAKJDegf65P7AM8+tcgCsrtXkjVH7wA46jssGaKQ8VduTwoekfZn8DdmwPTL7MWXqwjSS/Lkg==}
+    peerDependencies:
+      hardhat: ^3.8.0
+
+  '@nomicfoundation/hardhat-toolbox-viem@5.0.7':
+    resolution: {integrity: sha512-aHF77tTYmBIbuxY99KKBPx4cLWdcQvvar1PpzWJyrDgC+P6rA7Edi1GpvvPcwO/HdfZXuACQ74zSS2PnmJu3mA==}
+    peerDependencies:
+      '@nomicfoundation/hardhat-ignition': ^3.0.7
+      '@nomicfoundation/hardhat-ignition-viem': ^3.0.7
       '@nomicfoundation/hardhat-keystore': ^3.0.0
-      '@nomicfoundation/hardhat-mocha': ^3.0.0
       '@nomicfoundation/hardhat-network-helpers': ^3.0.0
-      '@nomicfoundation/hardhat-typechain': ^3.0.0
+      '@nomicfoundation/hardhat-node-test-runner': ^3.0.0
       '@nomicfoundation/hardhat-verify': ^3.0.0
-      '@nomicfoundation/ignition-core': ^3.0.0
-      chai: ^5.1.2
-      ethers: ^6.14.0
-      hardhat: ^3.0.0
-
-  '@nomicfoundation/hardhat-utils@3.0.4':
-    resolution: {integrity: sha512-ZExEZ0ym/oIJoXg1HmrOgIKg0hnkS16bDa5UeRbMCH/cVwcatDYKAmwQwLBhoB2JK8nPjDlYmHxYvjL65QQ1Xw==}
+      '@nomicfoundation/hardhat-viem': ^3.0.4
+      '@nomicfoundation/hardhat-viem-assertions': ^3.0.5
+      '@nomicfoundation/ignition-core': ^3.0.7
+      hardhat: ^3.8.0
+      viem: ^2.47.6
 
   '@nomicfoundation/hardhat-utils@4.1.7':
     resolution: {integrity: sha512-syZ1OqcJUR1l8JD8cP96PPtjn+55GJX6c7q2e0z1WhT6/DjQJZCbOiET1MCkIr6HK6k+ZMfsTR7KbnhrRiL0CQ==}
 
-  '@nomicfoundation/hardhat-utils@https://github.com/money-on-chain/hardhat/releases/download/v3.0.10-moc/nomicfoundation-hardhat-utils-3.0.4.tgz':
-    resolution: {integrity: sha512-E/5gzs7Ld1kv1JOTpKZ1u8QBXdbVlclFmGfaF1JoQpmEJpC4rCayLFmC2/EfZuKMuhVY17bnZrKvhp7XhkucEA==, tarball: https://github.com/money-on-chain/hardhat/releases/download/v3.0.10-moc/nomicfoundation-hardhat-utils-3.0.4.tgz}
-    version: 3.0.4
-
   '@nomicfoundation/hardhat-vendored@3.0.4':
     resolution: {integrity: sha512-RO8Otj1FvRvxJmXzkxh1vTwK/+cqSVPYLqY6RrWkmzHEEcxnAwAFsBYdW7xyTEyW/pVbSSNd2gs3aoGdGZaoNA==}
 
-  '@nomicfoundation/hardhat-verify@https://github.com/money-on-chain/hardhat/releases/download/v3.0.10-moc/nomicfoundation-hardhat-verify-3.0.4.tgz':
-    resolution: {integrity: sha512-bw4MvJBkNWhwJ/IlYdmxLi3qyNa4119LI8MyLT4/vx1i156b0EqY/X5QyjU1fp/UyI8qGKPTpjHbj4wXECUT+A==, tarball: https://github.com/money-on-chain/hardhat/releases/download/v3.0.10-moc/nomicfoundation-hardhat-verify-3.0.4.tgz}
-    version: 3.0.4
+  '@nomicfoundation/hardhat-verify@3.0.21':
+    resolution: {integrity: sha512-kaV9BfmFw5VbjMEyyQxoXVe0qwkEUi7wfi/WVTiVU0mdUUwojvk8hv0oT87vHO6FeYVGAcN/FEwmYZqBOiip6Q==}
     peerDependencies:
-      hardhat: ^3.0.0
+      hardhat: ^3.8.0
+
+  '@nomicfoundation/hardhat-viem-assertions@3.1.2':
+    resolution: {integrity: sha512-vMdyBnvgAD/2uZVzDwWc4ynGekxEQx/1LJ3gIXmsJtAPWENolfBXs3fHCxnA48he7lldyEsymZaNya8MZBLYwA==}
+    peerDependencies:
+      '@nomicfoundation/hardhat-viem': ^3.0.4
+      hardhat: ^3.8.0
+      viem: ^2.47.6
+
+  '@nomicfoundation/hardhat-viem@3.0.9':
+    resolution: {integrity: sha512-GtQ7l55C70Jj80yrZGdW7Kah0vPmEje29G/xVfcxchVxRRFdj1XyFZFn+7e53b11qhHMWDB787pVN+I8YZae3w==}
+    peerDependencies:
+      hardhat: ^3.8.0
+      viem: ^2.47.6
 
   '@nomicfoundation/hardhat-zod-utils@3.0.5':
     resolution: {integrity: sha512-A1G9Jcizf/vYcGMtqkf+st94zBPTDB+bXXlojOMu77gmBZYbywY0k7hdRM2B4uJY+8nM0oe0sNVGVkARITXdcw==}
     peerDependencies:
       zod: ^3.23.8
 
-  '@nomicfoundation/ignition-core@https://github.com/money-on-chain/hardhat/releases/download/v3.0.10-moc/nomicfoundation-ignition-core-3.0.3.tgz':
-    resolution: {integrity: sha512-6ikveexZpHNB54Kl3SO/3RPN/Bv/0MMSNn0fwqAzjncdpnL1BEJ1he2QLL4ydlWMCDwHRKkKg498FGEhPRH9Fg==, tarball: https://github.com/money-on-chain/hardhat/releases/download/v3.0.10-moc/nomicfoundation-ignition-core-3.0.3.tgz}
-    version: 3.0.3
+  '@nomicfoundation/ignition-core@3.1.7':
+    resolution: {integrity: sha512-3u9dZ3+tRW8uSNTMHlYONNKZ2psHjmMdUwtHKHOLsaWdyGBSNMwMnGmLCpXlqhPm+p40cmMSruyzogAQkcEseA==}
+
+  '@nomicfoundation/ignition-core@3.1.8':
+    resolution: {integrity: sha512-HJsV8WNa3wa9g8eqNqT4ZsgEI/zNEmByHCro6yHRc+E1VbCZCalXScgZ2ZSjsZlvQdMw19sk8av1YIxRm28rRw==}
 
   '@nomicfoundation/ignition-ui@3.1.2':
     resolution: {integrity: sha512-OoS5eQi9WBeiYI6EXurhqrpr6syRVhnaUzdx5fyK/1syKGq9BsjWWHXTNru0qk5ZFQ9f/KMTZotcDZD4eAdCpg==}
@@ -913,6 +959,9 @@ packages:
     resolution: {integrity: sha512-KxXvfapcixpz6rVEB6HPjOUZT22yN6v0vI0urQSk1L8MlEWPDFCZkhw2xmkyoTGYeFw7tWTZd7e3lVzRZRN/EA==}
     engines: {node: '>=18'}
 
+  '@sinclair/typebox@0.34.52':
+    resolution: {integrity: sha512-XiMQh7qqVlxZzcVD+kkGMNGMzcTrDMLWI7S4x7z1MkCkbDPrekpZXEUK0eZqZFMuHQg2a2DZOcDIh9o5v3Gonw==}
+
   '@sindresorhus/is@5.6.0':
     resolution: {integrity: sha512-TV7t8GKYaJWsn00tFDqBw8+Uqmr8A0fRU1tvTQhyZzGv0sJCGRQL3JGMI3ucuKo3XIZdUP+Lx7/gh2t3lewy7g==}
     engines: {node: '>=14.16'}
@@ -946,21 +995,18 @@ packages:
 
   '@solidstate/hardhat-contract-sizer@3.0.3':
     resolution: {integrity: sha512-vvCzM4I9mXsJN1V0PsF5+7FJSjj43JKKrUSWN/brHBYc350fTKeclpe68gaujXGRoyTO6N1fL+2419lIvKTX6g==}
-    version: 3.0.3
     peerDependencies:
       '@nomicfoundation/hardhat-utils': ^4.0.0
       hardhat: ^3.8.0
 
   '@solidstate/hardhat-git@1.0.3':
     resolution: {integrity: sha512-Z6heCARNVqtf3ZmfvLuN3Q8uDrkMIXYG08xugvscE8XUnLEMhWcHfgUvlPBkb8ICa7ZI1rKUyraykKjEKhydSg==}
-    version: 1.0.3
     peerDependencies:
       '@nomicfoundation/hardhat-utils': ^4.0.0
       hardhat: ^3.8.0
 
   '@solidstate/hardhat-solidstate-utils@1.0.3':
     resolution: {integrity: sha512-VoD5KsHCUllPNeo7QgTS4HN316zIW7bTnn3VgELLQOWpjPmRZd+znxN4qHV25g96gbV6TW4GFf8WVHL3V13wvQ==}
-    version: 1.0.3
     peerDependencies:
       '@nomicfoundation/hardhat-utils': ^4.0.0
       hardhat: ^3.8.0
@@ -1160,6 +1206,10 @@ packages:
   ansi-styles@4.3.0:
     resolution: {integrity: sha512-zbB9rCJAT1rbjiVDb2hqKFHNYLxgtk8NURxZ3IZwD3F6NtxbXZQCnnSi1Lkx+IDohdPlFp222wVALIheZJQSEg==}
     engines: {node: '>=8'}
+
+  ansi-styles@5.2.0:
+    resolution: {integrity: sha512-Cxwpt2SfTzTtXcfOlzGEee8O+c+MmUgGrNiBcXnuWxuFJHe6a5Hz7qwhwe5OgaSYI0IJvkLqWX1ASG+cJOkEiA==}
+    engines: {node: '>=10'}
 
   antlr4@4.13.2:
     resolution: {integrity: sha512-QiVbZhyy4xAZ17UPEuG3YTOt8ZaoeOR1CvEAqrEsDBsOqINslaB147i9xqljZqoyf5S+EUlGStaj+t22LT9MOg==}
@@ -2000,6 +2050,10 @@ packages:
   ieee754@1.2.1:
     resolution: {integrity: sha512-dcyqhDvX1C46lXZcVqCpK+FtMRQVdIMN6/Df5js2zouUsqG7I6sFxitIC+7KYK29KdXOLHdu9zL4sFnoVQnqaA==}
 
+  ignition-utils@https://codeload.github.com/money-on-chain/ignition-utils/tar.gz/786b080cda2b7636fcc48e14cf2d5fff2a36915f:
+    resolution: {gitHosted: true, integrity: sha512-rm45bHtZJSfye3O8Vf1DyBJpYLtyizNyMZ6pFFgGThUe6431hoobVluyBwymcBoOLIO6rT8ZexXq3p1y+qqe8A==, tarball: https://codeload.github.com/money-on-chain/ignition-utils/tar.gz/786b080cda2b7636fcc48e14cf2d5fff2a36915f}
+    version: 1.0.0
+
   ignore@5.3.2:
     resolution: {integrity: sha512-hsBTNUqQTDwkWtcdYI2i06Y/nUBEsNEDJKjWdigLvegy8kDuJAS8uRlpkkcQpyEXL0Z/pjDy5HBmMjRCJ2gq+g==}
     engines: {node: '>= 4'}
@@ -2111,6 +2165,10 @@ packages:
     resolution: {integrity: sha512-I1fSfDCZL5P0v33sVqeTDSpcstAg/N+wF5HS033mogOVIp4B+oHC7oOCsA3axAbBSGTJ8QubbNmnIRN/h8U7hg==}
     peerDependencies:
       ws: '*'
+
+  jest-diff@30.4.1:
+    resolution: {integrity: sha512-CRpFK0RtLriVDGcPPAnR6HMVI8bSR2jnUIgralhauzYQZIb4RH9AtEInTuQr65LmmGggGcRT6HIASxwqsVsmlA==}
+    engines: {node: ^18.14.0 || ^20.0.0 || ^22.0.0 || >=24.0.0}
 
   jiti@2.6.1:
     resolution: {integrity: sha512-ekilCSN1jwRvIbgeg/57YFh8qQDNbwDb9xT/qu2DAHbFFZUicIl4ygVaAvzveMhMVr3LnpSKTNnwt8PoOfmKhQ==}
@@ -2541,6 +2599,10 @@ packages:
     engines: {node: '>=14'}
     hasBin: true
 
+  pretty-format@30.4.1:
+    resolution: {integrity: sha512-K6KiKMHTL4jjX4u3Kir2EW07nRfcqVTXIImx50wbjHQTcZPgg+gjVeNTIT3l3L1Rd4UefxfogquC9J37SoFyyw==}
+    engines: {node: ^18.14.0 || ^20.0.0 || ^22.0.0 || >=24.0.0}
+
   price-oracle-interfaces@https://codeload.github.com/money-on-chain/price_oracle_interfaces/tar.gz/1d40834055f9d12ac3b3ce98bce82199336eb7d9:
     resolution: {gitHosted: true, integrity: sha512-YF67HoahUUwiVV+0XzvvypwAYSDXlUpi9mrA7DMNSvyzLKXmJfKgRTRPdBCnEzlOIqZTxnV3UefovI5ja1AmIg==, tarball: https://codeload.github.com/money-on-chain/price_oracle_interfaces/tar.gz/1d40834055f9d12ac3b3ce98bce82199336eb7d9}
     version: 0.1.0
@@ -2588,6 +2650,12 @@ packages:
   rc@1.2.8:
     resolution: {integrity: sha512-y3bGgqKj3QBdxLbLkomlohkvsA8gdAiUQlSBJnBhfn+BPxg4bc62d8TcBW15wavDfgexCgccckhcZvywyQYPOw==}
     hasBin: true
+
+  react-is@18.3.1:
+    resolution: {integrity: sha512-/LLMVyas0ljjAtoYiPqYiL8VWXzUUdThrmU5+n20DZv+a+ClRoevUzw5JxU+Ieh5/c87ytoTBV9G1FiKfNJdmg==}
+
+  react-is@19.2.8:
+    resolution: {integrity: sha512-s5un28nYxKJw5gvUHyW5PCC28CvBqLu9r3cWgzHT4Vo/5fqqkFcdRYsGcKf50WMPpjjFZS5d76fn3YCo2njKwQ==}
 
   read-pkg-up@3.0.0:
     resolution: {integrity: sha512-YFzFrVvpC6frF1sz8psoHDBGF7fLPc+llq/8NB43oagqWkx8ar5zYtsTORtOjw9W2RHLpWP+zTWwBvf1bCmcSw==}
@@ -2914,6 +2982,10 @@ packages:
     engines: {node: '>=18.0.0'}
     hasBin: true
 
+  tunnel@0.0.6:
+    resolution: {integrity: sha512-1h/Lnq9yajKY2PEbBadPXj3VxsDDu844OnaAo52UVmIzIvwwtBPIuNvkjuzBlTWpfJyUbG3ez0KSBibQkj4ojg==}
+    engines: {node: '>=0.6.11 <=0.7.0 || >=0.7.3'}
+
   type-check@0.4.0:
     resolution: {integrity: sha512-XleUoc9uwGXqjWwXaUTZAmzMcFZ5858QA2vvx1Ur5xIcixXIP+8LnFDgRplU30us6teqdlskFfu+ae4K79Ooew==}
     engines: {node: '>= 0.8.0'}
@@ -3084,6 +3156,22 @@ packages:
     resolution: {integrity: sha512-gzUt/qt81nXsFGKIFcC3YnfEAx5NkunCfnDlvuBSSFS02bcXu4Lmea0AFIUwbLWxWPx3d9p8S5QoaujKcNQxcQ==}
 
 snapshots:
+
+  '@actions/core@3.0.1':
+    dependencies:
+      '@actions/exec': 3.0.0
+      '@actions/http-client': 4.0.1
+
+  '@actions/exec@3.0.0':
+    dependencies:
+      '@actions/io': 3.0.2
+
+  '@actions/http-client@4.0.1':
+    dependencies:
+      tunnel: 0.0.6
+      undici: 6.28.0
+
+  '@actions/io@3.0.2': {}
 
   '@adraffy/ens-normalize@1.11.1': {}
 
@@ -3654,6 +3742,14 @@ snapshots:
 
   '@hutson/parse-repository-url@3.0.2': {}
 
+  '@jest/diff-sequences@30.4.0': {}
+
+  '@jest/get-type@30.1.0': {}
+
+  '@jest/schemas@30.4.1':
+    dependencies:
+      '@sinclair/typebox': 0.34.52
+
   '@kwsites/file-exists@1.1.1(supports-color@7.2.0)':
     dependencies:
       debug: 4.4.3(supports-color@7.2.0)
@@ -3667,14 +3763,14 @@ snapshots:
       '@moc/periphery': '@moneyonchain/periphery@https://codeload.github.com/money-on-chain/MoC-Periphery/tar.gz/6be2d281a42cc17b8136184054dcb62f7c586a7b'
       '@openzeppelin/contracts-ethereum-package': 3.0.0
 
-  '@moneyonchain/oracles@https://codeload.github.com/money-on-chain/OMoC-Decentralized-Oracle/tar.gz/97346da016e2ac460b09969568330dfdc0a19df4(@moneyonchain/periphery@https://codeload.github.com/money-on-chain/MoC-Periphery/tar.gz/6be2d281a42cc17b8136184054dcb62f7c586a7b)(main-sc-protocol-v2@git+ssh://git@github.com/money-on-chain/main-sc-protocol-v2.git#808fae8dba59c793d490b0b3668fbeb23c773c9b(hardhat@3.9.0))(ts-test-helpers@https://codeload.github.com/money-on-chain/ts-test-helpers/tar.gz/6177adbe32646487c88dc9553b160c22d498e8e2(hardhat@3.9.0)(typescript@5.9.3)(zod@3.25.76))(typescript@5.9.3)(zod@3.25.76)':
+  '@moneyonchain/oracles@https://codeload.github.com/money-on-chain/OMoC-Decentralized-Oracle/tar.gz/97346da016e2ac460b09969568330dfdc0a19df4(@moneyonchain/periphery@https://codeload.github.com/money-on-chain/MoC-Periphery/tar.gz/6be2d281a42cc17b8136184054dcb62f7c586a7b)(main-sc-protocol-v2@git+ssh://git@github.com/money-on-chain/main-sc-protocol-v2.git#808fae8dba59c793d490b0b3668fbeb23c773c9b(hardhat@3.9.0))(ts-test-helpers@https://codeload.github.com/money-on-chain/ts-test-helpers/tar.gz/6177adbe32646487c88dc9553b160c22d498e8e2(@nomicfoundation/hardhat-toolbox-viem@5.0.7(6290106f27664cbed5721001e427defd))(hardhat@3.9.0)(typescript@5.9.3)(zod@3.25.76))(typescript@5.9.3)(zod@3.25.76)':
     dependencies:
       '@moc/moc-main': main-sc-protocol-v2@git+ssh://git@github.com/money-on-chain/main-sc-protocol-v2.git#808fae8dba59c793d490b0b3668fbeb23c773c9b(hardhat@3.9.0)
       '@moc/periphery': '@moneyonchain/periphery@https://codeload.github.com/money-on-chain/MoC-Periphery/tar.gz/6be2d281a42cc17b8136184054dcb62f7c586a7b'
       '@openzeppelin/contracts': 4.9.3
       '@openzeppelin/contracts-ethereum-package': 3.0.0
       '@openzeppelin/contracts-upgradeable': 4.9.3
-      ts-test-helpers: https://codeload.github.com/money-on-chain/ts-test-helpers/tar.gz/6177adbe32646487c88dc9553b160c22d498e8e2(hardhat@3.9.0)(typescript@5.9.3)(zod@3.25.76)
+      ts-test-helpers: https://codeload.github.com/money-on-chain/ts-test-helpers/tar.gz/6177adbe32646487c88dc9553b160c22d498e8e2(@nomicfoundation/hardhat-toolbox-viem@5.0.7(6290106f27664cbed5721001e427defd))(hardhat@3.9.0)(typescript@5.9.3)(zod@3.25.76)
       viem: 2.53.1(typescript@5.9.3)(zod@3.25.76)
     transitivePeerDependencies:
       - bufferutil
@@ -3685,6 +3781,8 @@ snapshots:
   '@moneyonchain/periphery@https://codeload.github.com/money-on-chain/MoC-Periphery/tar.gz/6be2d281a42cc17b8136184054dcb62f7c586a7b':
     dependencies:
       '@openzeppelin/contracts-ethereum-package': 3.0.0
+
+  '@noble/ciphers@1.2.1': {}
 
   '@noble/ciphers@1.3.0': {}
 
@@ -3707,6 +3805,8 @@ snapshots:
   '@noble/hashes@1.3.2': {}
 
   '@noble/hashes@1.4.0': {}
+
+  '@noble/hashes@1.7.1': {}
 
   '@noble/hashes@1.7.2': {}
 
@@ -3740,77 +3840,88 @@ snapshots:
     dependencies:
       '@nomicfoundation/hardhat-utils': 4.1.7
 
-  '@nomicfoundation/hardhat-ethers@https://github.com/money-on-chain/hardhat/releases/download/v3.0.10-moc/nomicfoundation-hardhat-ethers-4.0.2.tgz(hardhat@3.9.0)(supports-color@7.2.0)':
+  '@nomicfoundation/hardhat-ignition-viem@3.1.6(@nomicfoundation/hardhat-ignition@3.1.8(@nomicfoundation/hardhat-verify@3.0.21(hardhat@3.9.0))(hardhat@3.9.0))(@nomicfoundation/hardhat-verify@3.0.21(hardhat@3.9.0))(@nomicfoundation/hardhat-viem@3.0.9(hardhat@3.9.0)(viem@2.53.1(typescript@5.9.3)(zod@3.25.76)))(@nomicfoundation/ignition-core@3.1.8)(hardhat@3.9.0)(viem@2.53.1(typescript@5.9.3)(zod@3.25.76))':
     dependencies:
       '@nomicfoundation/hardhat-errors': 3.0.18
-      '@nomicfoundation/hardhat-utils': 3.0.4(supports-color@7.2.0)
-      debug: 4.4.3(supports-color@7.2.0)
-      ethereum-cryptography: 2.2.1
-      ethers: 6.17.0
+      '@nomicfoundation/hardhat-ignition': 3.1.8(@nomicfoundation/hardhat-verify@3.0.21(hardhat@3.9.0))(hardhat@3.9.0)
+      '@nomicfoundation/hardhat-verify': 3.0.21(hardhat@3.9.0)
+      '@nomicfoundation/hardhat-viem': 3.0.9(hardhat@3.9.0)(viem@2.53.1(typescript@5.9.3)(zod@3.25.76))
+      '@nomicfoundation/ignition-core': 3.1.8
       hardhat: 3.9.0
-    transitivePeerDependencies:
-      - bufferutil
-      - supports-color
-      - utf-8-validate
+      viem: 2.53.1(typescript@5.9.3)(zod@3.25.76)
 
-  ? '@nomicfoundation/hardhat-ignition-ethers@https://github.com/money-on-chain/hardhat/releases/download/v3.0.10-moc/nomicfoundation-hardhat-ignition-ethers-3.0.3.tgz(@nomicfoundation/hardhat-ethers@https://github.com/money-on-chain/hardhat/releases/download/v3.0.10-moc/nomicfoundation-hardhat-ethers-4.0.2.tgz(hardhat@3.9.0)(supports-color@7.2.0))(@nomicfoundation/hardhat-ignition@https://github.com/money-on-chain/hardhat/releases/download/v3.0.10-moc/nomicfoundation-hardhat-ignition-3.0.3.tgz(@nomicfoundation/hardhat-verify@https://github.com/money-on-chain/hardhat/releases/download/v3.0.10-moc/nomicfoundation-hardhat-verify-3.0.4.tgz(hardhat@3.9.0)(supports-color@7.2.0))(hardhat@3.9.0)(supports-color@7.2.0))(@nomicfoundation/hardhat-verify@https://github.com/money-on-chain/hardhat/releases/download/v3.0.10-moc/nomicfoundation-hardhat-verify-3.0.4.tgz(hardhat@3.9.0)(supports-color@7.2.0))(@nomicfoundation/ignition-core@https://github.com/money-on-chain/hardhat/releases/download/v3.0.10-moc/nomicfoundation-ignition-core-3.0.3.tgz(supports-color@7.2.0))(ethers@6.17.0)(hardhat@3.9.0)'
-  : dependencies:
-      '@nomicfoundation/hardhat-errors': 3.0.18
-      '@nomicfoundation/hardhat-ethers': https://github.com/money-on-chain/hardhat/releases/download/v3.0.10-moc/nomicfoundation-hardhat-ethers-4.0.2.tgz(hardhat@3.9.0)(supports-color@7.2.0)
-      '@nomicfoundation/hardhat-ignition': https://github.com/money-on-chain/hardhat/releases/download/v3.0.10-moc/nomicfoundation-hardhat-ignition-3.0.3.tgz(@nomicfoundation/hardhat-verify@https://github.com/money-on-chain/hardhat/releases/download/v3.0.10-moc/nomicfoundation-hardhat-verify-3.0.4.tgz(hardhat@3.9.0)(supports-color@7.2.0))(hardhat@3.9.0)(supports-color@7.2.0)
-      '@nomicfoundation/hardhat-verify': https://github.com/money-on-chain/hardhat/releases/download/v3.0.10-moc/nomicfoundation-hardhat-verify-3.0.4.tgz(hardhat@3.9.0)(supports-color@7.2.0)
-      '@nomicfoundation/ignition-core': https://github.com/money-on-chain/hardhat/releases/download/v3.0.10-moc/nomicfoundation-ignition-core-3.0.3.tgz(supports-color@7.2.0)
-      ethers: 6.17.0
-      hardhat: 3.9.0
-
-  '@nomicfoundation/hardhat-ignition@https://github.com/money-on-chain/hardhat/releases/download/v3.0.10-moc/nomicfoundation-hardhat-ignition-3.0.3.tgz(@nomicfoundation/hardhat-verify@https://github.com/money-on-chain/hardhat/releases/download/v3.0.10-moc/nomicfoundation-hardhat-verify-3.0.4.tgz(hardhat@3.9.0)(supports-color@7.2.0))(hardhat@3.9.0)(supports-color@7.2.0)':
+  '@nomicfoundation/hardhat-ignition@3.1.8(@nomicfoundation/hardhat-verify@3.0.21(hardhat@3.9.0))(hardhat@3.9.0)':
     dependencies:
       '@nomicfoundation/hardhat-errors': 3.0.18
-      '@nomicfoundation/hardhat-utils': 3.0.4(supports-color@7.2.0)
-      '@nomicfoundation/hardhat-verify': https://github.com/money-on-chain/hardhat/releases/download/v3.0.10-moc/nomicfoundation-hardhat-verify-3.0.4.tgz(hardhat@3.9.0)(supports-color@7.2.0)
-      '@nomicfoundation/ignition-core': https://github.com/money-on-chain/hardhat/releases/download/v3.0.10-moc/nomicfoundation-ignition-core-3.0.3.tgz(supports-color@7.2.0)
+      '@nomicfoundation/hardhat-utils': 4.1.7
+      '@nomicfoundation/hardhat-verify': 3.0.21(hardhat@3.9.0)
+      '@nomicfoundation/ignition-core': 3.1.8
       '@nomicfoundation/ignition-ui': 3.1.2
-      chalk: 5.6.2
-      debug: 4.4.3(supports-color@7.2.0)
       hardhat: 3.9.0
       json5: 2.2.3
       prompts: 2.4.2
     transitivePeerDependencies:
       - bufferutil
-      - supports-color
       - utf-8-validate
 
-  '@nomicfoundation/hardhat-network-helpers@https://github.com/money-on-chain/hardhat/releases/download/v3.0.10-moc/nomicfoundation-hardhat-network-helpers-3.0.1.tgz(hardhat@3.9.0)(supports-color@7.2.0)':
+  '@nomicfoundation/hardhat-keystore@3.0.12(hardhat@3.9.0)':
+    dependencies:
+      '@noble/ciphers': 1.2.1
+      '@noble/hashes': 1.7.1
+      '@nomicfoundation/hardhat-errors': 3.0.18
+      '@nomicfoundation/hardhat-utils': 4.1.7
+      '@nomicfoundation/hardhat-zod-utils': 3.0.5(zod@3.25.76)
+      hardhat: 3.9.0
+      zod: 3.25.76
+
+  '@nomicfoundation/hardhat-network-helpers@3.0.11(hardhat@3.9.0)':
     dependencies:
       '@nomicfoundation/hardhat-errors': 3.0.18
-      '@nomicfoundation/hardhat-utils': 3.0.4(supports-color@7.2.0)
-      hardhat: 3.9.0
-    transitivePeerDependencies:
-      - supports-color
-
-  '@nomicfoundation/hardhat-toolbox-mocha-ethers@https://github.com/money-on-chain/hardhat/releases/download/v3.0.10-moc/nomicfoundation-hardhat-toolbox-mocha-ethers-3.0.0.tgz(af8ae41cec01d0a12db0bb0b045855bf)':
-    dependencies:
-      '@nomicfoundation/hardhat-ethers': https://github.com/money-on-chain/hardhat/releases/download/v3.0.10-moc/nomicfoundation-hardhat-ethers-4.0.2.tgz(hardhat@3.9.0)(supports-color@7.2.0)
-      '@nomicfoundation/hardhat-ignition': https://github.com/money-on-chain/hardhat/releases/download/v3.0.10-moc/nomicfoundation-hardhat-ignition-3.0.3.tgz(@nomicfoundation/hardhat-verify@https://github.com/money-on-chain/hardhat/releases/download/v3.0.10-moc/nomicfoundation-hardhat-verify-3.0.4.tgz(hardhat@3.9.0)(supports-color@7.2.0))(hardhat@3.9.0)(supports-color@7.2.0)
-      '@nomicfoundation/hardhat-ignition-ethers': https://github.com/money-on-chain/hardhat/releases/download/v3.0.10-moc/nomicfoundation-hardhat-ignition-ethers-3.0.3.tgz(@nomicfoundation/hardhat-ethers@https://github.com/money-on-chain/hardhat/releases/download/v3.0.10-moc/nomicfoundation-hardhat-ethers-4.0.2.tgz(hardhat@3.9.0)(supports-color@7.2.0))(@nomicfoundation/hardhat-ignition@https://github.com/money-on-chain/hardhat/releases/download/v3.0.10-moc/nomicfoundation-hardhat-ignition-3.0.3.tgz(@nomicfoundation/hardhat-verify@https://github.com/money-on-chain/hardhat/releases/download/v3.0.10-moc/nomicfoundation-hardhat-verify-3.0.4.tgz(hardhat@3.9.0)(supports-color@7.2.0))(hardhat@3.9.0)(supports-color@7.2.0))(@nomicfoundation/hardhat-verify@https://github.com/money-on-chain/hardhat/releases/download/v3.0.10-moc/nomicfoundation-hardhat-verify-3.0.4.tgz(hardhat@3.9.0)(supports-color@7.2.0))(@nomicfoundation/ignition-core@https://github.com/money-on-chain/hardhat/releases/download/v3.0.10-moc/nomicfoundation-ignition-core-3.0.3.tgz(supports-color@7.2.0))(ethers@6.17.0)(hardhat@3.9.0)
-      '@nomicfoundation/hardhat-network-helpers': https://github.com/money-on-chain/hardhat/releases/download/v3.0.10-moc/nomicfoundation-hardhat-network-helpers-3.0.1.tgz(hardhat@3.9.0)(supports-color@7.2.0)
-      '@nomicfoundation/hardhat-verify': https://github.com/money-on-chain/hardhat/releases/download/v3.0.10-moc/nomicfoundation-hardhat-verify-3.0.4.tgz(hardhat@3.9.0)(supports-color@7.2.0)
-      '@nomicfoundation/ignition-core': https://github.com/money-on-chain/hardhat/releases/download/v3.0.10-moc/nomicfoundation-ignition-core-3.0.3.tgz(supports-color@7.2.0)
-      ethers: 6.17.0
+      '@nomicfoundation/hardhat-utils': 4.1.7
       hardhat: 3.9.0
 
-  '@nomicfoundation/hardhat-utils@3.0.4(supports-color@7.2.0)':
+  '@nomicfoundation/hardhat-node-test-reporter@3.1.1':
     dependencies:
-      '@streamparser/json-node': 0.0.22
-      debug: 4.4.3(supports-color@7.2.0)
-      env-paths: 2.2.1
-      ethereum-cryptography: 2.2.1
-      fast-equals: 5.4.1
-      json-stream-stringify: 3.1.7
-      rfdc: 1.4.1
-      undici: 6.28.0
-    transitivePeerDependencies:
-      - supports-color
+      '@actions/core': 3.0.1
+      jest-diff: 30.4.1
+
+  '@nomicfoundation/hardhat-node-test-runner@3.0.17(hardhat@3.9.0)':
+    dependencies:
+      '@nomicfoundation/hardhat-errors': 3.0.18
+      '@nomicfoundation/hardhat-node-test-reporter': 3.1.1
+      '@nomicfoundation/hardhat-utils': 4.1.7
+      '@nomicfoundation/hardhat-zod-utils': 3.0.5(zod@3.25.76)
+      hardhat: 3.9.0
+      tsx: 4.23.11
+      zod: 3.25.76
+
+  '@nomicfoundation/hardhat-toolbox-viem@5.0.7(6290106f27664cbed5721001e427defd)':
+    dependencies:
+      '@nomicfoundation/hardhat-ignition': 3.1.8(@nomicfoundation/hardhat-verify@3.0.21(hardhat@3.9.0))(hardhat@3.9.0)
+      '@nomicfoundation/hardhat-ignition-viem': 3.1.6(@nomicfoundation/hardhat-ignition@3.1.8(@nomicfoundation/hardhat-verify@3.0.21(hardhat@3.9.0))(hardhat@3.9.0))(@nomicfoundation/hardhat-verify@3.0.21(hardhat@3.9.0))(@nomicfoundation/hardhat-viem@3.0.9(hardhat@3.9.0)(viem@2.53.1(typescript@5.9.3)(zod@3.25.76)))(@nomicfoundation/ignition-core@3.1.8)(hardhat@3.9.0)(viem@2.53.1(typescript@5.9.3)(zod@3.25.76))
+      '@nomicfoundation/hardhat-keystore': 3.0.12(hardhat@3.9.0)
+      '@nomicfoundation/hardhat-network-helpers': 3.0.11(hardhat@3.9.0)
+      '@nomicfoundation/hardhat-node-test-runner': 3.0.17(hardhat@3.9.0)
+      '@nomicfoundation/hardhat-verify': 3.0.21(hardhat@3.9.0)
+      '@nomicfoundation/hardhat-viem': 3.0.9(hardhat@3.9.0)(viem@2.53.1(typescript@5.9.3)(zod@3.25.76))
+      '@nomicfoundation/hardhat-viem-assertions': 3.1.2(@nomicfoundation/hardhat-viem@3.0.9(hardhat@3.9.0)(viem@2.53.1(typescript@5.9.3)(zod@3.25.76)))(hardhat@3.9.0)(viem@2.53.1(typescript@5.9.3)(zod@3.25.76))
+      '@nomicfoundation/ignition-core': 3.1.8
+      hardhat: 3.9.0
+      viem: 2.53.1(typescript@5.9.3)(zod@3.25.76)
+
+  '@nomicfoundation/hardhat-toolbox-viem@5.0.7(888d9e6e504d5ca27c6bcc0d505c54e6)':
+    dependencies:
+      '@nomicfoundation/hardhat-ignition': 3.1.8(@nomicfoundation/hardhat-verify@3.0.21(hardhat@3.9.0))(hardhat@3.9.0)
+      '@nomicfoundation/hardhat-ignition-viem': 3.1.6(@nomicfoundation/hardhat-ignition@3.1.8(@nomicfoundation/hardhat-verify@3.0.21(hardhat@3.9.0))(hardhat@3.9.0))(@nomicfoundation/hardhat-verify@3.0.21(hardhat@3.9.0))(@nomicfoundation/hardhat-viem@3.0.9(hardhat@3.9.0)(viem@2.53.1(typescript@5.9.3)(zod@3.25.76)))(@nomicfoundation/ignition-core@3.1.8)(hardhat@3.9.0)(viem@2.53.1(typescript@5.9.3)(zod@3.25.76))
+      '@nomicfoundation/hardhat-keystore': 3.0.12(hardhat@3.9.0)
+      '@nomicfoundation/hardhat-network-helpers': 3.0.11(hardhat@3.9.0)
+      '@nomicfoundation/hardhat-node-test-runner': 3.0.17(hardhat@3.9.0)
+      '@nomicfoundation/hardhat-verify': 3.0.21(hardhat@3.9.0)
+      '@nomicfoundation/hardhat-viem': 3.0.9(hardhat@3.9.0)(viem@2.53.1(typescript@5.9.3)(zod@3.25.76))
+      '@nomicfoundation/hardhat-viem-assertions': 3.1.2(@nomicfoundation/hardhat-viem@3.0.9(hardhat@3.9.0)(viem@2.53.1(typescript@5.9.3)(zod@3.25.76)))(hardhat@3.9.0)(viem@2.53.1(typescript@5.9.3)(zod@3.25.76))
+      '@nomicfoundation/ignition-core': 3.1.7
+      hardhat: 3.9.0
+      viem: 2.53.1(typescript@5.9.3)(zod@3.25.76)
 
   '@nomicfoundation/hardhat-utils@4.1.7':
     dependencies:
@@ -3822,36 +3933,32 @@ snapshots:
       rfdc: 1.4.1
       undici: 6.28.0
 
-  '@nomicfoundation/hardhat-utils@https://github.com/money-on-chain/hardhat/releases/download/v3.0.10-moc/nomicfoundation-hardhat-utils-3.0.4.tgz(supports-color@7.2.0)':
-    dependencies:
-      '@streamparser/json-node': 0.0.22
-      debug: 4.4.3(supports-color@7.2.0)
-      env-paths: 2.2.1
-      ethereum-cryptography: 2.2.1
-      fast-equals: 5.4.1
-      json-stream-stringify: 3.1.7
-      rfdc: 1.4.1
-      undici: 6.28.0
-    transitivePeerDependencies:
-      - supports-color
-
   '@nomicfoundation/hardhat-vendored@3.0.4': {}
 
-  '@nomicfoundation/hardhat-verify@https://github.com/money-on-chain/hardhat/releases/download/v3.0.10-moc/nomicfoundation-hardhat-verify-3.0.4.tgz(hardhat@3.9.0)(supports-color@7.2.0)':
+  '@nomicfoundation/hardhat-verify@3.0.21(hardhat@3.9.0)':
     dependencies:
       '@ethersproject/abi': 5.8.0
       '@nomicfoundation/hardhat-errors': 3.0.18
-      '@nomicfoundation/hardhat-utils': 3.0.4(supports-color@7.2.0)
+      '@nomicfoundation/hardhat-utils': 4.1.7
       '@nomicfoundation/hardhat-zod-utils': 3.0.5(zod@3.25.76)
       cbor2: 1.12.0
-      chalk: 5.6.2
-      debug: 4.4.3(supports-color@7.2.0)
       hardhat: 3.9.0
-      semver: 7.8.5
-      undici: 6.28.0
       zod: 3.25.76
-    transitivePeerDependencies:
-      - supports-color
+
+  '@nomicfoundation/hardhat-viem-assertions@3.1.2(@nomicfoundation/hardhat-viem@3.0.9(hardhat@3.9.0)(viem@2.53.1(typescript@5.9.3)(zod@3.25.76)))(hardhat@3.9.0)(viem@2.53.1(typescript@5.9.3)(zod@3.25.76))':
+    dependencies:
+      '@nomicfoundation/hardhat-errors': 3.0.18
+      '@nomicfoundation/hardhat-utils': 4.1.7
+      '@nomicfoundation/hardhat-viem': 3.0.9(hardhat@3.9.0)(viem@2.53.1(typescript@5.9.3)(zod@3.25.76))
+      hardhat: 3.9.0
+      viem: 2.53.1(typescript@5.9.3)(zod@3.25.76)
+
+  '@nomicfoundation/hardhat-viem@3.0.9(hardhat@3.9.0)(viem@2.53.1(typescript@5.9.3)(zod@3.25.76))':
+    dependencies:
+      '@nomicfoundation/hardhat-errors': 3.0.18
+      '@nomicfoundation/hardhat-utils': 4.1.7
+      hardhat: 3.9.0
+      viem: 2.53.1(typescript@5.9.3)(zod@3.25.76)
 
   '@nomicfoundation/hardhat-zod-utils@3.0.5(zod@3.25.76)':
     dependencies:
@@ -3859,21 +3966,34 @@ snapshots:
       '@nomicfoundation/hardhat-utils': 4.1.7
       zod: 3.25.76
 
-  '@nomicfoundation/ignition-core@https://github.com/money-on-chain/hardhat/releases/download/v3.0.10-moc/nomicfoundation-ignition-core-3.0.3.tgz(supports-color@7.2.0)':
+  '@nomicfoundation/ignition-core@3.1.7':
     dependencies:
       '@ethersproject/address': 5.6.1
       '@nomicfoundation/hardhat-errors': 3.0.18
-      '@nomicfoundation/hardhat-utils': 3.0.4(supports-color@7.2.0)
+      '@nomicfoundation/hardhat-utils': 4.1.7
       '@nomicfoundation/solidity-analyzer': 0.1.2
       cbor2: 1.12.0
-      debug: 4.4.3(supports-color@7.2.0)
       ethers: 6.17.0
       immer: 10.0.2
       lodash-es: 4.17.21
       ndjson: 2.0.0
     transitivePeerDependencies:
       - bufferutil
-      - supports-color
+      - utf-8-validate
+
+  '@nomicfoundation/ignition-core@3.1.8':
+    dependencies:
+      '@ethersproject/address': 5.6.1
+      '@nomicfoundation/hardhat-errors': 3.0.18
+      '@nomicfoundation/hardhat-utils': 4.1.7
+      '@nomicfoundation/solidity-analyzer': 0.1.2
+      cbor2: 1.12.0
+      ethers: 6.17.0
+      immer: 10.0.2
+      lodash-es: 4.17.21
+      ndjson: 2.0.0
+    transitivePeerDependencies:
+      - bufferutil
       - utf-8-validate
 
   '@nomicfoundation/ignition-ui@3.1.2': {}
@@ -4047,6 +4167,8 @@ snapshots:
 
   '@simple-libs/stream-utils@1.2.0': {}
 
+  '@sinclair/typebox@0.34.52': {}
+
   '@sindresorhus/is@5.6.0': {}
 
   '@smithy/core@3.31.1':
@@ -4084,21 +4206,21 @@ snapshots:
 
   '@solidity-parser/parser@0.19.0': {}
 
-  '@solidstate/hardhat-contract-sizer@3.0.3(@nomicfoundation/hardhat-utils@https://github.com/money-on-chain/hardhat/releases/download/v3.0.10-moc/nomicfoundation-hardhat-utils-3.0.4.tgz(supports-color@7.2.0))(debug@4.4.3(supports-color@7.2.0))(hardhat@3.9.0)(supports-color@7.2.0)':
+  '@solidstate/hardhat-contract-sizer@3.0.3(@nomicfoundation/hardhat-utils@4.1.7)(debug@4.4.3(supports-color@7.2.0))(hardhat@3.9.0)(supports-color@7.2.0)':
     dependencies:
-      '@nomicfoundation/hardhat-utils': https://github.com/money-on-chain/hardhat/releases/download/v3.0.10-moc/nomicfoundation-hardhat-utils-3.0.4.tgz(supports-color@7.2.0)
-      '@solidstate/hardhat-git': 1.0.3(@nomicfoundation/hardhat-utils@https://github.com/money-on-chain/hardhat/releases/download/v3.0.10-moc/nomicfoundation-hardhat-utils-3.0.4.tgz(supports-color@7.2.0))(debug@4.4.3(supports-color@7.2.0))(hardhat@3.9.0)(supports-color@7.2.0)
-      '@solidstate/hardhat-solidstate-utils': 1.0.3(@nomicfoundation/hardhat-utils@https://github.com/money-on-chain/hardhat/releases/download/v3.0.10-moc/nomicfoundation-hardhat-utils-3.0.4.tgz(supports-color@7.2.0))(debug@4.4.3(supports-color@7.2.0))(hardhat@3.9.0)(supports-color@7.2.0)
+      '@nomicfoundation/hardhat-utils': 4.1.7
+      '@solidstate/hardhat-git': 1.0.3(@nomicfoundation/hardhat-utils@4.1.7)(debug@4.4.3(supports-color@7.2.0))(hardhat@3.9.0)(supports-color@7.2.0)
+      '@solidstate/hardhat-solidstate-utils': 1.0.3(@nomicfoundation/hardhat-utils@4.1.7)(debug@4.4.3(supports-color@7.2.0))(hardhat@3.9.0)(supports-color@7.2.0)
       chalk: 5.6.2
       hardhat: 3.9.0
     transitivePeerDependencies:
       - debug
       - supports-color
 
-  '@solidstate/hardhat-git@1.0.3(@nomicfoundation/hardhat-utils@https://github.com/money-on-chain/hardhat/releases/download/v3.0.10-moc/nomicfoundation-hardhat-utils-3.0.4.tgz(supports-color@7.2.0))(debug@4.4.3(supports-color@7.2.0))(hardhat@3.9.0)(supports-color@7.2.0)':
+  '@solidstate/hardhat-git@1.0.3(@nomicfoundation/hardhat-utils@4.1.7)(debug@4.4.3(supports-color@7.2.0))(hardhat@3.9.0)(supports-color@7.2.0)':
     dependencies:
-      '@nomicfoundation/hardhat-utils': https://github.com/money-on-chain/hardhat/releases/download/v3.0.10-moc/nomicfoundation-hardhat-utils-3.0.4.tgz(supports-color@7.2.0)
-      '@solidstate/hardhat-solidstate-utils': 1.0.3(@nomicfoundation/hardhat-utils@https://github.com/money-on-chain/hardhat/releases/download/v3.0.10-moc/nomicfoundation-hardhat-utils-3.0.4.tgz(supports-color@7.2.0))(debug@4.4.3(supports-color@7.2.0))(hardhat@3.9.0)(supports-color@7.2.0)
+      '@nomicfoundation/hardhat-utils': 4.1.7
+      '@solidstate/hardhat-solidstate-utils': 1.0.3(@nomicfoundation/hardhat-utils@4.1.7)(debug@4.4.3(supports-color@7.2.0))(hardhat@3.9.0)(supports-color@7.2.0)
       chalk: 5.6.2
       env-paths: 4.0.0
       hardhat: 3.9.0
@@ -4108,9 +4230,9 @@ snapshots:
       - debug
       - supports-color
 
-  '@solidstate/hardhat-solidstate-utils@1.0.3(@nomicfoundation/hardhat-utils@https://github.com/money-on-chain/hardhat/releases/download/v3.0.10-moc/nomicfoundation-hardhat-utils-3.0.4.tgz(supports-color@7.2.0))(debug@4.4.3(supports-color@7.2.0))(hardhat@3.9.0)(supports-color@7.2.0)':
+  '@solidstate/hardhat-solidstate-utils@1.0.3(@nomicfoundation/hardhat-utils@4.1.7)(debug@4.4.3(supports-color@7.2.0))(hardhat@3.9.0)(supports-color@7.2.0)':
     dependencies:
-      '@nomicfoundation/hardhat-utils': https://github.com/money-on-chain/hardhat/releases/download/v3.0.10-moc/nomicfoundation-hardhat-utils-3.0.4.tgz(supports-color@7.2.0)
+      '@nomicfoundation/hardhat-utils': 4.1.7
       axios: 1.19.0(debug@4.4.3(supports-color@7.2.0))(supports-color@7.2.0)
       chalk: 5.6.2
       cli-table3: 0.6.5
@@ -4356,6 +4478,8 @@ snapshots:
   ansi-styles@4.3.0:
     dependencies:
       color-convert: 2.0.1
+
+  ansi-styles@5.2.0: {}
 
   antlr4@4.13.2: {}
 
@@ -5341,6 +5465,27 @@ snapshots:
 
   ieee754@1.2.1: {}
 
+  ignition-utils@https://codeload.github.com/money-on-chain/ignition-utils/tar.gz/786b080cda2b7636fcc48e14cf2d5fff2a36915f(@nomicfoundation/hardhat-ignition-viem@3.1.6(@nomicfoundation/hardhat-ignition@3.1.8(@nomicfoundation/hardhat-verify@3.0.21(hardhat@3.9.0))(hardhat@3.9.0))(@nomicfoundation/hardhat-verify@3.0.21(hardhat@3.9.0))(@nomicfoundation/hardhat-viem@3.0.9(hardhat@3.9.0)(viem@2.53.1(typescript@5.9.3)(zod@3.25.76)))(@nomicfoundation/ignition-core@3.1.8)(hardhat@3.9.0)(viem@2.53.1(typescript@5.9.3)(zod@3.25.76)))(@nomicfoundation/hardhat-ignition@3.1.8(@nomicfoundation/hardhat-verify@3.0.21(hardhat@3.9.0))(hardhat@3.9.0))(typescript@5.9.3)(zod@3.25.76):
+    dependencies:
+      '@nomicfoundation/hardhat-keystore': 3.0.12(hardhat@3.9.0)
+      '@nomicfoundation/hardhat-network-helpers': 3.0.11(hardhat@3.9.0)
+      '@nomicfoundation/hardhat-node-test-runner': 3.0.17(hardhat@3.9.0)
+      '@nomicfoundation/hardhat-toolbox-viem': 5.0.7(888d9e6e504d5ca27c6bcc0d505c54e6)
+      '@nomicfoundation/hardhat-verify': 3.0.21(hardhat@3.9.0)
+      '@nomicfoundation/hardhat-viem': 3.0.9(hardhat@3.9.0)(viem@2.53.1(typescript@5.9.3)(zod@3.25.76))
+      '@nomicfoundation/hardhat-viem-assertions': 3.1.2(@nomicfoundation/hardhat-viem@3.0.9(hardhat@3.9.0)(viem@2.53.1(typescript@5.9.3)(zod@3.25.76)))(hardhat@3.9.0)(viem@2.53.1(typescript@5.9.3)(zod@3.25.76))
+      '@nomicfoundation/ignition-core': 3.1.7
+      '@openzeppelin/contracts': 4.9.3
+      hardhat: 3.9.0
+      viem: 2.53.1(typescript@5.9.3)(zod@3.25.76)
+    transitivePeerDependencies:
+      - '@nomicfoundation/hardhat-ignition'
+      - '@nomicfoundation/hardhat-ignition-viem'
+      - bufferutil
+      - typescript
+      - utf-8-validate
+      - zod
+
   ignore@5.3.2: {}
 
   ignore@7.0.6: {}
@@ -5423,6 +5568,13 @@ snapshots:
   isows@1.0.7(ws@8.20.1):
     dependencies:
       ws: 8.20.1
+
+  jest-diff@30.4.1:
+    dependencies:
+      '@jest/diff-sequences': 30.4.0
+      '@jest/get-type': 30.1.0
+      chalk: 4.1.2
+      pretty-format: 30.4.1
 
   jiti@2.6.1: {}
 
@@ -5797,6 +5949,13 @@ snapshots:
 
   prettier@3.8.1: {}
 
+  pretty-format@30.4.1:
+    dependencies:
+      '@jest/schemas': 30.4.1
+      ansi-styles: 5.2.0
+      react-is-18: react-is@18.3.1
+      react-is-19: react-is@19.2.8
+
   price-oracle-interfaces@https://codeload.github.com/money-on-chain/price_oracle_interfaces/tar.gz/1d40834055f9d12ac3b3ce98bce82199336eb7d9: {}
 
   process-nextick-args@2.0.1: {}
@@ -5834,6 +5993,10 @@ snapshots:
       ini: 1.3.8
       minimist: 1.2.8
       strip-json-comments: 2.0.1
+
+  react-is@18.3.1: {}
+
+  react-is@19.2.8: {}
 
   read-pkg-up@3.0.0:
     dependencies:
@@ -6176,10 +6339,12 @@ snapshots:
     dependencies:
       typescript: 5.9.3
 
-  ts-test-helpers@https://codeload.github.com/money-on-chain/ts-test-helpers/tar.gz/6177adbe32646487c88dc9553b160c22d498e8e2(hardhat@3.9.0)(typescript@5.9.3)(zod@3.25.76):
+  ts-test-helpers@https://codeload.github.com/money-on-chain/ts-test-helpers/tar.gz/6177adbe32646487c88dc9553b160c22d498e8e2(@nomicfoundation/hardhat-toolbox-viem@5.0.7(6290106f27664cbed5721001e427defd))(hardhat@3.9.0)(typescript@5.9.3)(zod@3.25.76):
     dependencies:
       hardhat: 3.9.0
       viem: 2.53.1(typescript@5.9.3)(zod@3.25.76)
+    optionalDependencies:
+      '@nomicfoundation/hardhat-toolbox-viem': 5.0.7(6290106f27664cbed5721001e427defd)
     transitivePeerDependencies:
       - bufferutil
       - typescript
@@ -6197,6 +6362,8 @@ snapshots:
       esbuild: 0.28.2
     optionalDependencies:
       fsevents: 2.3.3
+
+  tunnel@0.0.6: {}
 
   type-check@0.4.0:
     dependencies:

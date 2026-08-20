@@ -89,7 +89,7 @@ contract PauserSplitRifProMigrationChanger is IChangeContract {
         }
     }
 
-    function _beforeUpgrade() internal view {
+    function _beforeUpgrade() internal {
         address rifBucketAddress = address(rifBucketProxy);
         if (!IMocQueue(rifBucketProxy.mocQueue()).isEmpty()) revert QueueNotEmpty();
         if (!IAccessControl(newRifProToken).hasRole(MINTER_ROLE, rifBucketAddress))
