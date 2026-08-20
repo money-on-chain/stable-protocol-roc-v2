@@ -48,8 +48,4 @@ contract AddTasksRunnerChangerTestnetForkTests is AddTasksRunnerChangerForkTests
         require(topOwners[rank] != address(0), "not enough staked testnet oracles");
         return topOwners[rank];
     }
-
-    function _shouldExecutePreTasksRunnerChanger() internal pure override returns (bool) {
-        return false;
-    }
 }

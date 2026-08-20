@@ -83,14 +83,6 @@ contract BaseFork is IgnitionDeployments, OracleTestHelper {
         vm.deal(governorOwner, 100 ether);
     }
 
-    function _executePreTasksRunnerChanger() internal {
-        if (!_shouldExecutePreTasksRunnerChanger()) return;
-
-        IGovernor governor = IGovernor(address(rifBucket.governor()));
-        vm.prank(governorOwner);
-        governor.executeChange(IChangeContract(address(preTasksRunnerChanger)));
-    }
-
     function _executeAddTasksRunnerChanger() internal {
         IGovernor governor = IGovernor(address(rifBucket.governor()));
         vm.prank(governorOwner);
@@ -99,9 +91,5 @@ contract BaseFork is IgnitionDeployments, OracleTestHelper {
 
     function _getNetworkAddress(string memory key) internal view virtual returns (address) {
         return getMainnetAddress(key);
-    }
-
-    function _shouldExecutePreTasksRunnerChanger() internal pure virtual returns (bool) {
-        return true;
     }
 }

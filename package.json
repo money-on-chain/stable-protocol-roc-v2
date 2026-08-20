@@ -119,6 +119,7 @@
     "deploy-pauser-split-rifpro-migration-rskTestnet": "npx hardhat ignition deploy ./ignition/modules/changers/pauserSplitRifProMigrationChanger/PauserSplitRifProMigrationChanger.ts --network rskTestnet --parameters ./ignition/modules/changers/pauserSplitRifProMigrationChanger/parameters/rskTestnet.json",
     "deploy-pauser-split-rifpro-migration-rskMainnet": "npx hardhat ignition deploy ./ignition/modules/changers/pauserSplitRifProMigrationChanger/PauserSplitRifProMigrationChanger.ts --network rskMainnet --parameters ./ignition/modules/changers/pauserSplitRifProMigrationChanger/parameters/rskMainnet.json",
     "deploy-preTasksRunner-rskMainnet": "npx hardhat ignition deploy ./ignition/modules/changers/preTasksRunner/preTasksRunner.ts --network rskMainnet --build-profile default --parameters ./ignition/modules/changers/preTasksRunner/parameters/rskMainnet.json --deployment-id preTasksRunner-mainnet",
+    "deploy-addTasksRunner-rskMainnet": "npx hardhat ignition deploy ./ignition/modules/changers/addTasksRunner/AddTasksRunner.ts --network rskMainnet --build-profile default --parameters ./ignition/modules/changers/addTasksRunner/parameters/rskMainnet.json --deployment-id addTasksRunner-mainnet",
     "verify:rskTestnet": "pnpm hardhat ignition verify --network rskTestnet",
     "verify:rskMainnet": "pnpm hardhat ignition verify --network rskMainnet chain-30",
     "tenderly-verify:rskTestnet": "pnpm hardhat run scripts/tenderly-verify.ts --network rskTestnet"

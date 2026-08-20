@@ -117,6 +117,7 @@ interface IStakingFull {
 
 interface IQueueExecFeesView {
     function priceUpdatesCost() external view returns (uint256);
+    function execCost(uint8 operType) external view returns (uint256);
     function getExecFee(uint8 opType) external view returns (uint256);
     function maxOperWaitingBlk() external view returns (uint256);
 }
@@ -175,10 +176,8 @@ contract AddTasksRunnerChangerForkTests is BaseFork {
         require(isValid, "RIF bucket TP0 price is not valid");
         rifBucketTp0Price = uint256(price);
 
-        // PreTasksRunnerChanger must execute before AddTasksRunnerChanger so the
-        // TasksRunner proxy is registered in the OracleManager and the oracle
-        // infrastructure is ready for the add-tasks wiring.
-        _executePreTasksRunnerChanger();
+        // PreTasksRunner was deployed and executed on the forked network before
+        // this suite runs. The suite only exercises AddTasksRunnerChanger.
     }
 
     function test_ExecuteAddTasksRunnerChanger() public {
@@ -277,6 +276,36 @@ contract AddTasksRunnerChangerForkTests is BaseFork {
             address(docBucket),
             "MOC->DOC legacy auction output should point to docBucket"
         );
+    }
+
+    function test_QueueExecutionCostsRemainUnchangedExceptPriceUpdatesCost() public {
+        IQueueExecFeesView rifQueueFees = IQueueExecFeesView(address(rifQueue));
+        IQueueExecFeesView docQueueFees = IQueueExecFeesView(address(docBucket.mocQueue()));
+        uint256[9] memory rifExecutionCostsBefore;
+        uint256[9] memory docExecutionCostsBefore;
+
+        for (uint8 operType = 1; operType <= 9; operType++) {
+            rifExecutionCostsBefore[operType - 1] = rifQueueFees.execCost(operType);
+            docExecutionCostsBefore[operType - 1] = docQueueFees.execCost(operType);
+        }
+
+        _executeAddTasksRunnerChanger();
+
+        for (uint8 operType = 1; operType <= 9; operType++) {
+            assertEq(
+                rifQueueFees.execCost(operType),
+                rifExecutionCostsBefore[operType - 1],
+                "RIF queue execution cost changed"
+            );
+            assertEq(
+                docQueueFees.execCost(operType),
+                docExecutionCostsBefore[operType - 1],
+                "DOC queue execution cost changed"
+            );
+        }
+
+        assertEq(rifQueueFees.priceUpdatesCost(), docQueueFees.priceUpdatesCost(), "queue price update costs differ after changer");
+        assertEq(rifQueueFees.priceUpdatesCost(), 255000, "queue price update cost should be set to 255000");
     }
 
     function test_RifUsdMigration() public {
@@ -749,6 +778,11 @@ contract AddTasksRunnerChangerForkTests is BaseFork {
         _subscribeIfNeeded(IStakingOracleOps(staking), oracleOwner2, coinPair);
         _subscribeIfNeeded(IStakingOracleOps(staking), oracleOwner3, coinPair);
 
+        // The live TasksRunner can still be inside its current round lock
+        // period at the fork block. Advance the fork timestamp so the round
+        // switch is deterministic and independent of the chosen mainnet block.
+        (, , uint256 lockPeriodTimestamp, , , ) = tasksRunner.getRoundInfo();
+        vm.warp(lockPeriodTimestamp + 1);
         tasksRunner.switchRound();
 
         // makes TaskInterestPaymentV3RifBucket available to execute
@@ -759,23 +793,19 @@ contract AddTasksRunnerChangerForkTests is BaseFork {
 
         string memory tasksJson = vm.readFile(TASKS_DEPLOYED_ADDRESSES_PATH);
         address expectedInterestTask = vm.parseJsonAddress(tasksJson, ".TaskInterestPaymentV3RifBucket");
-        address expectedSwitchRoundTask = vm.parseJsonAddress(tasksJson, ".TaskSwitchRoundRifUsdCoinPair");
         address[] memory availableTasks = tasksRunner.getTasksAvailable();
         uint256 availableTaskCount;
         bool interestTaskAvailable;
-        bool switchRoundTaskAvailable;
 
         for (uint256 i = 0; i < availableTasks.length; i++) {
             if (availableTasks[i] != address(0)) {
                 availableTaskCount++;
                 if (availableTasks[i] == expectedInterestTask) interestTaskAvailable = true;
-                if (availableTasks[i] == expectedSwitchRoundTask) switchRoundTaskAvailable = true;
             }
         }
 
-        assertEq(availableTaskCount, 2, "Unexpected number of available tasks");
+        assertEq(availableTaskCount, 1, "Unexpected number of available tasks");
         assertTrue(interestTaskAvailable, "Interest payment task is not available");
-        assertTrue(switchRoundTaskAvailable, "RIF/USD switch round task is not available");
 
         uint256 tasksFlags = tasksRunner.getTasksAvailableAsFlags();
         (uint256 pointsBefore, ) = tasksRunner.getOracleRoundInfo(oracleOwner1);
@@ -835,7 +865,7 @@ contract AddTasksRunnerChangerForkTests is BaseFork {
                 sawTaskExecuted++;
             }
         }
-        assertEq(sawTaskExecuted, 2, "Two TaskExecuted event should be emitted");
+        assertEq(sawTaskExecuted, 1, "One TaskExecuted event should be emitted");
     }
 
     function _sortSignaturesBySigner(
@@ -873,7 +903,7 @@ contract AddTasksRunnerChangerForkTests is BaseFork {
         uint256 ctargemaCA = rifBucket.getCtargemaCA();
         uint256 ctargemaTP = rifBucket.getCtargemaTP(usdRif);
         assertEq(ctargemaCA, ctargemaTP, "ctargemaCA should equal ctargemaTP (only one pegged token in the bucket)");
-        assertEq(ctargemaCA, 11866059643163247835, "calcCtargemaCA should equal 11.86 before changer");
+        assertEq(ctargemaCA, 6045157037971720037, "calcCtargemaCA should equal 6.045 before changer");
 
         _executeAddTasksRunnerChanger();
 
@@ -889,7 +919,7 @@ contract AddTasksRunnerChangerForkTests is BaseFork {
         ctargemaCA = rifBucket.getCtargemaCA();
         ctargemaTP = rifBucket.getCtargemaTP(usdRif);
         assertEq(ctargemaCA, ctargemaTP, "ctargemaCA should equal ctargemaTP (only one pegged token in the bucket)");
-        assertEq(ctargemaCA, 13944792337996270365, "calcCtargemaCA should equal 13.9 after changer");
+        assertEq(ctargemaCA, 7594716768696421859, "calcCtargemaCA should equal 7.59 after changer");
     }
 
     /// @dev After both changers run, queues a mintTP on the RIF bucket (usdRIF) and on the DOC

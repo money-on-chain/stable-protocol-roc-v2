@@ -4,10 +4,10 @@
 #
 # This script:
 # 1. Starts a Hardhat node forking the selected RSK network (in-memory EDR)
-# 2. Deploys PreTasksRunner (TasksRunner proxy + PreTasksRunnerChanger)
+# 2. Loads the already deployed PreTasksRunner (TasksRunner proxy + changer)
 # 3. Deploys AddTasksRunner (includes AddTasksRunnerChanger), injecting the
-#    TasksRunner proxy address and RIF/USD CoinPair address produced by step 2
-# 4. Exports local deployment addresses (both modules) into a single fixture
+#    real TasksRunner proxy address and RIF/USD CoinPair address
+# 4. Exports deployment addresses into a single fixture
 # 5. Runs Solidity tests that fork from the running Hardhat node
 #
 # Usage:
@@ -23,22 +23,20 @@ set -e
 NETWORK="${1:-rskMainnet}"
 NODE_PORT=8545
 NODE_PID=""
-PRE_TASKS_DEPLOYMENT_ID="chain-pre-test"
+PRE_TASKS_DEPLOYMENT_ID="preTasksRunner-mainnet"
 ADD_TASKS_DEPLOYMENT_ID="chain-test"
 DEPLOYED_ADDRESSES_FILE="test/changers/addTasksRunner/fixtures/deployed-addresses.json"
-SKIP_PRE_TASKS=false
 
 # These are exported so that hardhat has them as ENV vars, used in hardhat.config.ts
 # for configuring the 'node' network.
 if [ "$NETWORK" = "rskTestnet" ]; then
     PRE_TASKS_DEPLOYMENT_ID="preTasksRunner-testnet"
-    SKIP_PRE_TASKS=true
-    export FORK_BLOCK_NUMBER="${FORK_BLOCK_NUMBER:-"7933673"}"
+    export FORK_BLOCK_NUMBER="${FORK_BLOCK_NUMBER:-"7989151"}"
     export FORK_RPC_URL="${FORK_RPC_URL:-${RSK_TESTNET_RPC_URL:-https://public-node.testnet.rsk.co}}"
     export FORK_CHAIN_ID=31
     TEST_FILE="test/changers/addTasksRunner/AddTasksRunnerChangerTestnetFork.t.sol"
 else
-    export FORK_BLOCK_NUMBER="${FORK_BLOCK_NUMBER:-"9024485"}"
+    export FORK_BLOCK_NUMBER="${FORK_BLOCK_NUMBER:-"9167653"}"
     export FORK_RPC_URL="${FORK_RPC_URL:-${RSK_MAINNET_RPC_URL:-https://public-node.rsk.co}}"
     export FORK_CHAIN_ID=30
     TEST_FILE="test/changers/addTasksRunner/AddTasksRunnerChanger.t.sol"
@@ -115,16 +113,6 @@ start_node() {
     exit 1
 }
 
-validate_pre_tasks_params() {
-    local pre_tasks_params="ignition/modules/changers/preTasksRunner/parameters/$NETWORK.json"
-    if [ ! -f "$pre_tasks_params" ]; then
-        log_error "Missing PreTasksRunner parameters file: $pre_tasks_params"
-        exit 1
-    fi
-
-    log_success "Using PreTasksRunner parameters: $pre_tasks_params"
-}
-
 validate_add_tasks_params() {
     local add_tasks_params="ignition/modules/changers/addTasksRunner/parameters/$NETWORK.json"
     if [ ! -f "$add_tasks_params" ]; then
@@ -135,23 +123,14 @@ validate_add_tasks_params() {
     log_success "Using AddTasksRunner parameters: $add_tasks_params"
 }
 
-deploy_pre_tasks_runner() {
-    if [ "$SKIP_PRE_TASKS" = true ]; then
-        log_info "Skipping PreTasksRunner deployment for testnet; using $PRE_TASKS_DEPLOYMENT_ID"
-        return 0
+validate_pre_tasks_deployment() {
+    local pre_tasks_file="ignition/deployments/$PRE_TASKS_DEPLOYMENT_ID/deployed_addresses.json"
+    if [ ! -f "$pre_tasks_file" ]; then
+        log_error "Missing existing PreTasksRunner deployment: $pre_tasks_file"
+        exit 1
     fi
 
-    log_info "Deploying PreTasksRunner via Ignition..."
-
-    rm -rf "ignition/deployments/$PRE_TASKS_DEPLOYMENT_ID"
-
-    echo "y" | pnpm hardhat ignition deploy \
-        ignition/modules/changers/preTasksRunner/preTasksRunner.ts \
-        --parameters "ignition/modules/changers/preTasksRunner/parameters/$NETWORK.json" \
-        --network localhost \
-        --deployment-id "$PRE_TASKS_DEPLOYMENT_ID"
-
-    log_success "PreTasksRunner deployed"
+    log_success "Using existing PreTasksRunner deployment: $pre_tasks_file"
 }
 
 deploy_add_tasks_runner() {
@@ -292,9 +271,6 @@ run_forge_tests() {
 
     log_success "Tests completed"
 
-    if [ "$SKIP_PRE_TASKS" = false ]; then
-        rm -rf "ignition/deployments/$PRE_TASKS_DEPLOYMENT_ID"
-    fi
     rm -rf "ignition/deployments/$ADD_TASKS_DEPLOYMENT_ID"
 }
 
@@ -306,9 +282,8 @@ main() {
 
     check_requirements
     start_node
-    validate_pre_tasks_params
     validate_add_tasks_params
-    deploy_pre_tasks_runner
+    validate_pre_tasks_deployment
     deploy_add_tasks_runner
     export_addresses
     run_forge_tests
