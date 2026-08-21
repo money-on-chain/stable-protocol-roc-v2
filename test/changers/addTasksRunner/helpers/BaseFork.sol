@@ -59,8 +59,7 @@ contract BaseFork is IgnitionDeployments, OracleTestHelper {
     }
 
     function setUp() public virtual {
-        string memory forkUrl = vm.envOr("FORK_URL", string("http://127.0.0.1:8545"));
-        vm.createSelectFork(forkUrl);
+        vm.createSelectFork(_forkRpcUrl(), _forkBlock());
 
         _loadDeployedAddresses();
         _loadIgnitionContracts();
@@ -76,7 +75,7 @@ contract BaseFork is IgnitionDeployments, OracleTestHelper {
 
         // These are test-only accounts. The holder does not need to exist on the
         // fork, while the governor owner is read from the live Governor contract
-        // so the suite works for both mainnet and testnet address books.
+        // from the mainnet address book.
         holder = vm.addr(0xBEEF);
         governorOwner = IOwnableOwner(address(rifBucket.governor())).owner();
         vm.deal(holder, 100 ether);
@@ -89,7 +88,15 @@ contract BaseFork is IgnitionDeployments, OracleTestHelper {
         governor.executeChange(IChangeContract(address(addTasksRunnerChanger)));
     }
 
-    function _getNetworkAddress(string memory key) internal view virtual returns (address) {
+    function _getNetworkAddress(string memory key) internal view returns (address) {
         return getMainnetAddress(key);
+    }
+
+    function _forkRpcUrl() internal view returns (string memory) {
+        return vm.envOr("RSK_MAINNET_RPC_URL", string("https://public-node.rsk.co"));
+    }
+
+    function _forkBlock() internal view returns (uint256) {
+        return vm.envOr("ADD_TASKS_RUNNER_FORK_BLOCK", uint256(9170610));
     }
 }

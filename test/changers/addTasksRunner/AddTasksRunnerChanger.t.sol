@@ -138,8 +138,6 @@ interface ICommissionSplitterView {
 }
 
 contract AddTasksRunnerChangerForkTests is BaseFork {
-    string private constant TASKS_DEPLOYED_ADDRESSES_PATH =
-        "test/changers/addTasksRunner/fixtures/deployed-addresses.json";
     bytes32 private constant MOC_FLOW_BUFFERS = 0x4cb845794d5472a713e41e8e4ddc566dab8d695f1dc6c8edd43dad9d55112a22;
     bytes32 private constant MOC_FLOW_REVERSE_AUCTIONS =
         0x0428ec087e0cce276a71d1caf1afe4da32a2d48b3ebe579040612b5bd262ff73;
@@ -183,9 +181,9 @@ contract AddTasksRunnerChangerForkTests is BaseFork {
     function test_ExecuteAddTasksRunnerChanger() public {
         _executeAddTasksRunnerChanger();
 
-        string memory json = vm.readFile(TASKS_DEPLOYED_ADDRESSES_PATH);
-        address swapRifFeesToMocForRifOracle = vm.parseJsonAddress(json, ".SwapRifFeesToMocForRifOracle");
-        address swapDocFeesToMocForRifOracle = vm.parseJsonAddress(json, ".SwapDocFeesToMocForRifOracle");
+        string memory json = vm.readFile(_deployedAddressesPath());
+        address swapRifFeesToMocForRifOracle = getAddTasksRunnerAddress(json, "SwapRifFeesToMocForRifOracle");
+        address swapDocFeesToMocForRifOracle = getAddTasksRunnerAddress(json, "SwapDocFeesToMocForRifOracle");
 
         assertEq(
             mocMultiCollateralGuard.coinbaseExecFeeRecipient(),
@@ -304,7 +302,11 @@ contract AddTasksRunnerChangerForkTests is BaseFork {
             );
         }
 
-        assertEq(rifQueueFees.priceUpdatesCost(), docQueueFees.priceUpdatesCost(), "queue price update costs differ after changer");
+        assertEq(
+            rifQueueFees.priceUpdatesCost(),
+            docQueueFees.priceUpdatesCost(),
+            "queue price update costs differ after changer"
+        );
         assertEq(rifQueueFees.priceUpdatesCost(), 255000, "queue price update cost should be set to 255000");
     }
 
@@ -347,8 +349,8 @@ contract AddTasksRunnerChangerForkTests is BaseFork {
             addTasksRunnerChanger.mocToRifPriceProvider(),
             "legacy MOC->RIF auction should be rewired to the replacement provider"
         );
-        string memory json = vm.readFile(TASKS_DEPLOYED_ADDRESSES_PATH);
-        address swapRifFeesToMocForRifOracle = vm.parseJsonAddress(json, ".SwapRifFeesToMocForRifOracle");
+        string memory json = vm.readFile(_deployedAddressesPath());
+        address swapRifFeesToMocForRifOracle = getAddTasksRunnerAddress(json, "SwapRifFeesToMocForRifOracle");
         assertEq(
             IReverseAuctionView(swapRifFeesToMocForRifOracle).priceProvider(),
             addTasksRunnerChanger.rifToMocPriceProvider(),
@@ -360,10 +362,10 @@ contract AddTasksRunnerChangerForkTests is BaseFork {
             INFO_ADDR
         );
         {
-            string memory tasksJson = vm.readFile(TASKS_DEPLOYED_ADDRESSES_PATH);
-            address taskExecuteQueueV3 = vm.parseJsonAddress(tasksJson, ".TaskExecuteQueueV3");
-            address taskExecuteQueueV3Fallback = vm.parseJsonAddress(tasksJson, ".TaskExecuteQueueV3Fallback");
-            address taskUpdateEmaV3RifBucket = vm.parseJsonAddress(tasksJson, ".TaskUpdateEmaV3RifBucket");
+            string memory tasksJson = vm.readFile(_deployedAddressesPath());
+            address taskExecuteQueueV3 = getAddTasksRunnerAddress(tasksJson, "TaskExecuteQueueV3");
+            address taskExecuteQueueV3Fallback = getAddTasksRunnerAddress(tasksJson, "TaskExecuteQueueV3Fallback");
+            address taskUpdateEmaV3RifBucket = getAddTasksRunnerAddress(tasksJson, "TaskUpdateEmaV3RifBucket");
             assertTrue(
                 rifOracleCoinPair.isPricePeekWhitelisted(taskExecuteQueueV3),
                 "TaskExecuteQueueV3 should be whitelisted on the new direct RIF/USD pair"
@@ -469,7 +471,7 @@ contract AddTasksRunnerChangerForkTests is BaseFork {
     function test_TasksRunnerContainsAllExpectedTasks() public {
         _executeAddTasksRunnerChanger();
 
-        string memory json = vm.readFile(TASKS_DEPLOYED_ADDRESSES_PATH);
+        string memory json = vm.readFile(_deployedAddressesPath());
         string[58] memory taskKeys = [
             "TaskUpdateEmaV1",
             "TaskEvalLiquidationV1",
@@ -535,8 +537,7 @@ contract AddTasksRunnerChangerForkTests is BaseFork {
         assertEq(tasksRunner.getTaskCount(), taskKeys.length, "unexpected tasks runner task count");
 
         for (uint256 i = 0; i < taskKeys.length; i++) {
-            string memory selector = string.concat(".", taskKeys[i]);
-            address taskAddress = vm.parseJsonAddress(json, selector);
+            address taskAddress = getAddTasksRunnerAddress(json, taskKeys[i]);
             assertTrue(tasksRunner.containsTask(taskAddress), string.concat("task not found: ", taskKeys[i]));
         }
     }
@@ -544,8 +545,8 @@ contract AddTasksRunnerChangerForkTests is BaseFork {
     function test_TaskExecuteQueueV3FallbackIsAvailableOnlyForExpiredOperations() public {
         _executeAddTasksRunnerChanger();
 
-        string memory json = vm.readFile(TASKS_DEPLOYED_ADDRESSES_PATH);
-        address fallbackTask = vm.parseJsonAddress(json, ".TaskExecuteQueueV3Fallback");
+        string memory json = vm.readFile(_deployedAddressesPath());
+        address fallbackTask = getAddTasksRunnerAddress(json, "TaskExecuteQueueV3Fallback");
 
         // With no expired operation, the fallback task must remain unavailable.
         assertFalse(ITaskView(fallbackTask).checkTask(), "fallback task should be unavailable initially");
@@ -581,9 +582,9 @@ contract AddTasksRunnerChangerForkTests is BaseFork {
     function test_BuffersOutputsAreSet() public {
         _executeAddTasksRunnerChanger();
 
-        string memory json = vm.readFile(TASKS_DEPLOYED_ADDRESSES_PATH);
-        address swapRifFeesToMocForRifOracle = vm.parseJsonAddress(json, ".SwapRifFeesToMocForRifOracle");
-        address swapDocFeesToMocForRifOracle = vm.parseJsonAddress(json, ".SwapDocFeesToMocForRifOracle");
+        string memory json = vm.readFile(_deployedAddressesPath());
+        address swapRifFeesToMocForRifOracle = getAddTasksRunnerAddress(json, "SwapRifFeesToMocForRifOracle");
+        address swapDocFeesToMocForRifOracle = getAddTasksRunnerAddress(json, "SwapDocFeesToMocForRifOracle");
 
         IBufferTokenView rocrBuffer = IBufferTokenView(addTasksRunnerChanger.rocrRewardsBuffer());
         (address rocrOutput0, , , ) = rocrBuffer.getOutput(0);
@@ -791,8 +792,8 @@ contract AddTasksRunnerChangerForkTests is BaseFork {
 
         uint256 version = 3;
 
-        string memory tasksJson = vm.readFile(TASKS_DEPLOYED_ADDRESSES_PATH);
-        address expectedInterestTask = vm.parseJsonAddress(tasksJson, ".TaskInterestPaymentV3RifBucket");
+        string memory tasksJson = vm.readFile(_deployedAddressesPath());
+        address expectedInterestTask = getAddTasksRunnerAddress(tasksJson, "TaskInterestPaymentV3RifBucket");
         address[] memory availableTasks = tasksRunner.getTasksAvailable();
         uint256 availableTaskCount;
         bool interestTaskAvailable;
@@ -903,7 +904,7 @@ contract AddTasksRunnerChangerForkTests is BaseFork {
         uint256 ctargemaCA = rifBucket.getCtargemaCA();
         uint256 ctargemaTP = rifBucket.getCtargemaTP(usdRif);
         assertEq(ctargemaCA, ctargemaTP, "ctargemaCA should equal ctargemaTP (only one pegged token in the bucket)");
-        assertEq(ctargemaCA, 6045157037971720037, "calcCtargemaCA should equal 6.045 before changer");
+        assertEq(ctargemaCA, 6087190760552433635, "calcCtargemaCA should equal 6.087 before changer");
 
         _executeAddTasksRunnerChanger();
 
@@ -919,7 +920,7 @@ contract AddTasksRunnerChangerForkTests is BaseFork {
         ctargemaCA = rifBucket.getCtargemaCA();
         ctargemaTP = rifBucket.getCtargemaTP(usdRif);
         assertEq(ctargemaCA, ctargemaTP, "ctargemaCA should equal ctargemaTP (only one pegged token in the bucket)");
-        assertEq(ctargemaCA, 7594716768696421859, "calcCtargemaCA should equal 7.59 after changer");
+        assertEq(ctargemaCA, 7640571738784473056, "calcCtargemaCA should equal 7.64 after changer");
     }
 
     /// @dev After both changers run, queues a mintTP on the RIF bucket (usdRIF) and on the DOC

@@ -23,6 +23,7 @@ extra_output = ["storageLayout"]
 fs_permissions = [
     { access = "read", path = "out" },
     { access = "read", path = "test" },
+    { access = "read", path = "ignition" },
     { access = "read", path = "addressBook.json" }
 ]
 
