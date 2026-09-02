@@ -72,6 +72,8 @@ export const addressBook: {
         mocToken: string;
         rifToken: string;
         rifProToken: string;
+        legacyRifProToken: string;
+        rifProMigrator: string;
         usdRifToken: string;
         docToken: string;
         docProToken: string;
@@ -185,6 +187,8 @@ export const testnet: {
     mocToken: string;
     rifToken: string;
     rifProToken: string;
+    legacyRifProToken: string;
+    rifProMigrator: string;
     usdRifToken: string;
     docToken: string;
     docProToken: string;
