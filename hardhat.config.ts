@@ -53,15 +53,17 @@ export default defineConfig({
     flat: false,
   },
   verify: {
-    // Rootstock explorer is still experimental
-    // as it needs extra parameters obtained from the website
-    // to interact with the nextjs app.
     blockscout: {
       enabled: true,
     },
     etherscan: {
+      // Rootstock's official explorer exposes an Etherscan-compatible API.
+      // It requires a non-empty placeholder but does not require a real API key.
+      enabled: true,
+      apiKey: process.env.ETHERSCAN_API_KEY ?? "rootstock",
+    },
+    sourcify: {
       enabled: false,
-      apiKey: process.env.ETHERSCAN_API_KEY ?? "unused",
     },
   },
   chainDescriptors: {
@@ -73,8 +75,8 @@ export default defineConfig({
       },
       blockExplorers: {
         etherscan: {
-          url: "",
-          apiUrl: "",
+          url: "https://explorer.rootstock.io",
+          apiUrl: "https://be.explorer.rootstock.io/api/v3/etherscan",
         },
         blockscout: {
           url: "https://rootstock.blockscout.com",
@@ -90,8 +92,8 @@ export default defineConfig({
       },
       blockExplorers: {
         etherscan: {
-          url: "",
-          apiUrl: "",
+          url: "https://explorer.testnet.rootstock.io",
+          apiUrl: "https://be.explorer.testnet.rootstock.io/api/v3/etherscan",
         },
         blockscout: {
           url: "https://rootstock-testnet.blockscout.com",
