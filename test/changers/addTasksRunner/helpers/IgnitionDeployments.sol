@@ -4,7 +4,6 @@ pragma solidity 0.8.24;
 import { Test } from "forge-std/Test.sol";
 
 abstract contract IgnitionDeployments is Test {
-    string constant DEPLOYED_ADDRESSES_PATH = "test/changers/addTasksRunner/fixtures/deployed-addresses.json";
     string constant ADDRESS_BOOK_PATH = "addressBook.json";
 
     mapping(string => address) public deployedAddresses;
@@ -13,27 +12,38 @@ abstract contract IgnitionDeployments is Test {
     function _loadDeployedAddresses() internal {
         if (addressesLoaded) return;
 
-        string memory json = vm.readFile(DEPLOYED_ADDRESSES_PATH);
+        string memory json = vm.readFile(_deployedAddressesPath());
         bytes memory jsonBytes = bytes(json);
         require(jsonBytes.length > 0, "Deployed addresses file is empty");
 
-        // PreTasksRunner deployment keys
-        _tryParseAddress(json, "PreTasksRunnerChanger");
-        _tryParseAddress(json, "TasksRunnerProxy");
+        _tryParseAddress(json, "AddTasksRunner#AddTasksRunnerChanger", "AddTasksRunnerChanger");
+        _tryParseAddress(json, "AddTasksRunner#TasksRunner", "TasksRunner");
 
-        // AddTasksRunner deployment keys
-        _tryParseAddress(json, "AddTasksRunnerChanger");
+        string memory preTasksJson = vm.readFile(_preTasksDeploymentPath());
+        _tryParseAddress(preTasksJson, "PreTasksRunnerModule#PreTasksRunnerChanger", "PreTasksRunnerChanger");
 
         addressesLoaded = true;
     }
 
-    function _tryParseAddress(string memory json, string memory key) internal {
-        string memory selector = string.concat(".", key);
+    function _deployedAddressesPath() internal pure returns (string memory) {
+        return "ignition/deployments/addTasksRunner-mainnet/deployed_addresses.json";
+    }
+
+    function _preTasksDeploymentPath() internal pure returns (string memory) {
+        return "ignition/deployments/preTasksRunner-mainnet/deployed_addresses.json";
+    }
+
+    function _tryParseAddress(string memory json, string memory selectorKey, string memory contractId) internal {
+        string memory selector = string.concat(".", selectorKey);
         try vm.parseJsonAddress(json, selector) returns (address addr) {
             if (addr != address(0)) {
-                deployedAddresses[key] = addr;
+                deployedAddresses[contractId] = addr;
             }
         } catch {}
+    }
+
+    function getAddTasksRunnerAddress(string memory json, string memory contractId) public pure returns (address) {
+        return vm.parseJsonAddress(json, string.concat(".AddTasksRunner#", contractId));
     }
 
     function getDeployedAddress(string memory contractId) public view returns (address) {
@@ -42,10 +52,6 @@ abstract contract IgnitionDeployments is Test {
 
     function getMainnetAddress(string memory key) public view returns (address) {
         return _getAddressBookAddress("mainnet", key);
-    }
-
-    function getTestnetAddress(string memory key) public view returns (address) {
-        return _getAddressBookAddress("testnet", key);
     }
 
     function _getAddressBookAddress(string memory network, string memory key) internal view returns (address) {
