@@ -1,7 +1,7 @@
 {
   "PauserSplitRifProMigrationChanger": {
     "mocMultiCollateralGuard": "0x0237Ad1f0831b479a344E56646BC48B0885cF46F",
-    "newPauser": "0x5bCdf8A2E61BD238AEe43b99962Ee8BfBda1Beca",
+    "newPauser": "0x817aC952d616c1e2Fa5c6D6DD20b3D15f10dDb03",
     "rifBucketProxy": "0xA27024Ed70035E46dba712609fc2Afa1c97aA36A",
     "legacyRifProToken": "0xf4d27c56595Ed59B66cC7F03CFF5193e4bd74a61",
     "newRifProTokenName": "RIFPro Token",
