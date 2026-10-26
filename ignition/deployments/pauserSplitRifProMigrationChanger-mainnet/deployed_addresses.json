@@ -1,0 +1,8 @@
+{
+  "PauserSplitRifProMigrationChanger#RifBucketProxy": "0xA27024Ed70035E46dba712609fc2Afa1c97aA36A",
+  "PauserSplitRifProMigrationChanger#NewRifProTokenImplementation": "0xc4620f963a0d88731A375d0c00AB333c87218159",
+  "PauserSplitRifProMigrationChanger#RifBucketImplementation": "0xA8BC1C546bB740F720BF35edFd348F0b0bcD98c7",
+  "PauserSplitRifProMigrationChanger#NewRifProTokenProxy": "0x7350DbA61B7e33449eb10c6414dabD6DAeC098A9",
+  "PauserSplitRifProMigrationChanger#NewRifProToken": "0x7350DbA61B7e33449eb10c6414dabD6DAeC098A9",
+  "PauserSplitRifProMigrationChanger#PauserSplitRifProMigrationChanger": "0x4E227DebAf627c9C1254806a4969e0B169A9C015"
+}

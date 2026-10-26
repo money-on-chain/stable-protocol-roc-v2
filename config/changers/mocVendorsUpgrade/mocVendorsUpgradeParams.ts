@@ -1,5 +1,5 @@
-import { HardhatRuntimeEnvironment } from "hardhat/types";
-import { Address } from "hardhat-deploy/types";
+import type { HardhatRuntimeEnvironment } from "hardhat/types";
+import type { Address } from "viem";
 
 type ChangerParams = {
   mocVendorsAddress: Address;
@@ -29,6 +29,7 @@ export const deployChangerParamsr: Record<string, ChangerParams> = {
 };
 
 export const getNetworkChangerParams = (hre: HardhatRuntimeEnvironment) => {
-  const network = hre.network.name === "localhost" ? "hardhat" : hre.network.name;
+  const networkName = hre.globalOptions.network ?? "hardhat";
+  const network = networkName === "localhost" ? "hardhat" : networkName;
   return deployChangerParamsr[network];
 };

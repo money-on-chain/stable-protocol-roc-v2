@@ -1,0 +1,9 @@
+{
+  "PreTasksRunnerModule#BasefeeProvider": "0x9df762835DaEa388fDcc62B357929f8E42E4Ef09",
+  "PreTasksRunnerModule#CoinPairImplementation": "0xbEb7ebe048cC6013eBD1d3b74935288Db64a3F2E",
+  "PreTasksRunnerModule#OracleManagerImplementation": "0x79B2b85c697E4B7cAd1E50ccee7D48959436fd1D",
+  "PreTasksRunnerModule#TasksRunnerImplementation": "0x342fbb045B81389cfCec2606555595C82a24D492",
+  "PreTasksRunnerModule#TasksRunnerProxy": "0x0E00baCDf5c6d6F51777998B4d7A660FD29e0fb6",
+  "PreTasksRunnerModule#TasksRunnerAtProxy": "0x0E00baCDf5c6d6F51777998B4d7A660FD29e0fb6",
+  "PreTasksRunnerModule#PreTasksRunnerChanger": "0xdE1fE4DcF2Fc74fAb3a86AF7F989A633478dc37D"
+}

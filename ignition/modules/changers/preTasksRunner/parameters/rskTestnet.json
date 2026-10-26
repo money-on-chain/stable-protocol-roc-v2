@@ -1,0 +1,26 @@
+{
+  "PreTasksRunnerModule": {
+    "oracleManagerProxy": "0x493eefbB8F0a22f85708c0C890E7B531E61A7018",
+    "upgradeDelegator": "0xa12a9A492eFEBf4E43B174A57886286dA5057B8D",
+    "proxyAdmin": "0xeF26DDA31FEe5737d7a115eA0bAa2d352210B641",
+    "multiSigCoinPairPauser": "0xf69287F5Ca3cC3C6d3981f2412109110cB8af076",
+    "governor": "0x7b716178771057195bB511f0B1F7198EEE62Bc22",
+    "mocTokenAddress": "0x45a97b54021a3F99827641AFe1BFAE574431e6ab",
+    "registry": "0xf078375a3dD89dDF4D9dA460352199C6769b5f10",
+    "minOraclesPerRound": 1,
+    "maxOraclesPerRound": 10,
+    "maxSubscribedOraclesPerRound": 30,
+    "roundLockPeriod": 2592000,
+    "maxMissedSigRounds": 10,
+    "maxTasksPerBatch": 3,
+    "tokenToCoinbasePriceProvider": "0x6C3A218AF21b82E17BC684c0B2DB3C799a3c66c1",
+    "sharesCapMultiplier": "1500000000000000000",
+    "mocSwapper": "0x0000000000000000000000000000000000000000",
+    "rifToken": "0x19F64674D8A5B4E652319F5e239eFd3bc969A1fE",
+    "mocToken": "0x45a97b54021a3F99827641AFe1BFAE574431e6ab",
+    "rifToMocIntermediateTokens": [],
+    "rifToMocFees": [],
+    "mocToRifIntermediateTokens": [],
+    "mocToRifFees": []
+  }
+}

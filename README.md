@@ -27,6 +27,14 @@ Create a local `.env` from [`.env.example`](./.env.example).
 pnpm install
 ```
 
+Install the Git hooks once per clone:
+
+```bash
+pnpm hooks:install
+```
+
+Hook installation is intentionally manual so projects that consume this repository as a Git dependency do not treat it as a package that requires build scripts.
+
 ## Build
 
 ```bash
