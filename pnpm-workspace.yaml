@@ -14,3 +14,6 @@ peerDependencyRules:
     "hardhat-watcher@2.5.0>hardhat": "3.9.0"
 
 blockExoticSubdeps: false
+
+overrides:
+  "@nomicfoundation/hardhat-verify>cbor2": "2.3.0"

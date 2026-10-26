@@ -2,11 +2,11 @@
 pragma solidity 0.8.24;
 
 import { Test } from "forge-std/Test.sol";
-import { ERC1967Proxy } from "@openzeppelin/contracts/proxy/ERC1967/ERC1967Proxy.sol";
 import { IERC20 } from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import { IChangeContract } from "moc-main-latest/contracts/interfaces/IChangeContract.sol";
 import { IGovernor } from "moc-main-latest/contracts/interfaces/IGovernor.sol";
 import { MocMultiCollateralGuard } from "moc-main-latest/contracts/multiCollateral/MocMultiCollateralGuard.sol";
+import { Stoppable } from "moc-main-latest/contracts/governance/Stoppable.sol";
 import { MocOperations } from "moc-main-latest/contracts/core/MocOperations.sol";
 import { MocQueue } from "moc-main-latest/contracts/queue/MocQueue.sol";
 import { MocQueueExecFees } from "moc-main-latest/contracts/queue/MocQueueExecFees.sol";
@@ -25,8 +25,9 @@ interface IGovernorOwner {
 contract PauserSplitRifProMigrationChangerForkTests is Test {
     address internal constant RIF_PRO_HOLDER = 0xe4822F07C1d988A8f2F53D1817f7e8848897b67A;
     address internal constant MIGRATION_OPERATOR = address(0x1234);
-    string internal constant DEFAULT_PARAMS_PATH =
-        "ignition/modules/changers/pauserSplitRifProMigrationChanger/parameters/rskMainnet.json";
+    string internal constant DEPLOYED_ADDRESSES_PATH =
+        "ignition/deployments/pauserSplitRifProMigrationChanger-mainnet/deployed_addresses.json";
+    uint256 internal constant MAINNET_FORK_BLOCK = 9357418;
     bytes32 internal constant DEFAULT_ADMIN_ROLE = 0x00;
     bytes32 internal constant MINTER_ROLE = keccak256("MINTER_ROLE");
     bytes32 internal constant BURNER_ROLE = keccak256("BURNER_ROLE");
@@ -34,7 +35,6 @@ contract PauserSplitRifProMigrationChangerForkTests is Test {
     MocRif internal rifBucket;
     MocRC20 internal legacyRifProToken;
     MocRC20 internal newRifProToken;
-    MocRif internal newRifBucketImplementation;
     PauserSplitRifProMigrationChanger internal changer;
     address internal governorOwner;
     MocMultiCollateralGuard internal mocMultiCollateralGuard;
@@ -43,24 +43,23 @@ contract PauserSplitRifProMigrationChangerForkTests is Test {
     function setUp() public {
         string memory defaultMainnetForkUrl = vm.envOr("RSK_MAINNET_RPC_URL", string("https://public-node.rsk.co"));
         string memory forkUrl = vm.envOr("FORK_URL", defaultMainnetForkUrl);
-        vm.createSelectFork(forkUrl, 8879400);
+        // The changer and its dependencies are deployed by this block, before execution.
+        vm.createSelectFork(forkUrl, MAINNET_FORK_BLOCK);
 
-        _loadParamsFromJson();
+        string memory json = vm.readFile(DEPLOYED_ADDRESSES_PATH);
+        changer = PauserSplitRifProMigrationChanger(
+            vm.parseJsonAddress(json, ".['PauserSplitRifProMigrationChanger#PauserSplitRifProMigrationChanger']")
+        );
+        assertGt(address(changer).code.length, 0, "mainnet changer should be deployed");
+        mocMultiCollateralGuard = changer.mocMultiCollateralGuard();
+        newPauser = changer.newPauser();
+        rifBucket = changer.rifBucketProxy();
+        legacyRifProToken = MocRC20(changer.legacyRifProToken());
+        newRifProToken = MocRC20(changer.newRifProToken());
 
         IGovernor governor = IGovernor(address(rifBucket.governor()));
         governorOwner = IGovernorOwner(address(governor)).owner();
         vm.deal(governorOwner, 100 ether);
-
-        newRifBucketImplementation = new MocRif();
-        newRifProToken = _deployRifProToken(governor);
-        changer = new PauserSplitRifProMigrationChanger(
-            mocMultiCollateralGuard,
-            newPauser,
-            address(rifBucket),
-            address(newRifBucketImplementation),
-            address(legacyRifProToken),
-            address(newRifProToken)
-        );
     }
 
     function test_ExecuteChangerUpgradesBucketAndDeploysMigrator() public {
@@ -99,18 +98,56 @@ contract PauserSplitRifProMigrationChangerForkTests is Test {
         }
     }
 
+    function test_NewPauserCanPauseAndUnpauseAcrossProtocol() public {
+        _executeChanger();
+
+        Stoppable[] memory targets = _protocolStoppables();
+        for (uint256 i = 0; i < targets.length; i++) {
+            Stoppable target = targets[i];
+            assertFalse(target.paused(), "contract should start unpaused");
+
+            vm.prank(newPauser);
+            target.pause();
+            assertTrue(target.paused(), "new pauser should pause contract");
+
+            vm.prank(newPauser);
+            target.unpause();
+            assertFalse(target.paused(), "new pauser should unpause contract");
+        }
+    }
+
+    function test_UnauthorizedAccountCannotPauseOrUnpauseAcrossProtocol() public {
+        _executeChanger();
+
+        address unauthorizedAccount = makeAddr("unauthorizedPauser");
+        assertNotEq(unauthorizedAccount, newPauser, "account must differ from new pauser");
+        Stoppable[] memory targets = _protocolStoppables();
+        for (uint256 i = 0; i < targets.length; i++) {
+            Stoppable target = targets[i];
+            assertFalse(target.governor().isAuthorizedChanger(unauthorizedAccount), "account must not be authorized");
+            assertFalse(target.paused(), "contract should start unpaused");
+
+            vm.prank(unauthorizedAccount);
+            vm.expectRevert(Stoppable.OnlyPauser.selector);
+            target.pause();
+            assertFalse(target.paused(), "unauthorized pause should leave contract unpaused");
+
+            vm.prank(newPauser);
+            target.pause();
+
+            vm.prank(unauthorizedAccount);
+            vm.expectRevert(Stoppable.OnlyPauser.selector);
+            target.unpause();
+            assertTrue(target.paused(), "unauthorized unpause should leave contract paused");
+
+            vm.prank(newPauser);
+            target.unpause();
+        }
+    }
+
     function test_ExecuteChangerRevertsIfNewTokenDoesNotGrantBucketRoles() public {
-        MocRC20 unpermissionedNewRifProToken = _deployRifProTokenWithoutBucketRoles(
-            IGovernor(address(rifBucket.governor()))
-        );
-        PauserSplitRifProMigrationChanger unpermissionedChanger = new PauserSplitRifProMigrationChanger(
-            mocMultiCollateralGuard,
-            newPauser,
-            address(rifBucket),
-            address(newRifBucketImplementation),
-            address(legacyRifProToken),
-            address(unpermissionedNewRifProToken)
-        );
+        vm.prank(address(rifBucket));
+        newRifProToken.revokeRole(MINTER_ROLE, address(rifBucket));
 
         IGovernor governor = IGovernor(address(rifBucket.governor()));
         vm.prank(governorOwner);
@@ -121,22 +158,12 @@ contract PauserSplitRifProMigrationChangerForkTests is Test {
                 address(rifBucket)
             )
         );
-        governor.executeChange(IChangeContract(address(unpermissionedChanger)));
+        governor.executeChange(IChangeContract(address(changer)));
     }
 
     function test_ExecuteChangerRevertsIfNewTokenDoesNotGrantBucketBurnerRole() public {
-        MocRC20 partiallyPermissionedNewRifProToken = _deployRifProTokenWithoutBucketRoles(
-            IGovernor(address(rifBucket.governor()))
-        );
-        partiallyPermissionedNewRifProToken.grantRole(MINTER_ROLE, address(rifBucket));
-        PauserSplitRifProMigrationChanger partiallyPermissionedChanger = new PauserSplitRifProMigrationChanger(
-            mocMultiCollateralGuard,
-            newPauser,
-            address(rifBucket),
-            address(newRifBucketImplementation),
-            address(legacyRifProToken),
-            address(partiallyPermissionedNewRifProToken)
-        );
+        vm.prank(address(rifBucket));
+        newRifProToken.revokeRole(BURNER_ROLE, address(rifBucket));
 
         IGovernor governor = IGovernor(address(rifBucket.governor()));
         vm.prank(governorOwner);
@@ -147,23 +174,12 @@ contract PauserSplitRifProMigrationChangerForkTests is Test {
                 address(rifBucket)
             )
         );
-        governor.executeChange(IChangeContract(address(partiallyPermissionedChanger)));
+        governor.executeChange(IChangeContract(address(changer)));
     }
 
     function test_ExecuteChangerRevertsIfNewTokenDoesNotGrantBucketAdminRole() public {
-        MocRC20 partiallyPermissionedNewRifProToken = _deployRifProTokenWithoutBucketRoles(
-            IGovernor(address(rifBucket.governor()))
-        );
-        partiallyPermissionedNewRifProToken.grantRole(MINTER_ROLE, address(rifBucket));
-        partiallyPermissionedNewRifProToken.grantRole(BURNER_ROLE, address(rifBucket));
-        PauserSplitRifProMigrationChanger partiallyPermissionedChanger = new PauserSplitRifProMigrationChanger(
-            mocMultiCollateralGuard,
-            newPauser,
-            address(rifBucket),
-            address(newRifBucketImplementation),
-            address(legacyRifProToken),
-            address(partiallyPermissionedNewRifProToken)
-        );
+        vm.prank(address(rifBucket));
+        newRifProToken.revokeRole(DEFAULT_ADMIN_ROLE, address(rifBucket));
 
         IGovernor governor = IGovernor(address(rifBucket.governor()));
         vm.prank(governorOwner);
@@ -174,7 +190,7 @@ contract PauserSplitRifProMigrationChangerForkTests is Test {
                 address(rifBucket)
             )
         );
-        governor.executeChange(IChangeContract(address(partiallyPermissionedChanger)));
+        governor.executeChange(IChangeContract(address(changer)));
     }
 
     function test_ExecuteChangerRevertsIfRifQueueIsNotEmpty() public {
@@ -378,40 +394,22 @@ contract PauserSplitRifProMigrationChangerForkTests is Test {
         assertEq(rifBucket.nTCcb(), nTCcbBefore, "nTCcb should return after redeemTC execution");
     }
 
-    function _deployRifProToken(IGovernor governor_) internal returns (MocRC20) {
-        MocRC20 token = _deployRifProTokenWithoutBucketRoles(governor_);
-        token.grantRole(DEFAULT_ADMIN_ROLE, address(rifBucket));
-        token.grantRole(MINTER_ROLE, address(rifBucket));
-        token.grantRole(BURNER_ROLE, address(rifBucket));
-        return token;
-    }
-
-    function _deployRifProTokenWithoutBucketRoles(IGovernor governor_) internal returns (MocRC20) {
-        MocRC20 implementation = new MocRC20();
-        ERC1967Proxy proxy = new ERC1967Proxy(
-            address(implementation),
-            abi.encodeCall(MocRC20.initialize, ("RIFPro Token", "RIFP", address(this), governor_))
-        );
-        MocRC20 token = MocRC20(address(proxy));
-        return token;
+    function _protocolStoppables() internal view returns (Stoppable[] memory targets) {
+        uint256 bucketAmount = mocMultiCollateralGuard.getBucketAmount();
+        targets = new Stoppable[](2 + 2 * bucketAmount);
+        targets[0] = Stoppable(address(mocMultiCollateralGuard));
+        targets[1] = Stoppable(address(mocMultiCollateralGuard.buckets(0).mocVendors()));
+        for (uint256 i = 0; i < bucketAmount; i++) {
+            MocOperations bucket = mocMultiCollateralGuard.buckets(i);
+            targets[2 + 2 * i] = Stoppable(address(bucket));
+            targets[3 + 2 * i] = Stoppable(bucket.mocQueue());
+        }
     }
 
     function _executeChanger() internal {
         IGovernor governor = IGovernor(address(rifBucket.governor()));
         vm.prank(governorOwner);
         governor.executeChange(IChangeContract(address(changer)));
-    }
-
-    function _loadParamsFromJson() internal {
-        string memory paramsPath = vm.envOr("PAUSER_SPLIT_RIFPRO_PARAMS_PATH", DEFAULT_PARAMS_PATH);
-        string memory json = vm.readFile(paramsPath);
-
-        mocMultiCollateralGuard = MocMultiCollateralGuard(
-            payable(vm.parseJsonAddress(json, ".PauserSplitRifProMigrationChanger.mocMultiCollateralGuard"))
-        );
-        newPauser = vm.parseJsonAddress(json, ".PauserSplitRifProMigrationChanger.newPauser");
-        rifBucket = MocRif(payable(vm.parseJsonAddress(json, ".PauserSplitRifProMigrationChanger.rifBucketProxy")));
-        legacyRifProToken = MocRC20(vm.parseJsonAddress(json, ".PauserSplitRifProMigrationChanger.legacyRifProToken"));
     }
 
     function _rifProHolderLegacyBalance() internal view returns (uint256 legacyAmount) {
@@ -441,10 +439,21 @@ contract PauserSplitRifProMigrationChangerForkTests is Test {
     function _mineUntilQueueCanExecute() internal {
         uint256 minOperWaitingBlk = MocQueue(payable(rifBucket.mocQueue())).minOperWaitingBlk();
         vm.roll(block.number + minOperWaitingBlk + 1);
+
+        // Simulate fresh publications so the queues can execute while keeping the fork's prices.
+        MocMultiCollateralGuard guard = _mocMultiCollateralGuard();
+        for (uint256 i = 0; i < guard.getBucketAmount(); i++) {
+            vm.mockCall(
+                address(guard.buckets(i)),
+                abi.encodeWithSignature("getLastPublicationBlock(bool)", guard.useMaxLastPublicationBlock()),
+                abi.encode(block.number)
+            );
+        }
     }
 
     function _executeRifQueue() internal {
         _mocMultiCollateralGuard().execute();
+        vm.clearMockedCalls();
     }
 }
 

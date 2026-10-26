@@ -45,6 +45,7 @@ export default defineConfig({
     verify: {
         blockscout: {
             enabled: true,
+            apiKey: process.env.ROOTSTOCK_BLOCKSCOUT_API_KEY?.trim() || undefined,
         },
         etherscan: {
             // Rootstock's official explorer exposes an Etherscan-compatible API.
